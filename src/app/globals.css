@@ -38,16 +38,16 @@
   --color-card: var(--card);
 
   /* Mint */
-  --color-mint-50: #defaf6;
-  --color-mint-100: #acf2e7;
-  --color-mint-200: #6aebd8;
-  --color-mint-300: #00e0c6;
-  --color-mint-400: #00d4b7;
-  --color-mint-500: #00c9a8;
-  --color-mint-600: #00ba99;
-  --color-mint-700: #00a887;
-  --color-mint-800: #009778;
-  --color-mint-900: #009778;
+  --color-mint-50: #def7f4;
+  --color-mint-100: #aeece1;
+  --color-mint-200: #72e0ce;
+  --color-mint-300: #00d2ba;
+  --color-mint-400: #00c6a9;
+  --color-mint-500: #00b998;
+  --color-mint-600: #00aa8a;
+  --color-mint-700: #009979;
+  --color-mint-800: #00886a;
+  --color-mint-900: #006a4b;
 
   /* Blue */
   --color-blue-50: #e6f3ff;
