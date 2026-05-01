@@ -153,6 +153,13 @@
   --color-text-on-fill-warning: var(--color-gray-800);
   --color-text-on-fill: var(--color-white);
 
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+
   /* Radius */
   --radius-none: 0;
   --radius-xs: 2px;
