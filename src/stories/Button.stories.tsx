@@ -16,7 +16,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'secondary', 'unselected'],
+      options: ['default', 'secondary', 'line'],
     },
     size: {
       control: 'select',
@@ -78,8 +78,25 @@ export const StateMatrix: Story = {
         </Button>
       </ButtonRow>
 
-      <ButtonRow title="Unselected">
-        <Button variant="unselected" leftIcon={<PlusIcon />}>
+      <ButtonRow title="Line">
+        <Button variant="line" leftIcon={<PlusIcon />}>
+          경험 추가
+        </Button>
+        <Button
+          variant="line"
+          className="border-border-bold bg-background-default shadow-sm"
+          leftIcon={<PlusIcon />}
+        >
+          경험 추가
+        </Button>
+        <Button
+          variant="line"
+          className="border-border-default bg-background-w shadow-focus-ring"
+          leftIcon={<PlusIcon />}
+        >
+          경험 추가
+        </Button>
+        <Button variant="line" disabled leftIcon={<PlusIcon />}>
           경험 추가
         </Button>
       </ButtonRow>
