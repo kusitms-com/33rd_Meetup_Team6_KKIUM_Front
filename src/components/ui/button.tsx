@@ -46,8 +46,7 @@ function Button({
   asChild = false,
   ...props
 }: ButtonProps) {
-  const hasIcon = Boolean(leftIcon || rightIcon);
-  const Comp = asChild && !hasIcon ? Slot.Root : 'button';
+  const Comp = asChild ? Slot.Root : 'button';
 
   return (
     <Comp
@@ -57,9 +56,9 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {leftIcon && <ButtonIcon size={size}>{leftIcon}</ButtonIcon>}
+      {!asChild && leftIcon && <ButtonIcon size={size}>{leftIcon}</ButtonIcon>}
       {children}
-      {rightIcon && <ButtonIcon size={size}>{rightIcon}</ButtonIcon>}
+      {!asChild && rightIcon && <ButtonIcon size={size}>{rightIcon}</ButtonIcon>}
     </Comp>
   );
 }
