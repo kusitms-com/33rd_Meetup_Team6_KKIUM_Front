@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Sidebar } from '@/components/common/Sidebar';
 import { nanumSquare } from './fonts';
 import './globals.css';
 
@@ -14,7 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${nanumSquare.className} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="min-h-full p-4">
+        {/* TODO: collapsed 상태 제어 추가하기 */}
+        <Sidebar />
+        <main className="ml-[268px] min-h-[calc(100vh-32px)] min-w-0">{children}</main>
+      </body>
     </html>
   );
 }
