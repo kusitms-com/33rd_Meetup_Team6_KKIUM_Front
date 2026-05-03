@@ -7,12 +7,12 @@ export function Container({ className, children, ...props }: React.ComponentProp
     <div
       data-slot="container"
       className={cn(
-        'min-h-[146px] w-full rounded-[14px] bg-background-default px-3 py-4',
+        'min-h-[146px] w-full rounded-[14px] bg-background-default px-3 py-4 body-3-regular text-[#364153]',
         className,
       )}
       {...props}
     >
-      <p className="body-3-regular text-[#364153]">{children}</p>
+      {children}
     </div>
   );
 }
