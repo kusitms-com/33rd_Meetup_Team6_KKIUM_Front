@@ -18,12 +18,15 @@ export function SearchBar({
   onChange,
   onClear,
   placeholder = '경험을 검색해주세요',
+  disabled,
+  readOnly,
   ...props
 }: SearchBarProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue?.toString() ?? '');
   const currentValue = value?.toString() ?? uncontrolledValue;
   const hasValue = currentValue.length > 0;
+  const canClear = hasValue && !disabled && !readOnly;
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     if (value === undefined) {
@@ -34,6 +37,10 @@ export function SearchBar({
   }
 
   function handleClear() {
+    if (!canClear) {
+      return;
+    }
+
     if (value === undefined) {
       setUncontrolledValue('');
     }
@@ -56,10 +63,12 @@ export function SearchBar({
         value={currentValue}
         onChange={handleChange}
         placeholder={placeholder}
+        disabled={disabled}
+        readOnly={readOnly}
         className="h-8 min-w-0 flex-1 bg-transparent body-1-bold text-tertiary outline-none placeholder:text-tertiary"
         {...props}
       />
-      {hasValue && (
+      {canClear && (
         <button
           type="button"
           aria-label="검색어 지우기"
