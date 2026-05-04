@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AppShell } from '@/components/common/AppShell';
 import { nanumSquare } from './fonts';
 import './globals.css';
 
@@ -14,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${nanumSquare.className} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="min-h-full p-4">
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }
