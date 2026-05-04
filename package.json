@@ -11,7 +11,7 @@
     "format:check": "prettier . --check",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "chromatic"
+    "chromatic": "pnpm dlx chromatic"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.97.0",
