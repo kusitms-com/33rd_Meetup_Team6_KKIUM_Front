@@ -8,6 +8,7 @@ import {
 } from '@/app/experience/_components/ExperienceCardGrid';
 import type { ExperienceCategory } from '@/app/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/experience/_components/ExperienceCategoryTabs';
+import { EmptyState } from '@/components/common/EmptyState';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
@@ -32,7 +33,16 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
-      <ExperienceCardGrid experiences={filteredExperiences} />
+      {filteredExperiences.length > 0 ? (
+        <ExperienceCardGrid experiences={filteredExperiences} />
+      ) : (
+        <EmptyState
+          title="아직 생성된 경험이 없어요"
+          description="경험을 추가해 파일에 끼워넣어볼까요?"
+          illustrationLabel="등록된 경험이 없습니다"
+          className="mt-[250px]"
+        />
+      )}
     </section>
   );
 }
