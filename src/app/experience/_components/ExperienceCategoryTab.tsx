@@ -67,7 +67,7 @@ export function ExperienceCategoryTab({
       data-category={category}
       data-selected={selected}
       className={cn(
-        'flex cursor-pointer items-center justify-center gap-1 px-1.5 py-0.5 body-1-bold transition-colors',
+        'flex cursor-pointer items-center justify-center gap-1 px-1.5 py-0.5 body-1-bold',
         selected ? 'text-strong' : 'text-quaternary',
         className,
       )}
