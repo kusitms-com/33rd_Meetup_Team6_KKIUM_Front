@@ -2,9 +2,9 @@ import Image from 'next/image';
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { MoreVerticalIcon } from '@/components/common/icons/MoreVerticalIcon';
 import { Tag } from '@/components/common/Tag';
 import { cn } from '@/lib/utils';
+import { ExperienceCardDropdownMenu } from './ExperienceCardDropdownMenu';
 import type { ExperienceCategory } from './ExperienceCategoryTab';
 
 const experienceCardVariants = cva(
@@ -67,13 +67,7 @@ export function ExperienceCard({
     >
       <div className="flex w-full items-start justify-between">
         <Image src={iconMap[type]} alt="" width={72} height={72} className="size-[72px] shrink-0" />
-        <button
-          type="button"
-          aria-label="경험 카드 메뉴"
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center text-gray-main"
-        >
-          <MoreVerticalIcon className="size-6" />
-        </button>
+        <ExperienceCardDropdownMenu triggerClassName="shrink-0" />
       </div>
 
       <div className="flex w-full flex-col items-start gap-3">
