@@ -8,7 +8,7 @@ import { ExperienceCardDropdownMenu } from './ExperienceCardDropdownMenu';
 import type { ExperienceCategory } from './ExperienceCategoryTab';
 
 const experienceCardVariants = cva(
-  'flex w-full cursor-pointer flex-col justify-between gap-2 overflow-hidden rounded-xl border border-border-default bg-background-w px-[18px] py-5 transition-shadow hover:shadow-lg focus-visible:shadow-focus-ring focus-visible:outline-none',
+  'flex w-full flex-col justify-between gap-2 overflow-hidden rounded-xl border border-border-default bg-background-w px-[18px] py-5 transition-shadow focus-visible:shadow-focus-ring focus-visible:outline-none',
   {
     variants: {
       size: {
@@ -20,10 +20,15 @@ const experienceCardVariants = cva(
         true: 'shadow-[0_0_0_3px_var(--color-mint-main)]',
         false: '',
       },
+      interactive: {
+        true: 'cursor-pointer hover:shadow-lg',
+        false: '',
+      },
     },
     defaultVariants: {
       size: 'small',
       selected: false,
+      interactive: false,
     },
   },
 );
@@ -38,7 +43,7 @@ const iconMap: Record<Exclude<ExperienceCategory, 'all'>, string> = {
 export interface ExperienceCardProps
   extends
     Omit<React.ComponentProps<'article'>, 'title'>,
-    VariantProps<typeof experienceCardVariants> {
+    Omit<VariantProps<typeof experienceCardVariants>, 'interactive'> {
   type: Exclude<ExperienceCategory, 'all'>;
   title: string;
   period: string;
@@ -55,14 +60,36 @@ export function ExperienceCard({
   size,
   selected,
   className,
+  onClick,
+  onKeyDown,
   ...props
 }: ExperienceCardProps) {
+  const isInteractive = Boolean(onClick);
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
+    onKeyDown?.(event);
+
+    if (event.defaultPrevented || event.target !== event.currentTarget || !onClick) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick(event as unknown as React.MouseEvent<HTMLElement>);
+    }
+  };
+
   return (
     <article
-      tabIndex={0}
+      tabIndex={isInteractive ? 0 : undefined}
+      role={isInteractive ? 'button' : undefined}
       data-slot="experience-card"
       data-type={type}
-      className={cn(experienceCardVariants({ size, selected, className }))}
+      className={cn(
+        experienceCardVariants({ size, selected, interactive: isInteractive, className }),
+      )}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
       {...props}
     >
       <div className="flex w-full items-start justify-between">
