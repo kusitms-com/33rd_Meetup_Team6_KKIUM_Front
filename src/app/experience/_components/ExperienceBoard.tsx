@@ -26,7 +26,7 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
   return (
     <section
       data-slot="experience-board"
-      className={cn('flex w-full flex-col gap-5', className)}
+      className={cn('flex w-full flex-1 flex-col gap-5', className)}
       {...props}
     >
       <ExperienceCategoryTabs
@@ -36,12 +36,13 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
       {filteredExperiences.length > 0 ? (
         <ExperienceCardGrid experiences={filteredExperiences} />
       ) : (
-        <EmptyState
-          title="아직 생성된 경험이 없어요"
-          description="경험을 추가해 파일에 끼워넣어볼까요?"
-          illustrationLabel="등록된 경험이 없습니다"
-          className="mt-[250px]"
-        />
+        <div className="flex flex-1 items-center justify-center">
+          <EmptyState
+            title="아직 생성된 경험이 없어요"
+            description="경험을 추가해 파일에 끼워넣어볼까요?"
+            illustrationLabel="등록된 경험이 없습니다"
+          />
+        </div>
       )}
     </section>
   );
