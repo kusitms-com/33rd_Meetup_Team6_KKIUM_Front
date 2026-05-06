@@ -8,6 +8,7 @@ import {
 } from '@/app/experience/_components/ExperienceCardGrid';
 import type { ExperienceCategory } from '@/app/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/experience/_components/ExperienceCategoryTabs';
+import { ExperienceDetailPanel } from '@/app/experience/_components/ExperienceDetailPanel';
 import { EmptyState } from '@/components/common/EmptyState';
 import { cn } from '@/lib/utils';
 
@@ -17,11 +18,21 @@ export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
 
 export function ExperienceBoard({ experiences, className, ...props }: ExperienceBoardProps) {
   const [selectedCategory, setSelectedCategory] = React.useState<ExperienceCategory>('all');
+  const [selectedExperienceId, setSelectedExperienceId] = React.useState<string>();
 
   const filteredExperiences =
     selectedCategory === 'all'
       ? experiences
       : experiences.filter((experience) => experience.type === selectedCategory);
+
+  const selectedExperience = filteredExperiences.find(
+    (experience) => experience.id === selectedExperienceId,
+  );
+
+  const handleCategoryChange = (category: ExperienceCategory) => {
+    setSelectedCategory(category);
+    setSelectedExperienceId(undefined);
+  };
 
   return (
     <section
@@ -31,10 +42,14 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
     >
       <ExperienceCategoryTabs
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={handleCategoryChange}
       />
       {filteredExperiences.length > 0 ? (
-        <ExperienceCardGrid experiences={filteredExperiences} />
+        <ExperienceCardGrid
+          experiences={filteredExperiences}
+          selectedExperienceId={selectedExperienceId}
+          onExperienceClick={(experience) => setSelectedExperienceId(experience.id)}
+        />
       ) : (
         <div className="flex flex-1 items-center justify-center">
           <EmptyState
@@ -43,6 +58,12 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
             illustrationLabel="등록된 경험이 없습니다"
           />
         </div>
+      )}
+      {selectedExperience && (
+        <ExperienceDetailPanel
+          experience={selectedExperience}
+          onClose={() => setSelectedExperienceId(undefined)}
+        />
       )}
     </section>
   );
