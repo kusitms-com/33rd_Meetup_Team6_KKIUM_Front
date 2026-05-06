@@ -76,13 +76,13 @@ export function ExperienceDetailPanel({
               <p className="truncate body-3-regular text-quaternary">{experience.description}</p>
             </div>
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-start gap-5">
               <div className="flex w-[83px] shrink-0 flex-col items-center gap-0.5">
                 <Image src={category.icon} alt="" width={72} height={72} className="size-[72px]" />
                 <span className="body-3-bold text-strong">{category.label}</span>
               </div>
 
-              <dl className="flex flex-col gap-1.5">
+              <dl className="flex flex-col gap-1.5 pt-2.5">
                 {experience.detailInfo.map((item) => (
                   <div key={item.label} className="flex items-center gap-4">
                     <dt className="body-3-bold text-strong">{item.label}</dt>
