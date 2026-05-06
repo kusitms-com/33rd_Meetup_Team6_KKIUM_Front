@@ -10,9 +10,10 @@ export interface ExperienceItem {
   title: string;
   description: string;
   period: string;
-  teamSize: string;
-  role: string;
-  contribution: string;
+  detailInfo: {
+    label: string;
+    value: string;
+  }[];
   skillTags: string[];
   competencyTags: string[];
   detail: {

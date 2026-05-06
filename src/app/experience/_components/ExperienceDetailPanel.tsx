@@ -83,20 +83,12 @@ export function ExperienceDetailPanel({
               </div>
 
               <dl className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-4">
-                  <dt className="body-3-bold text-strong">기간</dt>
-                  <dd className="body-3-regular text-secondary">{experience.period}</dd>
-                </div>
-                <div className="flex items-center gap-4">
-                  <dt className="body-3-bold text-strong">팀원 수</dt>
-                  <dd className="body-3-regular text-secondary">{experience.teamSize}</dd>
-                </div>
-                <div className="flex items-center gap-4">
-                  <dt className="body-3-bold text-strong">내 역할 및 기여도</dt>
-                  <dd className="body-3-regular text-secondary">
-                    {experience.role}, {experience.contribution}
-                  </dd>
-                </div>
+                {experience.detailInfo.map((item) => (
+                  <div key={item.label} className="flex items-center gap-4">
+                    <dt className="body-3-bold text-strong">{item.label}</dt>
+                    <dd className="body-3-regular text-secondary">{item.value}</dd>
+                  </div>
+                ))}
               </dl>
             </div>
           </div>
