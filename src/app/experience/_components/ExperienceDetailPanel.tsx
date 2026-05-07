@@ -164,7 +164,7 @@ export function ExperienceDetailPanel({
       aria-labelledby={titleId}
       tabIndex={-1}
       className={cn(
-        'fixed top-0 right-0 z-40 flex h-screen w-full max-w-[500px] flex-col bg-background-w px-6 pt-8 shadow-2xl',
+        'fixed top-0 right-0 z-40 flex h-dvh w-full max-w-[500px] flex-col bg-background-w px-6 pt-8 shadow-2xl',
         className,
       )}
       onKeyDown={handlePanelKeyDown}
