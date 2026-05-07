@@ -58,6 +58,20 @@ export function ExperienceDetailPanel({
   ...props
 }: ExperienceDetailPanelProps) {
   const category = categoryMap[experience.type];
+  const [detail, setDetail] = React.useState(experience.detail);
+
+  React.useEffect(() => {
+    setDetail(experience.detail);
+  }, [experience]);
+
+  const handleDetailChange =
+    (key: keyof ExperienceItem['detail']): React.ChangeEventHandler<HTMLTextAreaElement> =>
+    (event) => {
+      setDetail((prev) => ({
+        ...prev,
+        [key]: event.target.value,
+      }));
+    };
 
   return (
     <aside
@@ -123,7 +137,7 @@ export function ExperienceDetailPanel({
             <div className="flex items-center justify-between px-2">
               <h3 className="body-2-bold text-[#1e2939]">{label}</h3>
             </div>
-            <DetailInput readOnly value={experience.detail[key]} />
+            <DetailInput value={detail[key]} onChange={handleDetailChange(key)} />
           </div>
         ))}
       </div>
