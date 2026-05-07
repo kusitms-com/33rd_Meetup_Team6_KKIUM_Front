@@ -59,10 +59,17 @@ export function ExperienceDetailPanel({
 }: ExperienceDetailPanelProps) {
   const category = categoryMap[experience.type];
   const [detail, setDetail] = React.useState(experience.detail);
+  const previousExperienceIdRef = React.useRef(experience.id);
 
   React.useEffect(() => {
+    // 같은 경험을 편집 중일 때 부모 렌더로 입력값이 초기화되지 않도록 id 변경만 추적
+    if (previousExperienceIdRef.current === experience.id) {
+      return;
+    }
+
+    previousExperienceIdRef.current = experience.id;
     setDetail(experience.detail);
-  }, [experience]);
+  }, [experience.id, experience.detail]);
 
   React.useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
