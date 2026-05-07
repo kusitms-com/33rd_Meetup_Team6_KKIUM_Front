@@ -91,7 +91,7 @@ export function ExperienceDetailPanel({
     <aside
       data-slot="experience-detail-panel"
       className={cn(
-        'fixed top-0 right-0 z-40 flex h-screen w-[500px] flex-col bg-background-w px-6 pt-8 shadow-2xl',
+        'fixed top-0 right-0 z-40 flex h-screen w-full max-w-[500px] flex-col bg-background-w px-6 pt-8 shadow-2xl',
         className,
       )}
       {...props}
