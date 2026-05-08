@@ -69,10 +69,12 @@ function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
 function DialogFooter({
   className,
   showFooterCloseButton = false,
+  footerCloseLabel = '닫기',
   children,
   ...props
 }: React.ComponentProps<'div'> & {
   showFooterCloseButton?: boolean;
+  footerCloseLabel?: string;
 }) {
   return (
     <div
@@ -86,7 +88,7 @@ function DialogFooter({
       {children}
       {showFooterCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="line">Close</Button>
+          <Button variant="line">{footerCloseLabel}</Button>
         </DialogPrimitive.Close>
       )}
     </div>
