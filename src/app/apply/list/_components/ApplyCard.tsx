@@ -7,7 +7,7 @@ import { PencilIcon } from '@/components/common/icons/PencilIcon';
 import { cn } from '@/lib/utils';
 
 export interface ApplyCardProps extends React.ComponentProps<'article'> {
-  title: string;
+  applyTitle: string;
   companyName: string;
   jobField: string;
   period: string;
@@ -15,7 +15,7 @@ export interface ApplyCardProps extends React.ComponentProps<'article'> {
 }
 
 export function ApplyCard({
-  title,
+  applyTitle,
   companyName,
   jobField,
   period,
@@ -44,7 +44,7 @@ export function ApplyCard({
 
         <div className="flex w-full items-start justify-between gap-4">
           <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-            <h3 className="w-full truncate title-1-bold text-gray-main">{title}</h3>
+            <h3 className="w-full truncate title-1-bold text-gray-main">{applyTitle}</h3>
 
             <div className="flex flex-col items-start gap-0.5">
               <div className="flex items-center gap-1.5 body-1-regular text-gray-800">
