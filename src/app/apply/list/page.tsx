@@ -9,7 +9,7 @@ export default function ApplyListPage() {
   const hasCards = applyListMockData.length > 0;
 
   return (
-    <main className="w-full px-40">
+    <section className="w-full px-40">
       <div className="flex w-full min-w-0 max-w-[1560px] flex-col gap-5">
         <SearchBar
           placeholder="공고명, 기업명, 모집 분야를 검색해주세요"
@@ -31,6 +31,6 @@ export default function ApplyListPage() {
           <NullList />
         )}
       </div>
-    </main>
+    </section>
   );
 }
