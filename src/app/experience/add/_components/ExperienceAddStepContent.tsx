@@ -1,0 +1,18 @@
+import { EXPERIENCE_ADD_STEPS } from '@/app/experience/add/_constants/experienceAddSteps';
+
+interface ExperienceAddStepContentProps {
+  currentStepIndex: number;
+}
+
+export function ExperienceAddStepContent({ currentStepIndex }: ExperienceAddStepContentProps) {
+  const currentStep = EXPERIENCE_ADD_STEPS[currentStepIndex] ?? EXPERIENCE_ADD_STEPS[0];
+
+  return (
+    <section
+      aria-label={currentStep}
+      className="rounded-xl border border-border-default bg-background-w px-[30px] py-5"
+    >
+      <p className="body-1-bold text-strong">{currentStep}</p>
+    </section>
+  );
+}

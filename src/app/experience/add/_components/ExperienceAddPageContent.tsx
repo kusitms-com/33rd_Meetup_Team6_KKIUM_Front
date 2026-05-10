@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { ExperienceAddProgress } from '@/app/experience/add/_components/ExperienceAddProgress';
+import { ExperienceAddStepContent } from '@/app/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/experience/add/_constants/experienceAddSteps';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 export function ExperienceAddPageContent() {
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const currentStep = EXPERIENCE_ADD_STEPS[currentStepIndex];
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1;
 
@@ -39,13 +39,7 @@ export function ExperienceAddPageContent() {
 
       <main className="mt-[50px] flex flex-col gap-10">
         <ExperienceAddProgress currentStepIndex={currentStepIndex} />
-
-        <section
-          aria-label={currentStep}
-          className="rounded-xl border border-border-default bg-background-w px-[30px] py-5"
-        >
-          <p className="body-1-bold text-strong">{currentStep}</p>
-        </section>
+        <ExperienceAddStepContent currentStepIndex={currentStepIndex} />
       </main>
 
       <footer className="mt-10 flex justify-end gap-4">
