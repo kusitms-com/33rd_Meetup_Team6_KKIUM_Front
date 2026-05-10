@@ -24,7 +24,7 @@ export function ExperienceAddPageContent() {
   };
 
   return (
-    <div className="mx-20 mt-5 flex flex-col">
+    <div className="mx-20 flex min-h-[calc(100dvh-(var(--app-shell-padding)*2))] flex-col py-5">
       <header className="flex items-center gap-2">
         <button
           type="button"
@@ -37,7 +37,7 @@ export function ExperienceAddPageContent() {
         <h1 className="title-1-bold text-strong">경험 추가하기</h1>
       </header>
 
-      <main className="mt-[50px] flex flex-col gap-10">
+      <main className="mt-[50px] flex flex-1 flex-col gap-10">
         <ExperienceAddProgress currentStepIndex={currentStepIndex} />
         <ExperienceAddStepContent currentStepIndex={currentStepIndex} />
       </main>
