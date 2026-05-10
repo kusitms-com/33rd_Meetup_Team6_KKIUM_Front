@@ -1,3 +1,4 @@
+import { ExperienceAddBasicInfoStep } from '@/app/experience/add/_components/ExperienceAddBasicInfoStep';
 import { ExperienceAddUploadStep } from '@/app/experience/add/_components/ExperienceAddUploadStep';
 import { EXPERIENCE_ADD_STEPS } from '@/app/experience/add/_constants/experienceAddSteps';
 
@@ -10,6 +11,10 @@ export function ExperienceAddStepContent({ currentStepIndex }: ExperienceAddStep
 
   if (currentStepIndex === 0) {
     return <ExperienceAddUploadStep />;
+  }
+
+  if (currentStepIndex === 1) {
+    return <ExperienceAddBasicInfoStep />;
   }
 
   return (
