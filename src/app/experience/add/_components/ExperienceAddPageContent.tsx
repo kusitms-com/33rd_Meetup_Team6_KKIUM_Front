@@ -13,14 +13,14 @@ export function ExperienceAddPageContent() {
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const isFirstStep = currentStepIndex === 0;
-  const isLastStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1;
+  const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
 
   const goPreviousStep = () => {
     setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
   };
 
   const goNextStep = () => {
-    setCurrentStepIndex((stepIndex) => Math.min(stepIndex + 1, EXPERIENCE_ADD_STEPS.length - 1));
+    setCurrentStepIndex((stepIndex) => Math.min(stepIndex + 1, EXPERIENCE_ADD_STEPS.length));
   };
 
   return (
@@ -42,14 +42,16 @@ export function ExperienceAddPageContent() {
         <ExperienceAddStepContent currentStepIndex={currentStepIndex} />
       </main>
 
-      <footer className="mt-10 flex justify-end gap-4">
-        <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
-          이전
-        </Button>
-        <Button type="button" className="w-40" onClick={goNextStep} disabled={isLastStep}>
-          다음
-        </Button>
-      </footer>
+      {!isCompleteStep && (
+        <footer className="mt-10 flex justify-end gap-4">
+          <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
+            이전
+          </Button>
+          <Button type="button" className="w-40" onClick={goNextStep}>
+            다음
+          </Button>
+        </footer>
+      )}
     </div>
   );
 }
