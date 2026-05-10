@@ -1,9 +1,11 @@
-import type { SVGProps } from 'react';
+import { useId, type SVGProps } from 'react';
 
 export function LogoIcon(props: SVGProps<SVGSVGElement>) {
+  const filterId = `upload-document-icon-shadow-${useId()}`;
+
   return (
     <svg width="81" height="68" viewBox="0 0 81 68" fill="none" aria-hidden="true" {...props}>
-      <g filter="url(#upload-document-icon-shadow)">
+      <g filter={`url(#${filterId})`}>
         <rect
           x="14.864"
           y="12.0596"
@@ -24,7 +26,7 @@ export function LogoIcon(props: SVGProps<SVGSVGElement>) {
       </g>
       <defs>
         <filter
-          id="upload-document-icon-shadow"
+          id={filterId}
           x="0"
           y="0.164062"
           width="80.7478"
