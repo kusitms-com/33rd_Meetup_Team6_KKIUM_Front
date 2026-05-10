@@ -2,49 +2,18 @@
 
 import { useState } from 'react';
 
+import {
+  RESULT_BASIC_FIELDS,
+  RESULT_COMPETENCY_TAGS,
+  RESULT_CORE_FIELDS,
+  RESULT_SKILL_TAGS,
+} from '@/app/experience/add/_constants/experienceResultData';
 import { Tag } from '@/components/common/Tag';
 import { TextField } from '@/components/common/TextField';
 import { EditIcon } from '@/components/common/icons/EditIcon';
 import { Input } from '@/components/ui/input';
 
-const RESULT_BASIC_FIELDS = [
-  {
-    label: '제목',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트',
-  },
-  {
-    label: '한 줄 소개',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트',
-  },
-] as const;
-
-const RESULT_SKILL_TAGS = ['Figma', 'FigJam', 'Prototype', 'User Test'];
-const RESULT_COMPETENCY_TAGS = ['추진력', '문제 해결', '협업', '유연성'];
-
 type EditableTagGroup = 'skill' | 'competency';
-
-const RESULT_CORE_FIELDS = [
-  {
-    label: 'Situation (상황 및 목표)',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트블바릅라블',
-  },
-  {
-    label: 'Task (해결 과제)',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트',
-  },
-  {
-    label: 'Act (실제 행동)',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트',
-  },
-  {
-    label: 'Result (결과 및 성과)',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트',
-  },
-  {
-    label: 'Taken (배운점)',
-    value: '브랜드 마케팅 전략을 수립하고 실행하여 전환율 20% 향상을 달성한 프로젝트',
-  },
-] as const;
 
 export function ExperienceAddResultStep() {
   const [editingTagGroup, setEditingTagGroup] = useState<EditableTagGroup | null>(null);
