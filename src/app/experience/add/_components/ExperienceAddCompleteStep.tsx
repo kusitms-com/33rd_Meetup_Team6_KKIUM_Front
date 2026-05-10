@@ -11,7 +11,7 @@ export function ExperienceAddCompleteStep() {
   return (
     <section
       aria-labelledby="experience-add-complete-title"
-      className="flex h-full w-full flex-col items-center justify-center gap-6 rounded-xl border border-border-default bg-background-w px-[30px]"
+      className="flex w-full flex-1 flex-col items-center justify-center gap-6 rounded-xl border border-border-default bg-background-w px-[30px]"
     >
       <div className="flex flex-col items-center gap-6">
         <ExperienceAddCompleteIcon className="h-[162px] w-[176px]" />
