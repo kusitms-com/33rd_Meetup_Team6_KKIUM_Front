@@ -1,4 +1,6 @@
+import { ExperienceAddMaterialModal } from '@/app/experience/add/_components/ExperienceAddMaterialModal';
 import { EmptyState } from '@/components/common/EmptyState';
+import { Modal } from '@/components/common/Modal';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { Button } from '@/components/ui/button';
 
@@ -22,9 +24,16 @@ export function ExperienceAddUploadStep() {
         </div>
       </div>
 
-      <Button type="button" className="h-10 w-full body-3-bold" leftIcon={<PlusIcon />}>
-        자료 추가하기
-      </Button>
+      <Modal
+        showCloseButton
+        trigger={
+          <Button type="button" className="h-10 w-full body-3-bold" leftIcon={<PlusIcon />}>
+            자료 추가하기
+          </Button>
+        }
+      >
+        <ExperienceAddMaterialModal />
+      </Modal>
 
       <div className="h-[357px] w-full rounded-lg bg-gray-100 py-5">
         <EmptyState
