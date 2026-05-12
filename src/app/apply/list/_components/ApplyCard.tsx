@@ -13,7 +13,7 @@ export interface ApplyCardProps extends React.ComponentProps<'article'> {
   period: string;
   actionLabel?: string;
   selected?: boolean;
-  onMenuClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onCardClick?: React.MouseEventHandler<HTMLElement>;
 }
 
 export function ApplyCard({
@@ -23,20 +23,52 @@ export function ApplyCard({
   period,
   actionLabel = '지원서 작성하기',
   selected = false,
-  onMenuClick,
+  onCardClick,
+  onClick,
+  onKeyDown,
   className,
   ...props
 }: ApplyCardProps) {
+  const isInteractive = Boolean(onCardClick);
+
+  const handleClick: React.MouseEventHandler<HTMLElement> = (event) => {
+    onClick?.(event);
+    onCardClick?.(event);
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
+    onKeyDown?.(event);
+
+    if (
+      event.defaultPrevented ||
+      event.target !== event.currentTarget ||
+      !onCardClick
+    ) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onCardClick(event as unknown as React.MouseEvent<HTMLElement>);
+    }
+  };
+
   return (
     <article
       data-slot="apply-card"
       data-state={selected ? 'selected' : 'default'}
+      tabIndex={isInteractive ? 0 : undefined}
+      role={isInteractive ? 'button' : undefined}
       className={cn(
         'flex h-60 w-full max-w-[494px] flex-col justify-between gap-7 overflow-hidden rounded-xl border border-border-default bg-background-w px-5 py-7',
         selected &&
           'shadow-[0px_0px_0px_3px_rgba(114,224,206,1.00)] outline-1 outline-offset-[-1px] outline-border-default',
+        isInteractive &&
+          'cursor-pointer hover:shadow-md focus-visible:shadow-focus-ring focus-visible:outline-none',
         className,
       )}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       {...props}
     >
       <div className="flex w-full items-start gap-5">
@@ -78,10 +110,6 @@ export function ApplyCard({
             type="button"
             aria-label="카드 메뉴"
             className="flex size-8 shrink-0 items-center justify-center rounded bg-background-w text-gray-main"
-            onClick={(event) => {
-              event.stopPropagation();
-              onMenuClick?.(event);
-            }}
           >
             <MoreVerticalIcon className="size-6" />
           </button>

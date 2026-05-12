@@ -39,7 +39,7 @@ export function ApplyListSection({ cards }: ApplyListSectionProps) {
     }, 300);
   }
 
-  function handleMenuOpen(cardId: string) {
+  function handleCardOpen(cardId: string) {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
@@ -59,7 +59,7 @@ export function ApplyListSection({ cards }: ApplyListSectionProps) {
             jobField={card.jobField}
             period={card.period}
             selected={sidebarOpen && activeId === card.id}
-            onMenuClick={() => handleMenuOpen(card.id)}
+            onCardClick={() => handleCardOpen(card.id)}
             className="max-w-none"
           />
         ))}
