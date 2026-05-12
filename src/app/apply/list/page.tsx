@@ -1,7 +1,7 @@
 import { ApplyListSection } from './_components/ApplyListSection';
-import { NullList } from './_components/NullList';
 import { applyListMockData } from './_constants/applyListMockData';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
+import { EmptyState } from '@/components/common/EmptyState';
 import { SearchBar } from '@/components/common/SearchBar';
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +28,12 @@ export default function ApplyListPage() {
         {hasCards ? (
           <ApplyListSection cards={applyListMockData} />
         ) : (
-          <NullList />
+          <EmptyState
+            className="h-[823px] w-full py-64"
+            illustrationLabel="생성된 공고 없음"
+            title="아직 생성된 공고가 없어요"
+            description="공고를 추가해 파일에 끼워넣어볼까요?"
+          />
         )}
       </div>
     </section>
