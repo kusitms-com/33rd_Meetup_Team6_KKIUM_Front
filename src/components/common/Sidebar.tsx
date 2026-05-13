@@ -64,14 +64,14 @@ const defaultSettingsItem: SidebarItem = {
 export function Sidebar({ variant = 'fullMenu', collapsed = false }: SidebarProps) {
   const pathname = usePathname();
   const primaryItems = variant === 'fullMenu' ? defaultPrimaryItems : [];
-  const logoSrc = collapsed ? '/logo-mark.svg' : '/logo-dark.svg';
+  const logoSrc = collapsed ? '/logo-light-mark.svg' : '/logo-light.svg';
   const logoSize = collapsed ? { width: 49, height: 49 } : { width: 136, height: 49 };
 
   return (
     <aside
       className={cn(
-        'fixed top-4 left-4 flex h-[calc(100vh-32px)] flex-col justify-between rounded-xl bg-black px-3 py-[26px]',
-        collapsed ? 'w-[73px]' : 'w-[252px]',
+        'fixed top-0 left-0 flex h-dvh flex-col justify-between overflow-hidden border-r border-border-default bg-background-w py-[26px]',
+        collapsed ? 'w-[73px] px-3' : 'w-[252px] px-6',
       )}
     >
       <div className="flex flex-col gap-5">
@@ -122,7 +122,7 @@ function SidebarSection({
   }
 
   return (
-    <div className={cn('flex flex-col gap-2.5 py-2.5', withBorder && 'border-b border-secondary')}>
+    <div className={cn('flex flex-col gap-2.5 py-2.5', withBorder && 'border-b border-gray-300')}>
       {items.map((item) => (
         <SidebarNavItem
           key={item.label}
