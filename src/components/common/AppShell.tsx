@@ -34,9 +34,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       className="min-h-dvh bg-background-default"
     >
       <Sidebar collapsed={collapsed} />
-      <main className="ml-(--app-sidebar-width) min-h-dvh min-w-0">
+      <main className="ml-(--app-sidebar-width) min-h-dvh min-w-0 pt-[30px]">
         {children}
       </main>
-      </div>
+    </div>
   );
 }
