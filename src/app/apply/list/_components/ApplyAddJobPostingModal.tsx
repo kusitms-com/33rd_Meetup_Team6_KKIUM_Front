@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-
 import { Modal, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useJobPostingUrlField } from '@/hooks/apply/useJobPostingUrlField';
 
 export function ApplyAddJobPostingModal() {
-  const [url, setUrl] = useState('');
+  const { url, setUrl, validation, showError, markTouched, reset, maxLength } = useJobPostingUrlField();
+  const errorId = 'apply-job-posting-url-error';
 
   return (
     <Modal
       showCloseButton
+      onOpenChange={(open) => {
+        if (!open) {
+          reset();
+        }
+      }}
       trigger={
         <Button type="button" variant="default" size="default" leftIcon={<PlusIcon />}>
           지원 추가
@@ -31,14 +36,27 @@ export function ApplyAddJobPostingModal() {
           <label htmlFor="apply-job-posting-url" className="title-2-bold text-strong">
             공고 링크
           </label>
-          <Input
-            id="apply-job-posting-url"
-            type="url"
-            inputMode="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="링크를 입력해주세요"
-          />
+          <div className="flex flex-col gap-1.5">
+            <Input
+              id="apply-job-posting-url"
+              type="url"
+              inputMode="url"
+              name="jobPostingUrl"
+              autoComplete="url"
+              value={url}
+              maxLength={maxLength}
+              aria-invalid={showError}
+              aria-describedby={showError ? errorId : undefined}
+              onChange={(e) => setUrl(e.target.value)}
+              onBlur={markTouched}
+              placeholder="링크를 입력해주세요"
+            />
+            {showError && !validation.ok ? (
+              <p id={errorId} className="body-3-regular text-red-700" role="alert">
+                {validation.error}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -52,13 +70,15 @@ export function ApplyAddJobPostingModal() {
         </div>
       </div>
 
-      <button
+      <Button
         type="button"
-        disabled
-        className="flex h-10 w-full shrink-0 cursor-not-allowed items-center justify-center rounded-lg bg-gray-200 px-3 py-1 text-xs font-bold leading-5 text-gray-400"
+        variant="default"
+        size="default"
+        disabled={!validation.ok}
+        className="w-full text-xs font-bold leading-5"
       >
         공고 분석하기
-      </button>
+      </Button>
     </Modal>
   );
 }
