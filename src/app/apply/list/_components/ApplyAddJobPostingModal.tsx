@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Modal, ModalClose, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
+import { XIcon } from '@/components/common/icons/XIcon';
 import { RecruitmentPeriodField } from '@/components/common/PeriodField';
 import { type CalendarDateRange } from '@/components/common/RangeCalendar';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,8 @@ const JOB_EDIT_HEADER: Record<'result' | 'manual', { title: string; description:
   },
 };
 
+type CoverQuestionRow = { id: string; value: string };
+
 function LabeledField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex w-full flex-col gap-4">
@@ -42,7 +45,10 @@ export function ApplyAddJobPostingModal() {
   const [companyName, setCompanyName] = useState('');
   const [recruitmentField, setRecruitmentField] = useState('');
   const [postingBody, setPostingBody] = useState('');
-  const [coverQuestions, setCoverQuestions] = useState<string[]>(['']);
+  const coverRowIdRef = useRef(1);
+  const [coverQuestions, setCoverQuestions] = useState<CoverQuestionRow[]>([
+    { id: 'cover-1', value: '' },
+  ]);
   const [periodRange, setPeriodRange] = useState<CalendarDateRange | null>(null);
   const errorId = 'apply-job-posting-url-error';
 
@@ -53,7 +59,8 @@ export function ApplyAddJobPostingModal() {
         if (!open) {
           reset();
           setStep('url');
-          setCoverQuestions(['']);
+          coverRowIdRef.current = 1;
+          setCoverQuestions([{ id: 'cover-1', value: '' }]);
           setPeriodRange(null);
           setCompanyName('');
           setRecruitmentField('');
@@ -169,26 +176,55 @@ export function ApplyAddJobPostingModal() {
             </LabeledField>
 
             <div className="flex w-full flex-col gap-4">
-              <p className="title-2-bold text-strong">자기소개서 문항 입력</p>
+              <div className="flex w-full min-w-0 items-center justify-between gap-3">
+                <p className="title-2-bold text-strong">자기소개서 문항 입력</p>
+                <Button
+                  type="button"
+                  variant="default"
+                  className="h-9 shrink-0 rounded-lg px-2 py-0.5 body-1-bold"
+                >
+                  저장하기
+                </Button>
+              </div>
               <div className="flex flex-col gap-1.5">
-                {coverQuestions.map((value, index) => (
-                  <Input
-                    key={index}
-                    value={value}
-                    onChange={(e) =>
-                      setCoverQuestions((prev) =>
-                        prev.map((v, i) => (i === index ? e.target.value : v)),
-                      )
-                    }
-                    placeholder={`${index + 1}번 문항`}
-                    aria-label={`${index + 1}번 문항`}
-                  />
+                {coverQuestions.map((row, index) => (
+                  <div key={row.id} className="inline-flex w-full min-w-0 items-center gap-2.5">
+                    <button
+                      type="button"
+                      aria-label={`${index + 1}번 문항 삭제`}
+                      disabled={coverQuestions.length <= 1}
+                      className="flex size-7 shrink-0 items-center justify-center rounded border border-gray-300 bg-background-w text-tertiary outline-none transition-colors hover:bg-gray-100 focus-visible:shadow-focus-ring disabled:pointer-events-none disabled:opacity-40"
+                      onClick={() =>
+                        setCoverQuestions((prev) =>
+                          prev.length <= 1 ? prev : prev.filter((r) => r.id !== row.id),
+                        )
+                      }
+                    >
+                      <XIcon className="size-4" />
+                    </button>
+                    <Input
+                      className="min-w-0 flex-1"
+                      value={row.value}
+                      onChange={(e) =>
+                        setCoverQuestions((prev) =>
+                          prev.map((r) => (r.id === row.id ? { ...r, value: e.target.value } : r)),
+                        )
+                      }
+                      placeholder={`${index + 1}번 문항`}
+                      aria-label={`${index + 1}번 문항`}
+                    />
+                  </div>
                 ))}
               </div>
               <button
                 type="button"
                 className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1 overflow-hidden rounded-lg bg-gray-200 px-3 py-1 body-1-bold text-tertiary outline-none transition-colors hover:bg-gray-300 focus-visible:shadow-focus-ring"
-                onClick={() => setCoverQuestions((prev) => [...prev, ''])}
+                onClick={() =>
+                  setCoverQuestions((prev) => {
+                    coverRowIdRef.current += 1;
+                    return [...prev, { id: `cover-${coverRowIdRef.current}`, value: '' }];
+                  })
+                }
               >
                 <span className="flex size-8 shrink-0 items-center justify-center">
                   <PlusIcon className="size-6 text-tertiary" />
