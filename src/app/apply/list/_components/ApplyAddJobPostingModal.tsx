@@ -16,7 +16,18 @@ const MOCK_ANALYSIS = {
   field: 'Server Developer',
 } as const;
 
-function ReadonlyLabeledBlock({ label, children }: { label: string; children: React.ReactNode }) {
+const JOB_EDIT_HEADER: Record<'result' | 'manual', { title: string; description: string }> = {
+  result: {
+    title: '분석 결과 확인하기',
+    description: '등록한 공고 결과를 확인해주세요.',
+  },
+  manual: {
+    title: '공고 등록',
+    description: '새로운 공고를 등록해주세요.',
+  },
+};
+
+function LabeledField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex w-full flex-col gap-4">
       <p className="title-2-bold text-strong">{label}</p>
@@ -27,7 +38,10 @@ function ReadonlyLabeledBlock({ label, children }: { label: string; children: Re
 
 export function ApplyAddJobPostingModal() {
   const { url, setUrl, validation, showError, markTouched, reset, maxLength } = useJobPostingUrlField();
-  const [step, setStep] = useState<'url' | 'result'>('url');
+  const [step, setStep] = useState<'url' | 'result' | 'manual'>('url');
+  const [companyName, setCompanyName] = useState('');
+  const [recruitmentField, setRecruitmentField] = useState('');
+  const [postingBody, setPostingBody] = useState('');
   const [coverQuestions, setCoverQuestions] = useState<string[]>(['']);
   const [periodRange, setPeriodRange] = useState<CalendarDateRange | null>(null);
   const errorId = 'apply-job-posting-url-error';
@@ -41,6 +55,9 @@ export function ApplyAddJobPostingModal() {
           setStep('url');
           setCoverQuestions(['']);
           setPeriodRange(null);
+          setCompanyName('');
+          setRecruitmentField('');
+          setPostingBody('');
         }
       }}
       trigger={
@@ -91,6 +108,7 @@ export function ApplyAddJobPostingModal() {
               <button
                 type="button"
                 className="body-1-bold text-secondary underline underline-offset-4 hover:text-strong"
+                onClick={() => setStep('manual')}
               >
                 공고 직접 등록하기
               </button>
@@ -103,7 +121,12 @@ export function ApplyAddJobPostingModal() {
             size="default"
             disabled={!validation.ok}
             className="w-full text-xs font-bold leading-5"
-            onClick={() => setStep('result')}
+            onClick={() => {
+              setCompanyName(MOCK_ANALYSIS.companyName);
+              setRecruitmentField(MOCK_ANALYSIS.field);
+              setPostingBody('');
+              setStep('result');
+            }}
           >
             공고 분석하기
           </Button>
@@ -112,33 +135,38 @@ export function ApplyAddJobPostingModal() {
         <>
           <div className="flex w-full min-w-0 items-start justify-between pr-10">
             <div className="flex min-w-0 flex-col gap-0.5">
-              <ModalTitle className="text-strong">분석 결과 확인하기</ModalTitle>
-              <ModalDescription>등록한 공고 결과를 확인해주세요.</ModalDescription>
+              <ModalTitle className="text-strong">{JOB_EDIT_HEADER[step].title}</ModalTitle>
+              <ModalDescription>{JOB_EDIT_HEADER[step].description}</ModalDescription>
             </div>
           </div>
 
           <div className="flex w-full flex-col gap-6">
-            <ReadonlyLabeledBlock label="기업명">
-              <div className="rounded-lg border-[1.5px] border-border-bold bg-background-w p-4 body-2-regular text-strong">
-                {MOCK_ANALYSIS.companyName}
-              </div>
-            </ReadonlyLabeledBlock>
+            <LabeledField label="기업명">
+              <Input
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="기업명을 입력해주세요."
+                autoComplete="organization"
+              />
+            </LabeledField>
 
-            <ReadonlyLabeledBlock label="모집 분야">
-              <div className="rounded-lg border-[1.5px] border-border-bold bg-background-w p-4 body-2-regular text-strong">
-                {MOCK_ANALYSIS.field}
-              </div>
-            </ReadonlyLabeledBlock>
+            <LabeledField label="모집 분야">
+              <Input
+                value={recruitmentField}
+                onChange={(e) => setRecruitmentField(e.target.value)}
+                placeholder="모집 분야를 입력해주세요."
+              />
+            </LabeledField>
 
             <RecruitmentPeriodField value={periodRange} onChange={setPeriodRange} />
 
-            <ReadonlyLabeledBlock label="공고 본문">
+            <LabeledField label="공고 본문">
               <Textarea
-                readOnly
-                tabIndex={-1}
-                className="min-h-36 cursor-default resize-none"
+                value={postingBody}
+                onChange={(e) => setPostingBody(e.target.value)}
+                className="min-h-36 resize-y"
               />
-            </ReadonlyLabeledBlock>
+            </LabeledField>
 
             <div className="flex w-full flex-col gap-4">
               <p className="title-2-bold text-strong">자기소개서 문항 입력</p>
