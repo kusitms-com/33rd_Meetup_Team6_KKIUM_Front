@@ -38,6 +38,7 @@ export function ExperienceCardDropdownMenu({
           )}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
         >
           <MoreVerticalIcon className="size-6" />
         </button>
