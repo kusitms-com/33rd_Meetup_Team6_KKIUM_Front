@@ -49,7 +49,7 @@ export const DetailInput = React.forwardRef<HTMLTextAreaElement, DetailInputProp
         ref={setTextareaRef}
         data-slot="detail-input"
         className={cn(
-          'min-h-[146px] w-full resize-none overflow-hidden rounded-[14px] border border-border-thick bg-background-w px-3 py-4 body-3-regular text-primary outline-none placeholder:text-quaternary focus:border-border-default focus:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-600',
+          'min-h-[146px] w-full resize-none overflow-hidden rounded-[14px] border border-border-thick bg-background-w px-3 py-4 body-3-regular text-primary outline-none placeholder:text-quaternary focus:border-border-default focus:bg-gray-100 read-only:cursor-default read-only:focus:border-border-thick read-only:focus:bg-background-w disabled:cursor-not-allowed disabled:text-gray-600',
           className,
         )}
         onInput={handleInput}

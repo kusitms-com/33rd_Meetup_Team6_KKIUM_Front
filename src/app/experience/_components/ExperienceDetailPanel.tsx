@@ -5,6 +5,8 @@ import * as React from 'react';
 
 import type { ExperienceItem } from '@/app/experience/_components/ExperienceCardGrid';
 import type { ExperienceCategory } from '@/app/experience/_components/ExperienceCategoryTab';
+import { CalendarIcon } from '@/components/common/icons/CalendarIcon';
+import { EditIcon } from '@/components/common/icons/EditIcon';
 import { ExpandIcon } from '@/components/common/icons/ExpandIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
 import { Tag } from '@/components/common/Tag';
@@ -53,6 +55,7 @@ export interface ExperienceDetailPanelProps extends Omit<
   open: boolean;
   onExpand?: () => void;
   onEdit?: () => void;
+  onSave?: (experience: Pick<ExperienceItem, 'detail' | 'skillTags' | 'competencyTags'>) => void;
   onClose: () => void;
 }
 
@@ -61,6 +64,7 @@ export function ExperienceDetailPanel({
   open,
   onExpand,
   onEdit,
+  onSave,
   onClose,
   className,
   onKeyDown,
@@ -69,6 +73,9 @@ export function ExperienceDetailPanel({
   const category = categoryMap[experience.type];
   const titleId = React.useId();
   const [detail, setDetail] = React.useState(experience.detail);
+  const [skillTags, setSkillTags] = React.useState(experience.skillTags);
+  const [competencyTags, setCompetencyTags] = React.useState(experience.competencyTags);
+  const [isEditing, setIsEditing] = React.useState(false);
   const panelRef = React.useRef<HTMLElement>(null);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
   const previousExperienceIdRef = React.useRef(experience.id);
@@ -110,7 +117,16 @@ export function ExperienceDetailPanel({
 
     previousExperienceIdRef.current = experience.id;
     setDetail(experience.detail);
-  }, [experience.id, experience.detail]);
+    setSkillTags(experience.skillTags);
+    setCompetencyTags(experience.competencyTags);
+    setIsEditing(false);
+  }, [experience.competencyTags, experience.detail, experience.id, experience.skillTags]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setIsEditing(false);
+    }
+  }, [open]);
 
   React.useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -136,6 +152,20 @@ export function ExperienceDetailPanel({
         [key]: event.target.value,
       }));
     };
+
+  const handleEditClick = () => {
+    onEdit?.();
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    onSave?.({
+      detail,
+      skillTags,
+      competencyTags,
+    });
+    setIsEditing(false);
+  };
 
   const handlePanelKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
     onKeyDown?.(event);
@@ -230,9 +260,15 @@ export function ExperienceDetailPanel({
             <p className="body-3-regular text-quaternary">{experience.description}</p>
           </div>
 
-          <Button type="button" variant="secondary" onClick={onEdit}>
-            수정하기
-          </Button>
+          {isEditing ? (
+            <Button type="button" onClick={handleSaveEdit}>
+              저장하기
+            </Button>
+          ) : (
+            <Button type="button" variant="secondary" onClick={handleEditClick}>
+              수정하기
+            </Button>
+          )}
         </div>
 
         <div className="flex items-start gap-5">
@@ -245,32 +281,50 @@ export function ExperienceDetailPanel({
             {experience.detailInfo.map((item) => (
               <div key={item.label} className="flex items-center gap-4">
                 <dt className="body-3-bold text-strong">{item.label}</dt>
-                <dd className="body-3-regular text-secondary">{item.value}</dd>
+                <dd className="flex items-center gap-1 body-3-regular text-secondary">
+                  {isEditing && item.label === '기간' && (
+                    <CalendarIcon className="size-[21px] shrink-0 text-tertiary" />
+                  )}
+                  <span>{item.value}</span>
+                </dd>
               </div>
             ))}
           </dl>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap gap-1">
-            {experience.skillTags.map((tag, index) => (
-              <Tag key={`skill-${tag}-${index}`} tone="skill">
-                {tag}
-              </Tag>
-            ))}
+        {isEditing ? (
+          <div className="flex flex-col gap-2.5">
+            <TagEditRow label="기술" tone="skill" tags={skillTags} />
+            <TagEditRow
+              label="역량"
+              tone="competency"
+              tags={competencyTags}
+              borderBottom
+              className="min-h-[75px] pb-2.5"
+            />
           </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-1">
+              {skillTags.map((tag, index) => (
+                <Tag key={`skill-${tag}-${index}`} tone="skill">
+                  {tag}
+                </Tag>
+              ))}
+            </div>
 
-          <div className="flex flex-wrap gap-1">
-            {experience.competencyTags.map((tag, index) => (
-              <Tag key={`competency-${tag}-${index}`} tone="competency">
-                {tag}
-              </Tag>
-            ))}
+            <div className="flex flex-wrap gap-1">
+              {competencyTags.map((tag, index) => (
+                <Tag key={`competency-${tag}-${index}`} tone="competency">
+                  {tag}
+                </Tag>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="mt-4 h-px w-full shrink-0 bg-gray-300" />
+      {!isEditing ? <div className="mt-4 h-px w-full shrink-0 bg-gray-300" /> : null}
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto py-6">
         {detailFields.map(([label, key]) => (
@@ -278,10 +332,54 @@ export function ExperienceDetailPanel({
             <div className="flex items-center justify-between px-2">
               <h3 className="body-2-bold text-[#1e2939]">{label}</h3>
             </div>
-            <DetailInput value={detail[key]} maxLength={1000} onChange={handleDetailChange(key)} />
+            <DetailInput
+              value={detail[key]}
+              maxLength={1000}
+              readOnly={!isEditing}
+              onChange={handleDetailChange(key)}
+            />
           </div>
         ))}
       </div>
     </aside>
+  );
+}
+
+interface TagEditRowProps {
+  label: string;
+  tone: React.ComponentProps<typeof Tag>['tone'];
+  tags: string[];
+  borderBottom?: boolean;
+  className?: string;
+}
+
+function TagEditRow({ label, tone, tags, borderBottom = false, className }: TagEditRowProps) {
+  return (
+    <div
+      className={cn(
+        'flex min-h-[65px] w-full items-center justify-between gap-2.5 border-t border-border-default pt-1',
+        borderBottom && 'border-b',
+        className,
+      )}
+    >
+      <div className="flex min-w-0 flex-col gap-2.5">
+        <p className="body-2-regular text-strong">{label}</p>
+        <div className="flex flex-wrap gap-2.5">
+          {tags.map((tag, index) => (
+            <Tag key={`${label}-${tag}-${index}`} tone={tone}>
+              {tag}
+            </Tag>
+          ))}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        aria-label={`${label} 태그 수정`}
+        className="flex size-8 shrink-0 cursor-pointer items-center justify-center text-tertiary"
+      >
+        <EditIcon className="size-6" />
+      </button>
+    </div>
   );
 }
