@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 
-import { Modal, ModalClose, ModalDescription, ModalTitle } from '@/components/common/Modal';
+import { Modal, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
 import { RecruitmentDeadlineFields } from '@/components/common/RecruitmentDeadlineFields';
@@ -244,11 +244,6 @@ export function ApplyAddJobPostingModal() {
             </div>
           </div>
 
-          <ModalClose asChild>
-            <Button type="button" variant="default" size="default" className="w-full text-xs font-bold leading-5">
-              저장하기
-            </Button>
-          </ModalClose>
         </>
       )}
     </Modal>
