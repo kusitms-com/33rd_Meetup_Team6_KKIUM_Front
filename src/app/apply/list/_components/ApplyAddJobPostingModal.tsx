@@ -200,19 +200,18 @@ export function ApplyAddJobPostingModal() {
               <div className="flex flex-col gap-1.5">
                 {coverQuestions.map((row, index) => (
                   <div key={row.id} className="inline-flex w-full min-w-0 items-center gap-2.5">
-                    <button
-                      type="button"
-                      aria-label={`${index + 1}번 문항 삭제`}
-                      disabled={coverQuestions.length <= 1}
-                      className="flex size-7 shrink-0 items-center justify-center rounded border border-gray-300 bg-background-w text-tertiary outline-none transition-colors hover:bg-gray-100 focus-visible:shadow-focus-ring disabled:pointer-events-none disabled:opacity-40"
-                      onClick={() =>
-                        setCoverQuestions((prev) =>
-                          prev.length <= 1 ? prev : prev.filter((r) => r.id !== row.id),
-                        )
-                      }
-                    >
-                      <XIcon className="size-4" />
-                    </button>
+                    {index > 0 ? (
+                      <button
+                        type="button"
+                        aria-label={`${index + 1}번 문항 삭제`}
+                        className="flex size-7 shrink-0 items-center justify-center rounded bg-background-w text-tertiary outline-none transition-colors hover:bg-gray-100 focus-visible:shadow-focus-ring"
+                        onClick={() =>
+                          setCoverQuestions((prev) => prev.filter((r) => r.id !== row.id))
+                        }
+                      >
+                        <XIcon className="size-4" />
+                      </button>
+                    ) : null}
                     <Input
                       className="min-w-0 flex-1"
                       value={row.value}
