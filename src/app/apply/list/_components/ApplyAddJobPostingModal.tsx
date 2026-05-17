@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { Modal, ModalClose, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
-import { RecruitmentPeriodField } from '@/components/common/PeriodField';
+import { RecruitmentDeadlineFields } from '@/components/common/RecruitmentDeadlineFields';
 import { type CalendarDateRange } from '@/components/common/RangeCalendar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,6 +50,8 @@ export function ApplyAddJobPostingModal() {
     { id: 'cover-1', value: '' },
   ]);
   const [periodRange, setPeriodRange] = useState<CalendarDateRange | null>(null);
+  const [deadlineTime, setDeadlineTime] = useState('');
+  const [noRecruitmentPeriod, setNoRecruitmentPeriod] = useState(false);
   const errorId = 'apply-job-posting-url-error';
 
   return (
@@ -62,6 +64,8 @@ export function ApplyAddJobPostingModal() {
           coverRowIdRef.current = 1;
           setCoverQuestions([{ id: 'cover-1', value: '' }]);
           setPeriodRange(null);
+          setDeadlineTime('');
+          setNoRecruitmentPeriod(false);
           setCompanyName('');
           setRecruitmentField('');
           setPostingBody('');
@@ -165,7 +169,14 @@ export function ApplyAddJobPostingModal() {
               />
             </LabeledField>
 
-            <RecruitmentPeriodField value={periodRange} onChange={setPeriodRange} />
+            <RecruitmentDeadlineFields
+              periodRange={periodRange}
+              onPeriodRangeChange={setPeriodRange}
+              deadlineTime={deadlineTime}
+              onDeadlineTimeChange={setDeadlineTime}
+              noRecruitmentPeriod={noRecruitmentPeriod}
+              onNoRecruitmentPeriodChange={setNoRecruitmentPeriod}
+            />
 
             <LabeledField label="공고 본문">
               <Textarea
