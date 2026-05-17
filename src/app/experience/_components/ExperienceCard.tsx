@@ -49,71 +49,89 @@ export interface ExperienceCardProps
   period: string;
   skillTags: string[];
   competencyTags: string[];
+  disableActivationKeys?: boolean;
 }
 
-export function ExperienceCard({
-  type,
-  title,
-  period,
-  skillTags,
-  competencyTags,
-  size,
-  selected,
-  className,
-  onClick,
-  onKeyDown,
-  ...props
-}: ExperienceCardProps) {
-  const isInteractive = Boolean(onClick);
+export const ExperienceCard = React.forwardRef<HTMLElement, ExperienceCardProps>(
+  function ExperienceCard(
+    {
+      type,
+      title,
+      period,
+      skillTags,
+      competencyTags,
+      size,
+      selected,
+      className,
+      onClick,
+      onKeyDown,
+      disableActivationKeys = false,
+      ...props
+    },
+    ref,
+  ) {
+    const isInteractive = Boolean(onClick);
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
-    onKeyDown?.(event);
+    const handleKeyDown: React.KeyboardEventHandler<HTMLElement> = (event) => {
+      onKeyDown?.(event);
 
-    if (event.defaultPrevented || event.target !== event.currentTarget || !onClick) {
-      return;
-    }
+      if (event.defaultPrevented || event.target !== event.currentTarget || !onClick) {
+        return;
+      }
 
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onClick(event as unknown as React.MouseEvent<HTMLElement>);
-    }
-  };
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (disableActivationKeys) {
+          return;
+        }
 
-  return (
-    <article
-      tabIndex={isInteractive ? 0 : undefined}
-      role={isInteractive ? 'button' : undefined}
-      data-slot="experience-card"
-      data-type={type}
-      className={cn(
-        experienceCardVariants({ size, selected, interactive: isInteractive, className }),
-      )}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
-      {...props}
-    >
-      <div className="flex w-full items-start justify-between">
-        <Image src={iconMap[type]} alt="" width={72} height={72} className="size-[72px] shrink-0" />
-        <ExperienceCardDropdownMenu triggerClassName="shrink-0" />
-      </div>
+        event.preventDefault();
+        onClick(event as unknown as React.MouseEvent<HTMLElement>);
+      }
+    };
 
-      <div className="flex w-full flex-col items-start gap-3">
-        <div className="flex w-full flex-col items-start gap-1">
-          <h2 className="w-full truncate title-1-bold text-gray-main">{title}</h2>
-          <div className="flex items-center gap-[6px] label-3-regular text-gray-700">
-            <span>기간</span>
-            <span>{period}</span>
+    return (
+      <article
+        ref={ref}
+        tabIndex={isInteractive ? 0 : undefined}
+        role={isInteractive ? 'button' : undefined}
+        data-slot="experience-card"
+        data-type={type}
+        className={cn(
+          experienceCardVariants({ size, selected, interactive: isInteractive, className }),
+        )}
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+        {...props}
+      >
+        <div className="flex w-full items-start justify-between">
+          <Image
+            src={iconMap[type]}
+            alt=""
+            width={72}
+            height={72}
+            className="size-[72px] shrink-0"
+          />
+          <ExperienceCardDropdownMenu triggerClassName="shrink-0" />
+        </div>
+
+        <div className="flex w-full flex-col items-start gap-3">
+          <div className="flex w-full flex-col items-start gap-1">
+            <h2 className="w-full truncate title-1-bold text-gray-main">{title}</h2>
+            <div className="flex items-center gap-[6px] label-3-regular text-gray-700">
+              <span>기간</span>
+              <span>{period}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-start gap-1.5">
+            <TagRow tags={skillTags} tone="skill" />
+            <TagRow tags={competencyTags} tone="competency" />
           </div>
         </div>
-
-        <div className="flex flex-col items-start gap-1.5">
-          <TagRow tags={skillTags} tone="skill" />
-          <TagRow tags={competencyTags} tone="competency" />
-        </div>
-      </div>
-    </article>
-  );
-}
+      </article>
+    );
+  },
+);
 
 function TagRow({
   tags,

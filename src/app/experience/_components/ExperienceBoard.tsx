@@ -16,11 +16,30 @@ export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
   experiences: ExperienceItem[];
 }
 
+type ExperienceOrderMap = Record<ExperienceCategory, string[]>;
+
+const sortableCategories: ExperienceCategory[] = ['all', 'activity', 'career', 'education', 'etc'];
+
 export function ExperienceBoard({ experiences, className, ...props }: ExperienceBoardProps) {
   const [selectedCategory, setSelectedCategory] = React.useState<ExperienceCategory>('all');
   const [selectedExperienceId, setSelectedExperienceId] = React.useState<string>();
+  const [experienceOrderMap, setExperienceOrderMap] = React.useState(() =>
+    createExperienceOrderMap(experiences),
+  );
   const [panelOpen, setPanelOpen] = React.useState(false);
   const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    setExperienceOrderMap((currentOrderMap) => {
+      const nextOrderMap = syncExperienceOrderMap(currentOrderMap, experiences);
+
+      if (areExperienceOrderMapsEqual(currentOrderMap, nextOrderMap)) {
+        return currentOrderMap;
+      }
+
+      return nextOrderMap;
+    });
+  }, [experiences]);
 
   React.useEffect(() => {
     return () => {
@@ -30,10 +49,18 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
     };
   }, []);
 
-  const filteredExperiences =
-    selectedCategory === 'all'
-      ? experiences
-      : experiences.filter((experience) => experience.type === selectedCategory);
+  const experienceMap = React.useMemo(
+    () => new Map(experiences.map((experience) => [experience.id, experience])),
+    [experiences],
+  );
+
+  const filteredExperiences = React.useMemo(
+    () =>
+      experienceOrderMap[selectedCategory]
+        .map((id) => experienceMap.get(id))
+        .filter((experience): experience is ExperienceItem => Boolean(experience)),
+    [experienceMap, experienceOrderMap, selectedCategory],
+  );
 
   const selectedExperience = filteredExperiences.find(
     (experience) => experience.id === selectedExperienceId,
@@ -59,6 +86,16 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
     setSelectedExperienceId(experience.id);
     setPanelOpen(true);
   };
+
+  const handleExperienceReorder = React.useCallback(
+    (orderedExperienceIds: string[]) => {
+      setExperienceOrderMap((currentOrderMap) => ({
+        ...currentOrderMap,
+        [selectedCategory]: orderedExperienceIds,
+      }));
+    },
+    [selectedCategory],
+  );
 
   const handlePanelClose = () => {
     if (closeTimerRef.current) {
@@ -86,7 +123,9 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
         <ExperienceCardGrid
           experiences={filteredExperiences}
           selectedExperienceId={selectedExperienceId}
+          sortable
           onExperienceClick={handleExperienceSelect}
+          onExperienceReorder={handleExperienceReorder}
         />
       ) : (
         <div className="flex flex-1 items-center justify-center">
@@ -105,5 +144,54 @@ export function ExperienceBoard({ experiences, className, ...props }: Experience
         />
       )}
     </section>
+  );
+}
+
+function areStringArraysEqual(source: string[], target: string[]) {
+  return source.length === target.length && source.every((item, index) => item === target[index]);
+}
+
+function createExperienceOrderMap(experiences: ExperienceItem[]): ExperienceOrderMap {
+  return {
+    all: experiences.map((experience) => experience.id),
+    activity: getExperienceIdsByCategory(experiences, 'activity'),
+    career: getExperienceIdsByCategory(experiences, 'career'),
+    education: getExperienceIdsByCategory(experiences, 'education'),
+    etc: getExperienceIdsByCategory(experiences, 'etc'),
+  };
+}
+
+function syncExperienceOrderMap(
+  currentOrderMap: ExperienceOrderMap,
+  experiences: ExperienceItem[],
+): ExperienceOrderMap {
+  const defaultOrderMap = createExperienceOrderMap(experiences);
+
+  return sortableCategories.reduce<ExperienceOrderMap>((nextOrderMap, category) => {
+    const nextIds = defaultOrderMap[category];
+    const nextIdSet = new Set(nextIds);
+    const currentIds = currentOrderMap[category];
+    const currentIdSet = new Set(currentIds);
+    const preservedIds = currentIds.filter((id) => nextIdSet.has(id));
+    const addedIds = nextIds.filter((id) => !currentIdSet.has(id));
+
+    nextOrderMap[category] = [...preservedIds, ...addedIds];
+
+    return nextOrderMap;
+  }, {} as ExperienceOrderMap);
+}
+
+function getExperienceIdsByCategory(
+  experiences: ExperienceItem[],
+  category: Exclude<ExperienceCategory, 'all'>,
+) {
+  return experiences
+    .filter((experience) => experience.type === category)
+    .map((experience) => experience.id);
+}
+
+function areExperienceOrderMapsEqual(source: ExperienceOrderMap, target: ExperienceOrderMap) {
+  return sortableCategories.every((category) =>
+    areStringArraysEqual(source[category], target[category]),
   );
 }
