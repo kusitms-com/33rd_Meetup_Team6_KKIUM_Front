@@ -211,7 +211,7 @@ export function RangeCalendar({
     <div
       data-slot="range-calendar"
       className={cn(
-        'inline-flex flex-wrap items-start gap-8 rounded-2xl bg-background-w p-6 shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.10)] shadow-lg',
+        'inline-flex flex-wrap items-start gap-8 rounded-2xl bg-background-w p-6 shadow-lg',
         className,
       )}
       {...props}
