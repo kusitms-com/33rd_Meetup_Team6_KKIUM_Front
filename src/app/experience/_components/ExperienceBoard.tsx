@@ -10,11 +10,12 @@ import {
 import type { ExperienceCategory } from '@/app/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/experience/_components/ExperienceCategoryTabs';
 import { ExperienceDetailPanel } from '@/app/experience/_components/ExperienceDetailPanel';
+import { mapExperienceCardToItem } from '@/app/experience/_utils/mapExperienceResponse';
 import { EmptyState } from '@/components/common/EmptyState';
+import { useExperiences } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
-  experiences: ExperienceItem[];
   initialSelectedExperienceId?: string;
 }
 
@@ -27,13 +28,17 @@ function isExperienceCategory(category: string | null): category is ExperienceCa
 }
 
 export function ExperienceBoard({
-  experiences,
   initialSelectedExperienceId,
   className,
   ...props
 }: ExperienceBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data, isError, isPending } = useExperiences();
+  const experiences = React.useMemo(
+    () => data?.experiences.map(mapExperienceCardToItem) ?? [],
+    [data],
+  );
   const selectedExperienceIdFromQuery = searchParams.get('selected') ?? initialSelectedExperienceId;
   const selectedCategoryFromQuery = searchParams.get('category');
   const initialSelectedCategory = isExperienceCategory(selectedCategoryFromQuery)
@@ -176,7 +181,20 @@ export function ExperienceBoard({
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
       />
-      {filteredExperiences.length > 0 ? (
+      {/* TODO: 로딩/에러 상태 전용 UI가 확정되면 임시 EmptyState를 교체한다. */}
+      {isPending ? (
+        <div className="flex flex-1 items-center justify-center">
+          <EmptyState title="경험을 불러오는 중이에요" illustrationLabel="경험 목록 로딩 중" />
+        </div>
+      ) : isError ? (
+        <div className="flex flex-1 items-center justify-center">
+          <EmptyState
+            title="경험을 불러오지 못했어요"
+            description="잠시 후 다시 시도해주세요"
+            illustrationLabel="경험 목록 오류"
+          />
+        </div>
+      ) : filteredExperiences.length > 0 ? (
         <ExperienceCardGrid
           experiences={filteredExperiences}
           selectedExperienceId={selectedExperienceId}
