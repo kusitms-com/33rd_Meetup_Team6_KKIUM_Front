@@ -14,6 +14,7 @@ import {
   mapExperienceCardToItem,
   mapExperienceDetailToItem,
 } from '@/app/experience/_utils/mapExperienceResponse';
+import type { PieceType } from '@/app/api/experience/types';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useExperienceDetail, useInfiniteExperiences } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,12 @@ export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
 type ExperienceOrderMap = Record<ExperienceCategory, string[]>;
 
 const sortableCategories: ExperienceCategory[] = ['all', 'activity', 'career', 'education', 'etc'];
+const pieceTypeByCategory: Record<Exclude<ExperienceCategory, 'all'>, PieceType> = {
+  activity: 'ACTIVITY',
+  career: 'CAREER',
+  education: 'EDUCATION',
+  etc: 'ETC',
+};
 
 function isExperienceCategory(category: string | null): category is ExperienceCategory {
   return sortableCategories.includes(category as ExperienceCategory);
@@ -37,12 +44,6 @@ export function ExperienceBoard({
 }: ExperienceBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage, isPending } =
-    useInfiniteExperiences();
-  const experiences = React.useMemo(
-    () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
-    [data],
-  );
   const selectedExperienceIdFromQuery = searchParams.get('selected') ?? initialSelectedExperienceId;
   const selectedCategoryFromQuery = searchParams.get('category');
   const initialSelectedCategory = isExperienceCategory(selectedCategoryFromQuery)
@@ -52,6 +53,14 @@ export function ExperienceBoard({
     React.useState<ExperienceCategory>(initialSelectedCategory);
   const [selectedExperienceId, setSelectedExperienceId] = React.useState<string | undefined>(
     selectedExperienceIdFromQuery,
+  );
+  const selectedPieceType =
+    selectedCategory === 'all' ? undefined : pieceTypeByCategory[selectedCategory];
+  const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage, isPending } =
+    useInfiniteExperiences(selectedPieceType ? { type: selectedPieceType } : undefined);
+  const experiences = React.useMemo(
+    () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
+    [data],
   );
   const [experienceOrderMap, setExperienceOrderMap] = React.useState(() =>
     createExperienceOrderMap(experiences),
