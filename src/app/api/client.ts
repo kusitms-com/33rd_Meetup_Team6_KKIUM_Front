@@ -75,14 +75,18 @@ function buildHeaders(body: unknown, headers?: HeadersInit) {
 async function parseApiResponse<T>(response: Response): Promise<T> {
   let payload: ApiResponse<T> | null = null;
 
-  try {
-    const contentType = response.headers.get('Content-Type');
+  const contentType = response.headers.get('Content-Type');
 
+  try {
     if (contentType?.includes('application/json')) {
       payload = (await response.json()) as ApiResponse<T>;
     }
   } catch {
-    payload = null;
+    throw new ApiError({
+      status: response.status,
+      code: 'INVALID_RESPONSE',
+      message: '서버 응답을 해석하지 못했습니다.',
+    });
   }
 
   if (!response.ok || !payload || payload.code !== 'SUCCESS') {
@@ -99,11 +103,29 @@ async function parseApiResponse<T>(response: Response): Promise<T> {
 // 최종적으로 fetch를 호출하고 응답을 파싱해주는 메인 함수
 async function request<T>(path: string, options: ApiRequestOptions = {}) {
   const { params, body, headers, ...init } = options;
-  const response = await fetch(buildUrl(path, params), {
-    ...init,
-    body: buildBody(body),
-    headers: buildHeaders(body, headers),
-  });
+  const url = buildUrl(path, params);
+  const requestBody = buildBody(body);
+  const requestHeaders = buildHeaders(body, headers);
+
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      ...init,
+      body: requestBody,
+      headers: requestHeaders,
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new ApiError({
+      status: 0,
+      code: 'NETWORK_ERROR',
+      message: '네트워크 오류로 요청을 완료하지 못했습니다.',
+    });
+  }
 
   return parseApiResponse<T>(response);
 }
