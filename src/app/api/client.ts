@@ -2,8 +2,9 @@ import type { ApiErrorPayload, ApiResponse } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-// API query string으로 붙일 params 객체의 타입
-type QueryParams = Record<string, string | number | boolean | null | undefined>;
+type QueryParamValue = string | number | boolean | null | undefined;
+type QueryParams = Record<string, QueryParamValue>;
+type ApiMethodOptions = Omit<ApiRequestOptions, 'body' | 'method'>;
 
 // 함수들이 받을 요청 옵션 타입
 interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
@@ -71,7 +72,7 @@ function buildHeaders(body: unknown, headers?: HeadersInit) {
 }
 
 // API 응답을 파싱해서 data만 반환하고, 에러는 ApiError로 던지는 함수
-async function parseApiResponse<T>(response: Response): Promise<T | null> {
+async function parseApiResponse<T>(response: Response): Promise<T> {
   const payload = (await response.json()) as ApiResponse<T>;
 
   if (!response.ok || payload.code !== 'SUCCESS') {
@@ -99,19 +100,19 @@ async function request<T>(path: string, options: ApiRequestOptions = {}) {
 
 // 편의를 위해 메서드별로 export 하는 객체
 export const api = {
-  get<T>(path: string, options?: Omit<ApiRequestOptions, 'body' | 'method'>) {
+  get<T>(path: string, options?: ApiMethodOptions) {
     return request<T>(path, { ...options, method: 'GET' });
   },
-  post<T>(path: string, body?: unknown, options?: Omit<ApiRequestOptions, 'body' | 'method'>) {
+  post<T>(path: string, body?: unknown, options?: ApiMethodOptions) {
     return request<T>(path, { ...options, method: 'POST', body });
   },
-  put<T>(path: string, body?: unknown, options?: Omit<ApiRequestOptions, 'body' | 'method'>) {
+  put<T>(path: string, body?: unknown, options?: ApiMethodOptions) {
     return request<T>(path, { ...options, method: 'PUT', body });
   },
-  patch<T>(path: string, body?: unknown, options?: Omit<ApiRequestOptions, 'body' | 'method'>) {
+  patch<T>(path: string, body?: unknown, options?: ApiMethodOptions) {
     return request<T>(path, { ...options, method: 'PATCH', body });
   },
-  delete<T>(path: string, options?: Omit<ApiRequestOptions, 'body' | 'method'>) {
+  delete<T>(path: string, options?: ApiMethodOptions) {
     return request<T>(path, { ...options, method: 'DELETE' });
   },
 };
