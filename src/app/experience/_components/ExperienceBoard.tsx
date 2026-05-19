@@ -10,9 +10,12 @@ import {
 import type { ExperienceCategory } from '@/app/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/experience/_components/ExperienceCategoryTabs';
 import { ExperienceDetailPanel } from '@/app/experience/_components/ExperienceDetailPanel';
-import { mapExperienceCardToItem } from '@/app/experience/_utils/mapExperienceResponse';
+import {
+  mapExperienceCardToItem,
+  mapExperienceDetailToItem,
+} from '@/app/experience/_utils/mapExperienceResponse';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useExperiences } from '@/hooks/experience/useExperiences';
+import { useExperienceDetail, useExperiences } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
@@ -54,6 +57,14 @@ export function ExperienceBoard({
   );
   const [panelOpen, setPanelOpen] = React.useState(Boolean(selectedExperienceIdFromQuery));
   const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectedExperienceNumericId = selectedExperienceId ? Number(selectedExperienceId) : null;
+  const { data: selectedExperienceDetail } = useExperienceDetail(
+    Number.isFinite(selectedExperienceNumericId) ? selectedExperienceNumericId : null,
+  );
+  const selectedExperienceDetailItem = React.useMemo(
+    () => (selectedExperienceDetail ? mapExperienceDetailToItem(selectedExperienceDetail) : null),
+    [selectedExperienceDetail],
+  );
 
   React.useEffect(() => {
     setExperienceOrderMap((currentOrderMap) => {
@@ -114,6 +125,7 @@ export function ExperienceBoard({
   const selectedExperience = filteredExperiences.find(
     (experience) => experience.id === selectedExperienceId,
   );
+  const panelExperience = selectedExperienceDetailItem ?? selectedExperience;
 
   const handleCategoryChange = (category: ExperienceCategory) => {
     if (closeTimerRef.current) {
@@ -164,11 +176,11 @@ export function ExperienceBoard({
   };
 
   const handlePanelExpand = () => {
-    if (!selectedExperience) {
+    if (!panelExperience) {
       return;
     }
 
-    router.push(`/experience/${selectedExperience.id}?category=${selectedCategory}`);
+    router.push(`/experience/${panelExperience.id}?category=${selectedCategory}`);
   };
 
   return (
@@ -211,9 +223,9 @@ export function ExperienceBoard({
           />
         </div>
       )}
-      {selectedExperience && (
+      {panelExperience && (
         <ExperienceDetailPanel
-          experience={selectedExperience}
+          experience={panelExperience}
           open={panelOpen}
           onExpand={handlePanelExpand}
           onClose={handlePanelClose}
