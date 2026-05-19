@@ -15,7 +15,7 @@ import {
   mapExperienceDetailToItem,
 } from '@/app/experience/_utils/mapExperienceResponse';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useExperienceDetail, useExperiences } from '@/hooks/experience/useExperiences';
+import { useExperienceDetail, useInfiniteExperiences } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
@@ -37,9 +37,9 @@ export function ExperienceBoard({
 }: ExperienceBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data, isError, isPending } = useExperiences();
+  const { data, isError, isPending } = useInfiniteExperiences();
   const experiences = React.useMemo(
-    () => data?.experiences.map(mapExperienceCardToItem) ?? [],
+    () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
     [data],
   );
   const selectedExperienceIdFromQuery = searchParams.get('selected') ?? initialSelectedExperienceId;
