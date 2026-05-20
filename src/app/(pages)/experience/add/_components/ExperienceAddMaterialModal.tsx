@@ -10,6 +10,7 @@ import { ModalDescription, ModalTitle } from '@/components/common/Modal';
 export interface PdfMaterial {
   id: string;
   type: 'pdf';
+  file: File;
   name: string;
   size: number;
   status: 'completed';
@@ -50,6 +51,7 @@ export function ExperienceAddMaterialModal({ materials, onSave }: ExperienceAddM
     const pdfMaterials = files.map<PdfMaterial>((file) => ({
       id: `${file.name}-${file.lastModified}-${file.size}`,
       type: 'pdf',
+      file,
       name: file.name,
       size: file.size,
       status: 'completed',
