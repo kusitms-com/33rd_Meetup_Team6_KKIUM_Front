@@ -90,7 +90,7 @@ export function BubbleChart({
     <section
       data-slot="bubble-chart"
       className={cn(
-        'inline-flex h-[336px] w-96 flex-col items-center justify-between overflow-hidden rounded-xl border border-gray-300 bg-white p-5',
+        'inline-flex h-[336px] min-w-0 flex-col items-center justify-between overflow-hidden rounded-xl border border-gray-300 bg-white p-5',
         className,
       )}
       {...props}
@@ -101,7 +101,7 @@ export function BubbleChart({
       </div>
 
       {bubbleChartMockData.length > 0 ? (
-        <div className="h-56 w-72">
+        <div className="h-56 w-full max-w-72">
           <ReactECharts option={option} style={{ width: '100%', height: '100%' }} opts={{ renderer: 'svg' }} />
         </div>
       ) : (

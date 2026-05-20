@@ -72,7 +72,7 @@ export function ExperienceMatch({
     <section
       data-slot="experience-match"
       className={cn(
-        'inline-flex w-full min-w-0 items-stretch gap-5 overflow-hidden rounded-xl bg-background-w p-2.5',
+        'mx-auto inline-flex w-full min-w-0 max-w-[1048px] flex-col items-stretch gap-5 overflow-hidden rounded-xl bg-background-w p-2.5 xl:flex-row',
         className,
       )}
       {...props}
@@ -87,8 +87,8 @@ export function ExperienceMatch({
       />
 
       <div className="flex min-w-0 flex-1 flex-col items-start gap-5 self-stretch rounded-xl bg-background-w py-2.5">
-        <div className="flex w-[525px] max-w-full flex-col items-start gap-5">
-          <div className="inline-flex w-full items-start gap-20">
+        <div className="flex w-full max-w-full flex-col items-start gap-5">
+          <div className="inline-flex w-full flex-wrap items-start gap-x-10 gap-y-4">
             <div className="inline-flex flex-col items-start gap-1">
               <span className="text-xs font-bold leading-5 text-secondary">기업</span>
               <span className="text-xl font-extrabold leading-7 text-strong">{companyName}</span>
@@ -109,10 +109,10 @@ export function ExperienceMatch({
           </div>
         </div>
 
-        <div className="h-px w-[527px] max-w-full bg-border-thick" />
+        <div className="h-px w-full max-w-full bg-border-thick" />
 
-        <div className="inline-flex h-44 w-full items-center gap-2.5">
-          <div className="flex h-full flex-1 flex-col justify-between rounded-lg border border-border-thick bg-background-w px-4 py-3.5">
+        <div className="inline-flex w-full flex-col items-stretch gap-2.5 lg:h-44 lg:flex-row">
+          <div className="flex min-h-36 flex-1 flex-col justify-between rounded-lg border border-border-thick bg-background-w px-4 py-3.5 lg:h-full">
             <h4 className="text-lg font-bold leading-7 text-strong">요구 기술</h4>
             <div className="inline-flex flex-wrap items-start gap-1.5">
               {requiredSkills.map((skill) => (
@@ -126,7 +126,7 @@ export function ExperienceMatch({
             </div>
           </div>
 
-          <div className="flex h-full flex-1 flex-col justify-between rounded-lg border border-border-thick bg-background-w px-4 py-3.5">
+          <div className="flex min-h-36 flex-1 flex-col justify-between rounded-lg border border-border-thick bg-background-w px-4 py-3.5 lg:h-full">
             <h4 className="text-lg font-bold leading-7 text-strong">요구 역량</h4>
             <div className="inline-flex flex-wrap items-start gap-1.5">
               {requiredCompetencies.map((competency) => (

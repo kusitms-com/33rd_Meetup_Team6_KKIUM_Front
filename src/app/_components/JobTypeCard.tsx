@@ -30,7 +30,7 @@ export function JobTypeCard({
   return (
     <section
       data-slot="job-type-card"
-      className={cn('relative h-[336px] w-96 overflow-hidden rounded-xl border border-gray-300 bg-background-w', className)}
+      className={cn('relative h-[336px] min-w-0 overflow-hidden rounded-xl border border-gray-300 bg-background-w', className)}
       {...props}
     >
       <Image src={backgroundImage} alt="" fill className="object-cover" sizes="384px" priority={false} />
@@ -45,8 +45,8 @@ export function JobTypeCard({
         <p className="w-44 break-keep text-base font-bold leading-6 text-gray-800">{roleTypeDescription}</p>
       </div>
 
-      <div className="absolute left-0 top-[238px] h-28 w-96 overflow-hidden bg-background-w">
-        <div className="absolute left-5 top-3 inline-flex w-80 flex-col items-start justify-start gap-1.5">
+      <div className="absolute inset-x-0 top-[238px] h-28 overflow-hidden bg-background-w px-5">
+        <div className="absolute left-5 top-3 right-5 inline-flex flex-col items-start justify-start gap-1.5">
           <h4 className="text-lg font-bold leading-7 text-background-b">나의 역량 강점</h4>
           <div className="inline-flex flex-wrap items-start gap-1">
             {strengths.map((strength) => (

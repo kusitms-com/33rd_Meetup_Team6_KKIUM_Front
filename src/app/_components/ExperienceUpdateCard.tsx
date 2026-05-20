@@ -71,7 +71,7 @@ export function ExperienceUpdateCard({
   return (
     <aside
       data-slot="experience-update-card"
-      className={cn('inline-flex w-60 flex-col items-start justify-center gap-4 self-stretch', className)}
+      className={cn('inline-flex min-w-0 flex-col items-start justify-center gap-4 self-stretch', className)}
       {...props}
     >
       <StatPanel
