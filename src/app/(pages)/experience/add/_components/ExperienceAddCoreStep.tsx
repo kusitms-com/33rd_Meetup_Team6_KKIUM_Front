@@ -91,7 +91,6 @@ function CoreQuestionField({
         placeholder={placeholder}
         value={value}
         description={false}
-        className="min-h-[140px]"
         onChange={(event) => onChange(event.currentTarget.value)}
       />
     </div>

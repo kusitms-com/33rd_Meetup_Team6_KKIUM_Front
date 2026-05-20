@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 
 import type {
   ExperienceAddBasicInfoForm,
@@ -95,9 +96,9 @@ export function ExperienceAddResultStep({
         />
       </ResultSection>
 
-      <ResultSection number="03." title="핵심 경험">
+      <ResultSection number="03." title="핵심 경험" contentClassName="gap-7">
         {CORE_RESULT_FIELDS.map((field) => (
-          <ResultField
+          <ResultTextareaField
             key={field.name}
             label={field.label}
             value={coreInfo[field.name]}
@@ -118,10 +119,12 @@ function ResultSection({
   number,
   title,
   children,
+  contentClassName,
 }: {
   number: string;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
+  contentClassName?: string;
 }) {
   return (
     <div className="flex w-full flex-col gap-3.5">
@@ -129,7 +132,9 @@ function ResultSection({
         <span className="text-mint-300">{number}</span>
         <span className="text-strong">{title}</span>
       </div>
-      <div className="flex w-full flex-col gap-2.5 px-[30px]">{children}</div>
+      <div className={`flex w-full flex-col px-[30px] ${contentClassName ?? 'gap-2.5'}`}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -147,6 +152,28 @@ function ResultField({
     <label className="flex w-full flex-col gap-2">
       <span className="body-2-regular text-strong">{label}</span>
       <TextField
+        value={value}
+        description={false}
+        onChange={(event) => onChange(event.currentTarget.value)}
+      />
+    </label>
+  );
+}
+
+function ResultTextareaField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex w-full flex-col gap-4">
+      <span className="title-2-bold text-strong">{label}</span>
+      <TextField
+        variant="textarea"
         value={value}
         description={false}
         onChange={(event) => onChange(event.currentTarget.value)}
