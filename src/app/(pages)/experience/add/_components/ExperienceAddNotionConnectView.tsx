@@ -2,9 +2,13 @@ import { NotionIcon } from '@/components/common/icons/NotionIcon';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { Button } from '@/components/ui/button';
 
-export function ExperienceAddNotionConnectView() {
+interface ExperienceAddNotionConnectViewProps {
+  onConnect: () => void;
+}
+
+export function ExperienceAddNotionConnectView({ onConnect }: ExperienceAddNotionConnectViewProps) {
   return (
-    <div className="flex h-[474px] w-full flex-col items-center justify-center gap-3 py-[79px]">
+    <div className="flex h-[474px] w-full flex-col items-center justify-center gap-3">
       <NotionIcon className="size-[60.25px]" />
 
       <div className="flex flex-col items-center gap-1 text-center">
@@ -15,7 +19,13 @@ export function ExperienceAddNotionConnectView() {
         </div>
       </div>
 
-      <Button type="button" size="small" className="h-9 px-2.5 label-3-bold" leftIcon={<PlusIcon />}>
+      <Button
+        type="button"
+        size="small"
+        className="h-9 px-2.5 label-3-bold"
+        leftIcon={<PlusIcon />}
+        onClick={onConnect}
+      >
         노션 연결하기
       </Button>
     </div>
