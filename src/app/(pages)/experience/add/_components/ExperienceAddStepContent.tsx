@@ -6,7 +6,11 @@ import type { ExperienceMaterial } from '@/app/(pages)/experience/add/_component
 import { ExperienceAddResultStep } from '@/app/(pages)/experience/add/_components/ExperienceAddResultStep';
 import { ExperienceAddUploadStep } from '@/app/(pages)/experience/add/_components/ExperienceAddUploadStep';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
-import type { ExperienceAddBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
+import type {
+  ExperienceAddBasicInfoForm,
+  ExperienceAddCoreInfoForm,
+  ExperienceAddResultInfoForm,
+} from '@/app/(pages)/experience/add/_types/experienceAddForm';
 
 interface ExperienceAddStepContentProps {
   currentStepIndex: number;
@@ -15,6 +19,9 @@ interface ExperienceAddStepContentProps {
   onMaterialsChange: (materials: ExperienceMaterial[]) => void;
   basicInfo: ExperienceAddBasicInfoForm;
   onBasicInfoChange: (basicInfo: ExperienceAddBasicInfoForm) => void;
+  coreInfo: ExperienceAddCoreInfoForm;
+  onCoreInfoChange: (coreInfo: ExperienceAddCoreInfoForm) => void;
+  resultInfo: ExperienceAddResultInfoForm;
 }
 
 export function ExperienceAddStepContent({
@@ -24,6 +31,9 @@ export function ExperienceAddStepContent({
   onMaterialsChange,
   basicInfo,
   onBasicInfoChange,
+  coreInfo,
+  onCoreInfoChange,
+  resultInfo,
 }: ExperienceAddStepContentProps) {
   const currentStep = EXPERIENCE_ADD_STEPS[currentStepIndex] ?? EXPERIENCE_ADD_STEPS[0];
 
@@ -40,11 +50,19 @@ export function ExperienceAddStepContent({
   }
 
   if (currentStepIndex === 2) {
-    return <ExperienceAddCoreStep />;
+    return <ExperienceAddCoreStep value={coreInfo} onChange={onCoreInfoChange} />;
   }
 
   if (currentStepIndex === 3) {
-    return <ExperienceAddResultStep />;
+    return (
+      <ExperienceAddResultStep
+        basicInfo={basicInfo}
+        coreInfo={coreInfo}
+        resultInfo={resultInfo}
+        onBasicInfoChange={onBasicInfoChange}
+        onCoreInfoChange={onCoreInfoChange}
+      />
+    );
   }
 
   if (currentStepIndex === EXPERIENCE_ADD_STEPS.length) {

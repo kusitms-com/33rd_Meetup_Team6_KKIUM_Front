@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 
-import {
-  RESULT_BASIC_FIELDS,
-  RESULT_COMPETENCY_TAGS,
-  RESULT_CORE_FIELDS,
-  RESULT_SKILL_TAGS,
-} from '@/app/(pages)/experience/add/_constants/experienceResultData';
+import type {
+  ExperienceAddBasicInfoForm,
+  ExperienceAddCoreInfoForm,
+  ExperienceAddResultInfoForm,
+} from '@/app/(pages)/experience/add/_types/experienceAddForm';
 import { Tag } from '@/components/common/Tag';
 import { TextField } from '@/components/common/TextField';
 import { EditIcon } from '@/components/common/icons/EditIcon';
@@ -15,7 +14,34 @@ import { Input } from '@/components/ui/input';
 
 type EditableTagGroup = 'skill' | 'competency';
 
-export function ExperienceAddResultStep() {
+interface ExperienceAddResultStepProps {
+  basicInfo: ExperienceAddBasicInfoForm;
+  coreInfo: ExperienceAddCoreInfoForm;
+  resultInfo: ExperienceAddResultInfoForm;
+  onBasicInfoChange: (value: ExperienceAddBasicInfoForm) => void;
+  onCoreInfoChange: (value: ExperienceAddCoreInfoForm) => void;
+}
+
+const BASIC_RESULT_FIELDS = [
+  { name: 'title', label: '제목' },
+  { name: 'oneLineIntro', label: '한 줄 소개' },
+] as const;
+
+const CORE_RESULT_FIELDS = [
+  { name: 'situation', label: 'Situation (상황 및 목표)' },
+  { name: 'task', label: 'Task (해결 과제)' },
+  { name: 'act', label: 'Act (실제 행동)' },
+  { name: 'result', label: 'Result (결과 및 성과)' },
+  { name: 'taken', label: 'Taken (배운점)' },
+] as const;
+
+export function ExperienceAddResultStep({
+  basicInfo,
+  coreInfo,
+  resultInfo,
+  onBasicInfoChange,
+  onCoreInfoChange,
+}: ExperienceAddResultStepProps) {
   const [editingTagGroup, setEditingTagGroup] = useState<EditableTagGroup | null>(null);
 
   return (
@@ -37,22 +63,32 @@ export function ExperienceAddResultStep() {
       </div>
 
       <ResultSection number="01." title="기본 정보">
-        {RESULT_BASIC_FIELDS.map((field) => (
-          <ResultField key={field.label} label={field.label} value={field.value} />
+        {BASIC_RESULT_FIELDS.map((field) => (
+          <ResultField
+            key={field.name}
+            label={field.label}
+            value={basicInfo[field.name]}
+            onChange={(fieldValue) =>
+              onBasicInfoChange({
+                ...basicInfo,
+                [field.name]: fieldValue,
+              })
+            }
+          />
         ))}
       </ResultSection>
 
       <ResultSection number="02." title="태그">
         <ResultTagGroup
           label="기술"
-          tags={RESULT_SKILL_TAGS}
+          tags={resultInfo.skillTags}
           tone="skill"
           editing={editingTagGroup === 'skill'}
           onEdit={() => setEditingTagGroup('skill')}
         />
         <ResultTagGroup
           label="역량"
-          tags={RESULT_COMPETENCY_TAGS}
+          tags={resultInfo.competencyTags}
           tone="competency"
           editing={editingTagGroup === 'competency'}
           onEdit={() => setEditingTagGroup('competency')}
@@ -60,8 +96,18 @@ export function ExperienceAddResultStep() {
       </ResultSection>
 
       <ResultSection number="03." title="핵심 경험">
-        {RESULT_CORE_FIELDS.map((field) => (
-          <ResultField key={field.label} label={field.label} value={field.value} />
+        {CORE_RESULT_FIELDS.map((field) => (
+          <ResultField
+            key={field.name}
+            label={field.label}
+            value={coreInfo[field.name]}
+            onChange={(fieldValue) =>
+              onCoreInfoChange({
+                ...coreInfo,
+                [field.name]: fieldValue,
+              })
+            }
+          />
         ))}
       </ResultSection>
     </section>
@@ -88,11 +134,23 @@ function ResultSection({
   );
 }
 
-function ResultField({ label, value }: { label: string; value: string }) {
+function ResultField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
   return (
     <label className="flex w-full flex-col gap-2">
       <span className="body-2-regular text-strong">{label}</span>
-      <TextField defaultValue={value} description={false} />
+      <TextField
+        value={value}
+        description={false}
+        onChange={(event) => onChange(event.currentTarget.value)}
+      />
     </label>
   );
 }

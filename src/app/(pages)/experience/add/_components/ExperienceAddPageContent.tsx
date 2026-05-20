@@ -3,12 +3,21 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import type { ExperienceAnalyzeResponse } from '@/app/api/experience/add/types';
 import type { ExperienceMaterial } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
-import { createEmptyBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
-import { mapAnalyzeResponseToBasicInfoForm } from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
+import {
+  createEmptyBasicInfoForm,
+  createEmptyCoreInfoForm,
+  createEmptyResultInfoForm,
+} from '@/app/(pages)/experience/add/_types/experienceAddForm';
+import {
+  mapAnalyzeResponseToBasicInfoForm,
+  mapAnalyzeResponseToCoreInfoForm,
+  mapAnalyzeResponseToResultInfoForm,
+} from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +30,8 @@ export function ExperienceAddPageContent() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
   const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
+  const [coreInfo, setCoreInfo] = useState(createEmptyCoreInfoForm);
+  const [resultInfo, setResultInfo] = useState(createEmptyResultInfoForm);
   const analyzePdfMutation = useAnalyzeExperiencePdf();
   const analyzeNotionMutation = useAnalyzeExperienceNotion();
   const isAnalyzing = analyzePdfMutation.isPending || analyzeNotionMutation.isPending;
@@ -31,6 +42,12 @@ export function ExperienceAddPageContent() {
     setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
   };
 
+  const applyAnalyzeResponse = (analyzeResponse: ExperienceAnalyzeResponse) => {
+    setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
+    setCoreInfo(mapAnalyzeResponseToCoreInfoForm(analyzeResponse));
+    setResultInfo(mapAnalyzeResponseToResultInfoForm(analyzeResponse));
+  };
+
   const goNextStep = async () => {
     if (currentStepIndex === 0) {
       const selectedMaterial = materials[0];
@@ -38,12 +55,14 @@ export function ExperienceAddPageContent() {
       try {
         if (selectedMaterial?.type === 'pdf') {
           const analyzeResponse = await analyzePdfMutation.mutateAsync(selectedMaterial.file);
-          setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
+          applyAnalyzeResponse(analyzeResponse);
         } else if (selectedMaterial?.type === 'notion') {
           const analyzeResponse = await analyzeNotionMutation.mutateAsync(selectedMaterial.pageId);
-          setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
+          applyAnalyzeResponse(analyzeResponse);
         } else {
           setBasicInfo(createEmptyBasicInfoForm());
+          setCoreInfo(createEmptyCoreInfoForm());
+          setResultInfo(createEmptyResultInfoForm());
         }
       } catch (error) {
         window.alert(error instanceof Error ? error.message : '자료 분석 중 오류가 발생했습니다.');
@@ -77,6 +96,9 @@ export function ExperienceAddPageContent() {
           onMaterialsChange={setMaterials}
           basicInfo={basicInfo}
           onBasicInfoChange={setBasicInfo}
+          coreInfo={coreInfo}
+          onCoreInfoChange={setCoreInfo}
+          resultInfo={resultInfo}
         />
       </main>
 
