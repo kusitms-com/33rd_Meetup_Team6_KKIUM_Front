@@ -5,7 +5,9 @@ import { useEffect, useState } from 'react';
 import { ExperienceAddMaterialSelectView } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialSelectView';
 import { ExperienceAddNotionConnectView } from '@/app/(pages)/experience/add/_components/ExperienceAddNotionConnectView';
 import { ExperienceAddNotionPageSelectView } from '@/app/(pages)/experience/add/_components/ExperienceAddNotionPageSelectView';
+import { ApiError } from '@/app/api/client';
 import { ModalDescription, ModalTitle } from '@/components/common/Modal';
+import { useNotionPages } from '@/hooks/experience/useExperienceAdd';
 
 export interface PdfMaterial {
   id: string;
@@ -21,7 +23,7 @@ export interface NotionMaterial {
   type: 'notion';
   pageId: string;
   title: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export type ExperienceMaterial = PdfMaterial | NotionMaterial;
@@ -31,21 +33,23 @@ interface ExperienceAddMaterialModalProps {
   onSave: (materials: ExperienceMaterial[]) => void;
 }
 
-const notionPages = Array.from({ length: 9 }, (_, index) => ({
-  pageId: `notion-page-${index + 1}`,
-  title: '[쟁점한국현대사] 건국절 논란',
-  updatedAt: '2026.4.7.',
-}));
-
 export function ExperienceAddMaterialModal({ materials, onSave }: ExperienceAddMaterialModalProps) {
   const [modalView, setModalView] = useState<'material' | 'notion-connect' | 'notion-pages'>(
     'material',
   );
   const [draftMaterials, setDraftMaterials] = useState<ExperienceMaterial[]>(materials);
+  const notionPagesQuery = useNotionPages({ enabled: modalView === 'notion-pages' });
+  const notionPages = notionPagesQuery.data?.pages ?? [];
 
   useEffect(() => {
     setDraftMaterials(materials);
   }, [materials]);
+
+  useEffect(() => {
+    if (!(notionPagesQuery.error instanceof ApiError)) return;
+    if (notionPagesQuery.error.code !== 'N002') return;
+    setModalView('notion-connect');
+  }, [notionPagesQuery.error]);
 
   const selectedNotionPageIds = draftMaterials
     .filter((material): material is NotionMaterial => material.type === 'notion')
@@ -92,7 +96,6 @@ export function ExperienceAddMaterialModal({ materials, onSave }: ExperienceAddM
           type: 'notion',
           pageId: page.pageId,
           title: page.title,
-          updatedAt: page.updatedAt,
         },
       ];
     });
@@ -107,8 +110,15 @@ export function ExperienceAddMaterialModal({ materials, onSave }: ExperienceAddM
       {modalView === 'notion-pages' ? (
         <ExperienceAddNotionPageSelectView
           pages={notionPages}
+          isLoading={notionPagesQuery.isPending}
+          errorMessage={
+            notionPagesQuery.isError && notionPagesQuery.error instanceof Error
+              ? notionPagesQuery.error.message
+              : undefined
+          }
           selectedPageIds={selectedNotionPageIds}
           onBack={() => setModalView('material')}
+          onConnectMore={() => setModalView('notion-connect')}
           onPageToggle={handleNotionPageToggle}
           onSave={handleSave}
         />

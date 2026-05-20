@@ -10,25 +10,31 @@ import { cn } from '@/lib/utils';
 interface NotionPage {
   pageId: string;
   title: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 interface ExperienceAddNotionPageSelectViewProps {
   pages: NotionPage[];
+  isLoading?: boolean;
+  errorMessage?: string;
   selectedPageIds: string[];
   onBack: () => void;
+  onConnectMore: () => void;
   onPageToggle: (pageId: string) => void;
   onSave: () => void;
 }
 
 export function ExperienceAddNotionPageSelectView({
   pages,
+  isLoading = false,
+  errorMessage,
   selectedPageIds,
   onBack,
+  onConnectMore,
   onPageToggle,
   onSave,
 }: ExperienceAddNotionPageSelectViewProps) {
-  const canSave = selectedPageIds.length > 0;
+  const canSave = selectedPageIds.length > 0 && !isLoading;
 
   return (
     <>
@@ -51,6 +57,7 @@ export function ExperienceAddNotionPageSelectView({
                 variant="secondary"
                 size="small"
                 className="h-8 px-3 label-3-bold"
+                onClick={onConnectMore}
               >
                 페이지 추가 연동하기
               </Button>
@@ -60,46 +67,68 @@ export function ExperienceAddNotionPageSelectView({
       </div>
 
       <div className="flex max-h-[calc(100dvh-260px)] min-h-[360px] w-full flex-col gap-2 overflow-y-auto">
-        {pages.map((page) => {
-          const isSelected = selectedPageIds.includes(page.pageId);
+        {isLoading && (
+          <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-gray-50">
+            <p className="body-2-regular text-gray-700">노션 페이지를 불러오는 중이에요</p>
+          </div>
+        )}
 
-          return (
-            <button
-              key={page.pageId}
-              type="button"
-              className={cn(
-                'flex w-full cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-left',
-                'focus-visible:shadow-focus-ring focus-visible:outline-none',
-                isSelected ? 'bg-[#eefffd]' : 'bg-gray-50 hover:bg-gray-100',
-              )}
-              onClick={() => onPageToggle(page.pageId)}
-            >
-              <span
-                aria-hidden="true"
+        {!isLoading && errorMessage && (
+          <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-gray-50 px-5 text-center">
+            <p className="body-2-regular text-gray-700">{errorMessage}</p>
+          </div>
+        )}
+
+        {!isLoading && !errorMessage && pages.length === 0 && (
+          <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-gray-50">
+            <p className="body-2-regular text-gray-700">가져올 수 있는 노션 페이지가 없어요</p>
+          </div>
+        )}
+
+        {!isLoading &&
+          !errorMessage &&
+          pages.map((page) => {
+            const isSelected = selectedPageIds.includes(page.pageId);
+
+            return (
+              <button
+                key={page.pageId}
+                type="button"
                 className={cn(
-                  'flex size-10 shrink-0 items-center justify-center text-tertiary',
-                  isSelected && 'text-mint-500',
+                  'flex w-full cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-left',
+                  'focus-visible:shadow-focus-ring focus-visible:outline-none',
+                  isSelected ? 'bg-[#eefffd]' : 'bg-gray-50 hover:bg-gray-100',
                 )}
+                onClick={() => onPageToggle(page.pageId)}
               >
-                {isSelected ? (
-                  <CheckedBoxIcon className="size-6" />
-                ) : (
-                  <EmptyBoxIcon className="size-6" />
-                )}
-              </span>
-              <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-background-w">
-                <NotionIcon className="size-6" />
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="truncate body-1-bold text-strong">{page.title}</span>
-                <span className="flex items-center gap-2.5">
-                  <Tag tone="competency">페이지</Tag>
-                  <span className="body-2-regular text-gray-600">{page.updatedAt}</span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex size-10 shrink-0 items-center justify-center text-tertiary',
+                    isSelected && 'text-mint-500',
+                  )}
+                >
+                  {isSelected ? (
+                    <CheckedBoxIcon className="size-6" />
+                  ) : (
+                    <EmptyBoxIcon className="size-6" />
+                  )}
                 </span>
-              </span>
-            </button>
-          );
-        })}
+                <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-background-w">
+                  <NotionIcon className="size-6" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate body-1-bold text-strong">{page.title}</span>
+                  <span className="flex items-center gap-2.5">
+                    <Tag tone="competency">페이지</Tag>
+                    <span className="body-2-regular text-gray-600">
+                      {page.updatedAt ?? '최근 수정일 정보 없음'}
+                    </span>
+                  </span>
+                </span>
+              </button>
+            );
+          })}
       </div>
 
       <div className="w-full pt-2.5">

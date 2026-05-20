@@ -29,10 +29,11 @@ export function useNotionAuthUrl() {
   });
 }
 
-export function useNotionPages() {
+export function useNotionPages({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: experienceAddQueryKeys.notionPages(),
     queryFn: getNotionPages,
+    enabled,
   });
 }
 
