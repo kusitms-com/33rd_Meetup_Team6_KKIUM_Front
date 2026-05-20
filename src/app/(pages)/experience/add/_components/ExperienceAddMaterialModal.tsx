@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ExperienceAddMaterialSelectView } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialSelectView';
 import { ExperienceAddNotionConnectView } from '@/app/(pages)/experience/add/_components/ExperienceAddNotionConnectView';
@@ -43,29 +43,29 @@ export function ExperienceAddMaterialModal({ materials, onSave }: ExperienceAddM
   );
   const [draftMaterials, setDraftMaterials] = useState<ExperienceMaterial[]>(materials);
 
+  useEffect(() => {
+    setDraftMaterials(materials);
+  }, [materials]);
+
   const selectedNotionPageIds = draftMaterials
     .filter((material): material is NotionMaterial => material.type === 'notion')
     .map((material) => material.pageId);
 
   const handlePdfFilesAdd = (files: File[]) => {
-    const pdfMaterials = files.map<PdfMaterial>((file) => ({
+    const file = files[0];
+
+    if (!file) return;
+
+    const pdfMaterial: PdfMaterial = {
       id: `${file.name}-${file.lastModified}-${file.size}`,
       type: 'pdf',
       file,
       name: file.name,
       size: file.size,
       status: 'completed',
-    }));
+    };
 
-    setDraftMaterials((currentMaterials) => {
-      const materialMap = new Map(currentMaterials.map((material) => [material.id, material]));
-
-      pdfMaterials.forEach((material) => {
-        materialMap.set(material.id, material);
-      });
-
-      return Array.from(materialMap.values());
-    });
+    setDraftMaterials([pdfMaterial]);
   };
 
   const handleMaterialRemove = (materialId: string) => {
@@ -83,11 +83,10 @@ export function ExperienceAddMaterialModal({ materials, onSave }: ExperienceAddM
       const isSelected = currentMaterials.some((material) => material.id === page.pageId);
 
       if (isSelected) {
-        return currentMaterials.filter((material) => material.id !== page.pageId);
+        return [];
       }
 
       return [
-        ...currentMaterials,
         {
           id: page.pageId,
           type: 'notion',

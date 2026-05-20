@@ -1,19 +1,39 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 
 import { ExperienceTypeOptionCard } from '@/app/(pages)/experience/add/_components/ExperienceTypeOptionCard';
 import {
   EXPERIENCE_TYPE_FIELD_GROUPS,
   EXPERIENCE_TYPE_OPTIONS,
-  type ExperienceType,
 } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
+import type { ExperienceAddBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 import { TextField } from '@/components/common/TextField';
 import { cn } from '@/lib/utils';
 
-export function ExperienceAddBasicInfoStep() {
-  const [selectedType, setSelectedType] = useState<ExperienceType | null>(null);
+interface ExperienceAddBasicInfoStepProps {
+  value: ExperienceAddBasicInfoForm;
+  onChange: (value: ExperienceAddBasicInfoForm) => void;
+}
+
+export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBasicInfoStepProps) {
+  const selectedType = value.type;
   const selectedFieldGroups = selectedType ? EXPERIENCE_TYPE_FIELD_GROUPS[selectedType] : [];
+
+  const updateField = (
+    fieldName: keyof Omit<ExperienceAddBasicInfoForm, 'type'>,
+    fieldValue: string,
+  ) => {
+    onChange({
+      ...value,
+      [fieldName]: fieldValue,
+    });
+  };
+  const handleInputChange =
+    (fieldName: keyof Omit<ExperienceAddBasicInfoForm, 'type'>) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      updateField(fieldName, event.currentTarget.value);
+    };
 
   return (
     <section
@@ -45,7 +65,7 @@ export function ExperienceAddBasicInfoStep() {
               defaultIconSrc={option.defaultIconSrc}
               selectedIconSrc={option.selectedIconSrc}
               selected={selectedType === option.value}
-              onClick={() => setSelectedType(option.value)}
+              onClick={() => onChange({ ...value, type: option.value })}
             />
           ))}
         </div>
@@ -63,20 +83,44 @@ export function ExperienceAddBasicInfoStep() {
               {fieldGroup.fields.length > 1 ? (
                 <div className="grid w-full grid-cols-2 gap-2.5">
                   {fieldGroup.fields.map((field, index) => (
-                    <TextField
-                      key={`${fieldGroup.number}-${index}`}
-                      variant={field.variant}
-                      placeholder={field.placeholder}
-                      description={false}
-                    />
+                    <div key={`${fieldGroup.number}-${index}`}>
+                      {field.variant === 'date' ? (
+                        <TextField
+                          variant="date"
+                          placeholder={field.placeholder}
+                          value={value[field.name]}
+                          description={false}
+                        />
+                      ) : (
+                        <TextField
+                          variant="input"
+                          placeholder={field.placeholder}
+                          value={value[field.name]}
+                          description={false}
+                          onChange={handleInputChange(field.name)}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (
-                <TextField
-                  variant={fieldGroup.fields[0]?.variant}
-                  placeholder={fieldGroup.fields[0]?.placeholder}
-                  description={false}
-                />
+                fieldGroup.fields[0] &&
+                (fieldGroup.fields[0].variant === 'date' ? (
+                  <TextField
+                    variant="date"
+                    placeholder={fieldGroup.fields[0].placeholder}
+                    value={value[fieldGroup.fields[0].name]}
+                    description={false}
+                  />
+                ) : (
+                  <TextField
+                    variant="input"
+                    placeholder={fieldGroup.fields[0].placeholder}
+                    value={value[fieldGroup.fields[0].name]}
+                    description={false}
+                    onChange={handleInputChange(fieldGroup.fields[0].name)}
+                  />
+                ))
               )}
             </QuestionFieldGroup>
           ))}

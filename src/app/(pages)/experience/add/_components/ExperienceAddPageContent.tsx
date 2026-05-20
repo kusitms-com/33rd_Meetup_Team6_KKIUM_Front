@@ -3,15 +3,22 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import type { ExperienceMaterial } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
+import { createEmptyBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
+import { mapAnalyzeResponseToBasicInfoForm } from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
+import { useAnalyzeExperiencePdf } from '@/hooks/experience/useExperienceAdd';
 
 export function ExperienceAddPageContent() {
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
+  const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
+  const analyzePdfMutation = useAnalyzeExperiencePdf();
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
 
@@ -19,7 +26,23 @@ export function ExperienceAddPageContent() {
     setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
   };
 
-  const goNextStep = () => {
+  const goNextStep = async () => {
+    if (currentStepIndex === 0) {
+      const selectedMaterial = materials[0];
+
+      if (selectedMaterial?.type === 'pdf') {
+        try {
+          const analyzeResponse = await analyzePdfMutation.mutateAsync(selectedMaterial.file);
+          setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
+        } catch (error) {
+          window.alert(error instanceof Error ? error.message : 'PDF 분석 중 오류가 발생했습니다.');
+          return;
+        }
+      } else {
+        setBasicInfo(createEmptyBasicInfoForm());
+      }
+    }
+
     setCurrentStepIndex((stepIndex) => Math.min(stepIndex + 1, EXPERIENCE_ADD_STEPS.length));
   };
 
@@ -39,7 +62,13 @@ export function ExperienceAddPageContent() {
 
       <main className="mt-[50px] flex flex-1 flex-col gap-10">
         <ExperienceAddProgress currentStepIndex={currentStepIndex} />
-        <ExperienceAddStepContent currentStepIndex={currentStepIndex} />
+        <ExperienceAddStepContent
+          currentStepIndex={currentStepIndex}
+          materials={materials}
+          onMaterialsChange={setMaterials}
+          basicInfo={basicInfo}
+          onBasicInfoChange={setBasicInfo}
+        />
       </main>
 
       {!isCompleteStep && (
@@ -47,8 +76,13 @@ export function ExperienceAddPageContent() {
           <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
             이전
           </Button>
-          <Button type="button" className="w-40" onClick={goNextStep}>
-            다음
+          <Button
+            type="button"
+            className="w-40"
+            disabled={analyzePdfMutation.isPending}
+            onClick={goNextStep}
+          >
+            {analyzePdfMutation.isPending ? '분석 중...' : '다음'}
           </Button>
         </footer>
       )}

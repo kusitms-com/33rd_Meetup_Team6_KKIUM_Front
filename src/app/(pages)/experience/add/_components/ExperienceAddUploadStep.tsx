@@ -16,21 +16,26 @@ import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
 import { Button } from '@/components/ui/button';
 
-export function ExperienceAddUploadStep() {
-  const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
+interface ExperienceAddUploadStepProps {
+  materials: ExperienceMaterial[];
+  onMaterialsChange: (materials: ExperienceMaterial[]) => void;
+}
+
+export function ExperienceAddUploadStep({
+  materials,
+  onMaterialsChange,
+}: ExperienceAddUploadStepProps) {
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const notionMaterials = materials.filter((material) => material.type === 'notion');
   const pdfMaterials = materials.filter((material) => material.type === 'pdf');
   const hasMaterials = materials.length > 0;
 
   const removeMaterial = (materialId: string) => {
-    setMaterials((currentMaterials) =>
-      currentMaterials.filter((material) => material.id !== materialId),
-    );
+    onMaterialsChange(materials.filter((material) => material.id !== materialId));
   };
 
   const saveMaterials = (nextMaterials: ExperienceMaterial[]) => {
-    setMaterials(nextMaterials);
+    onMaterialsChange(nextMaterials);
     setIsMaterialModalOpen(false);
   };
 

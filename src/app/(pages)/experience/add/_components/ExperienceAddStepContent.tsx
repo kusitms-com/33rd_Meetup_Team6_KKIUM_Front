@@ -1,23 +1,35 @@
 import { ExperienceAddBasicInfoStep } from '@/app/(pages)/experience/add/_components/ExperienceAddBasicInfoStep';
 import { ExperienceAddCompleteStep } from '@/app/(pages)/experience/add/_components/ExperienceAddCompleteStep';
 import { ExperienceAddCoreStep } from '@/app/(pages)/experience/add/_components/ExperienceAddCoreStep';
+import type { ExperienceMaterial } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
 import { ExperienceAddResultStep } from '@/app/(pages)/experience/add/_components/ExperienceAddResultStep';
 import { ExperienceAddUploadStep } from '@/app/(pages)/experience/add/_components/ExperienceAddUploadStep';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
+import type { ExperienceAddBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 
 interface ExperienceAddStepContentProps {
   currentStepIndex: number;
+  materials: ExperienceMaterial[];
+  onMaterialsChange: (materials: ExperienceMaterial[]) => void;
+  basicInfo: ExperienceAddBasicInfoForm;
+  onBasicInfoChange: (basicInfo: ExperienceAddBasicInfoForm) => void;
 }
 
-export function ExperienceAddStepContent({ currentStepIndex }: ExperienceAddStepContentProps) {
+export function ExperienceAddStepContent({
+  currentStepIndex,
+  materials,
+  onMaterialsChange,
+  basicInfo,
+  onBasicInfoChange,
+}: ExperienceAddStepContentProps) {
   const currentStep = EXPERIENCE_ADD_STEPS[currentStepIndex] ?? EXPERIENCE_ADD_STEPS[0];
 
   if (currentStepIndex === 0) {
-    return <ExperienceAddUploadStep />;
+    return <ExperienceAddUploadStep materials={materials} onMaterialsChange={onMaterialsChange} />;
   }
 
   if (currentStepIndex === 1) {
-    return <ExperienceAddBasicInfoStep />;
+    return <ExperienceAddBasicInfoStep value={basicInfo} onChange={onBasicInfoChange} />;
   }
 
   if (currentStepIndex === 2) {
