@@ -11,7 +11,10 @@ import { createEmptyBasicInfoForm } from '@/app/(pages)/experience/add/_types/ex
 import { mapAnalyzeResponseToBasicInfoForm } from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
-import { useAnalyzeExperiencePdf } from '@/hooks/experience/useExperienceAdd';
+import {
+  useAnalyzeExperienceNotion,
+  useAnalyzeExperiencePdf,
+} from '@/hooks/experience/useExperienceAdd';
 
 export function ExperienceAddPageContent() {
   const router = useRouter();
@@ -19,7 +22,8 @@ export function ExperienceAddPageContent() {
   const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
   const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
   const analyzePdfMutation = useAnalyzeExperiencePdf();
-  const isAnalyzingPdf = analyzePdfMutation.isPending;
+  const analyzeNotionMutation = useAnalyzeExperienceNotion();
+  const isAnalyzing = analyzePdfMutation.isPending || analyzeNotionMutation.isPending;
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
 
@@ -31,16 +35,19 @@ export function ExperienceAddPageContent() {
     if (currentStepIndex === 0) {
       const selectedMaterial = materials[0];
 
-      if (selectedMaterial?.type === 'pdf') {
-        try {
+      try {
+        if (selectedMaterial?.type === 'pdf') {
           const analyzeResponse = await analyzePdfMutation.mutateAsync(selectedMaterial.file);
           setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
-        } catch (error) {
-          window.alert(error instanceof Error ? error.message : 'PDF 분석 중 오류가 발생했습니다.');
-          return;
+        } else if (selectedMaterial?.type === 'notion') {
+          const analyzeResponse = await analyzeNotionMutation.mutateAsync(selectedMaterial.pageId);
+          setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
+        } else {
+          setBasicInfo(createEmptyBasicInfoForm());
         }
-      } else {
-        setBasicInfo(createEmptyBasicInfoForm());
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : '자료 분석 중 오류가 발생했습니다.');
+        return;
       }
     }
 
@@ -65,7 +72,7 @@ export function ExperienceAddPageContent() {
         <ExperienceAddProgress currentStepIndex={currentStepIndex} />
         <ExperienceAddStepContent
           currentStepIndex={currentStepIndex}
-          isAnalyzing={isAnalyzingPdf}
+          isAnalyzing={isAnalyzing}
           materials={materials}
           onMaterialsChange={setMaterials}
           basicInfo={basicInfo}
@@ -75,12 +82,12 @@ export function ExperienceAddPageContent() {
 
       {!isCompleteStep && (
         <footer className="mt-10 flex justify-end gap-4">
-          {!isAnalyzingPdf && (
+          {!isAnalyzing && (
             <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
               이전
             </Button>
           )}
-          <Button type="button" className="w-40" disabled={isAnalyzingPdf} onClick={goNextStep}>
+          <Button type="button" className="w-40" disabled={isAnalyzing} onClick={goNextStep}>
             다음
           </Button>
         </footer>
