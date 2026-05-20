@@ -19,6 +19,7 @@ export function ExperienceAddPageContent() {
   const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
   const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
   const analyzePdfMutation = useAnalyzeExperiencePdf();
+  const isAnalyzingPdf = analyzePdfMutation.isPending;
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
 
@@ -64,6 +65,7 @@ export function ExperienceAddPageContent() {
         <ExperienceAddProgress currentStepIndex={currentStepIndex} />
         <ExperienceAddStepContent
           currentStepIndex={currentStepIndex}
+          isAnalyzing={isAnalyzingPdf}
           materials={materials}
           onMaterialsChange={setMaterials}
           basicInfo={basicInfo}
@@ -73,16 +75,13 @@ export function ExperienceAddPageContent() {
 
       {!isCompleteStep && (
         <footer className="mt-10 flex justify-end gap-4">
-          <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
-            이전
-          </Button>
-          <Button
-            type="button"
-            className="w-40"
-            disabled={analyzePdfMutation.isPending}
-            onClick={goNextStep}
-          >
-            {analyzePdfMutation.isPending ? '분석 중...' : '다음'}
+          {!isAnalyzingPdf && (
+            <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
+              이전
+            </Button>
+          )}
+          <Button type="button" className="w-40" disabled={isAnalyzingPdf} onClick={goNextStep}>
+            다음
           </Button>
         </footer>
       )}

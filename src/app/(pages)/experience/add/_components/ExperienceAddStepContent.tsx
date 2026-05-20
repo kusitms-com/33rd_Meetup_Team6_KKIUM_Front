@@ -1,4 +1,5 @@
 import { ExperienceAddBasicInfoStep } from '@/app/(pages)/experience/add/_components/ExperienceAddBasicInfoStep';
+import { ExperienceAddAnalyzingStep } from '@/app/(pages)/experience/add/_components/ExperienceAddAnalyzingStep';
 import { ExperienceAddCompleteStep } from '@/app/(pages)/experience/add/_components/ExperienceAddCompleteStep';
 import { ExperienceAddCoreStep } from '@/app/(pages)/experience/add/_components/ExperienceAddCoreStep';
 import type { ExperienceMaterial } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
@@ -9,6 +10,7 @@ import type { ExperienceAddBasicInfoForm } from '@/app/(pages)/experience/add/_t
 
 interface ExperienceAddStepContentProps {
   currentStepIndex: number;
+  isAnalyzing?: boolean;
   materials: ExperienceMaterial[];
   onMaterialsChange: (materials: ExperienceMaterial[]) => void;
   basicInfo: ExperienceAddBasicInfoForm;
@@ -17,12 +19,17 @@ interface ExperienceAddStepContentProps {
 
 export function ExperienceAddStepContent({
   currentStepIndex,
+  isAnalyzing = false,
   materials,
   onMaterialsChange,
   basicInfo,
   onBasicInfoChange,
 }: ExperienceAddStepContentProps) {
   const currentStep = EXPERIENCE_ADD_STEPS[currentStepIndex] ?? EXPERIENCE_ADD_STEPS[0];
+
+  if (isAnalyzing) {
+    return <ExperienceAddAnalyzingStep />;
+  }
 
   if (currentStepIndex === 0) {
     return <ExperienceAddUploadStep materials={materials} onMaterialsChange={onMaterialsChange} />;
