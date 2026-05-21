@@ -1,6 +1,14 @@
 'use client';
 
-import type { ChangeEvent, ReactNode } from 'react';
+import {
+  type ChangeEvent,
+  type ReactNode,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { ExperienceTypeOptionCard } from '@/app/(pages)/experience/add/_components/ExperienceTypeOptionCard';
 import {
@@ -8,6 +16,7 @@ import {
   EXPERIENCE_TYPE_OPTIONS,
 } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
 import type { ExperienceAddBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
+import { type CalendarDateRange, RangeCalendar } from '@/components/common/RangeCalendar';
 import { TextField } from '@/components/common/TextField';
 import { cn } from '@/lib/utils';
 
@@ -38,7 +47,7 @@ export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBas
   return (
     <section
       aria-labelledby="experience-add-basic-info-title"
-      className="flex w-full flex-col gap-6 overflow-hidden rounded-xl border border-border-default bg-background-w px-[30px] py-5"
+      className="flex w-full flex-col gap-6 overflow-visible rounded-xl border border-border-default bg-background-w px-[30px] py-5"
     >
       <div className="flex flex-col gap-1">
         <p className="title-2-bold text-mint-300">Step 2</p>
@@ -88,12 +97,16 @@ export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBas
                 }
               >
                 {isDateRangeGroup ? (
-                  <TextField
-                    variant="date"
-                    placeholder={DATE_RANGE_PLACEHOLDER}
-                    value={formatDateRangeValue(value.startDate, value.endDate)}
-                    className="border-gray-300"
-                    description={false}
+                  <ExperienceDateRangeField
+                    startDate={value.startDate}
+                    endDate={value.endDate}
+                    onChange={(nextStartDate, nextEndDate) => {
+                      onChange({
+                        ...value,
+                        startDate: nextStartDate,
+                        endDate: nextEndDate,
+                      });
+                    }}
                   />
                 ) : fieldGroup.fields.length > 1 ? (
                   <div className="grid w-full grid-cols-2 gap-2.5">
@@ -140,6 +153,32 @@ function formatDateRangeValue(startDate: string, endDate: string) {
   return `${formattedStartDate} ~ ${formattedEndDate}`;
 }
 
+function parseDateValue(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const [, year, month, day] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function formatDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
 function formatKoreanDateValue(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return '';
@@ -156,6 +195,99 @@ function formatKoreanDateValue(value: string) {
   }
 
   return `${year}년 ${month}월 ${day}일`;
+}
+
+function ExperienceDateRangeField({
+  startDate,
+  endDate,
+  onChange,
+}: {
+  startDate: string;
+  endDate: string;
+  onChange: (startDate: string, endDate: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const dialogId = useId();
+  const parsedStartDate = useMemo(() => parseDateValue(startDate), [startDate]);
+  const parsedEndDate = useMemo(() => parseDateValue(endDate), [endDate]);
+  const selectedRange = useMemo<CalendarDateRange | null>(() => {
+    if (!parsedStartDate || !parsedEndDate) return null;
+
+    return {
+      start: parsedStartDate,
+      end: parsedEndDate,
+    };
+  }, [parsedStartDate, parsedEndDate]);
+  const displayValue = formatDateRangeValue(startDate, endDate);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, true);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative w-full">
+      <TextField
+        variant="date"
+        placeholder={DATE_RANGE_PLACEHOLDER}
+        value={displayValue}
+        className={cn('border-gray-300', displayValue && 'text-strong')}
+        description={false}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={dialogId}
+        onClick={() => setOpen((prevOpen) => !prevOpen)}
+      />
+
+      {open && (
+        <div
+          id={dialogId}
+          role="dialog"
+          aria-label="날짜 선택"
+          className="absolute bottom-full left-0 z-60 mb-2 max-w-[calc(100vw-2rem)]"
+        >
+          <RangeCalendar
+            value={selectedRange}
+            defaultVisibleMonth={selectedRange?.start ?? parsedStartDate ?? new Date()}
+            onChange={(nextRange) => {
+              if (!nextRange) return;
+
+              onChange(formatDateValue(nextRange.start), formatDateValue(nextRange.end));
+              setOpen(false);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 function QuestionFieldGroup({
