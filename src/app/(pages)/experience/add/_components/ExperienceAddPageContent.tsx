@@ -21,6 +21,10 @@ import {
   mapAnalyzeResponseToCoreInfoForm,
   mapAnalyzeResponseToResultInfoForm,
 } from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
+import {
+  clearExperienceAddPdfDraft,
+  getExperienceAddPdfDraft,
+} from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
 import {
@@ -53,6 +57,28 @@ export function ExperienceAddPageContent() {
     router.replace('/experience/add', { scroll: false });
   }, [isNotionConnected, router]);
 
+  useEffect(() => {
+    const restorePdfDraft = async () => {
+      try {
+        const pdfMaterial = await getExperienceAddPdfDraft();
+
+        if (!pdfMaterial) return;
+
+        setMaterials((currentMaterials) => {
+          const hasPdf = currentMaterials.some((material) => material.type === 'pdf');
+
+          if (hasPdf) return currentMaterials;
+
+          return [pdfMaterial, ...currentMaterials];
+        });
+      } catch (error) {
+        console.warn('PDF 임시 저장 데이터를 복구하지 못했습니다.', error);
+      }
+    };
+
+    void restorePdfDraft();
+  }, []);
+
   const goPreviousStep = () => {
     setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
   };
@@ -71,6 +97,9 @@ export function ExperienceAddPageContent() {
         if (selectedMaterial?.type === 'pdf') {
           const analyzeResponse = await analyzePdfMutation.mutateAsync(selectedMaterial.file);
           applyAnalyzeResponse(analyzeResponse);
+          void clearExperienceAddPdfDraft().catch((error: unknown) => {
+            console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
+          });
         } else if (selectedMaterial?.type === 'notion') {
           const analyzeResponse = await analyzeNotionMutation.mutateAsync(selectedMaterial.pageId);
           applyAnalyzeResponse(analyzeResponse);

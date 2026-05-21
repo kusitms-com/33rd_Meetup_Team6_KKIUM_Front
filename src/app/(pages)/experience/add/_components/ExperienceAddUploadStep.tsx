@@ -5,9 +5,14 @@ import type { ReactNode } from 'react';
 
 import {
   ExperienceAddMaterialModal,
+  type PdfMaterial,
   type ExperienceAddMaterialModalView,
   type ExperienceMaterial,
 } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
+import {
+  clearExperienceAddPdfDraft,
+  saveExperienceAddPdfDraft,
+} from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Modal } from '@/components/common/Modal';
 import { Tag } from '@/components/common/Tag';
@@ -38,10 +43,32 @@ export function ExperienceAddUploadStep({
   const hasMaterials = materials.length > 0;
 
   const removeMaterial = (materialId: string) => {
+    const removedMaterial = materials.find((material) => material.id === materialId);
+
+    if (removedMaterial?.type === 'pdf') {
+      void clearExperienceAddPdfDraft().catch((error: unknown) => {
+        console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
+      });
+    }
+
     onMaterialsChange(materials.filter((material) => material.id !== materialId));
   };
 
   const saveMaterials = (nextMaterials: ExperienceMaterial[]) => {
+    const pdfMaterial = nextMaterials.find(
+      (material): material is PdfMaterial => material.type === 'pdf',
+    );
+
+    if (pdfMaterial) {
+      void saveExperienceAddPdfDraft(pdfMaterial).catch((error: unknown) => {
+        console.warn('PDF 임시 저장 데이터를 저장하지 못했습니다.', error);
+      });
+    } else {
+      void clearExperienceAddPdfDraft().catch((error: unknown) => {
+        console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
+      });
+    }
+
     onMaterialsChange(nextMaterials);
     onMaterialModalOpenChange(false);
   };
