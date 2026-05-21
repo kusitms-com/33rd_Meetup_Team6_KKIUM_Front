@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import {
+  analyzeExperienceMaterials,
   analyzeExperienceNotion,
   analyzeExperiencePdf,
   getNotionAuthUrl,
@@ -18,6 +19,12 @@ export const experienceAddQueryKeys = {
 export function useAnalyzeExperiencePdf() {
   return useMutation({
     mutationFn: analyzeExperiencePdf,
+  });
+}
+
+export function useAnalyzeExperienceMaterials() {
+  return useMutation({
+    mutationFn: analyzeExperienceMaterials,
   });
 }
 

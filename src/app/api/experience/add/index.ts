@@ -1,12 +1,30 @@
 import { api } from '@/app/api/client';
 
-import type { ExperienceAnalyzeResponse, NotionPageListResponse } from './types';
+import type {
+  ExperienceAnalyzeMaterialsRequest,
+  ExperienceAnalyzeResponse,
+  NotionPageListResponse,
+} from './types';
 
 export function analyzeExperiencePdf(file: File) {
   const formData = new FormData();
   formData.append('file', file);
 
   return api.post<ExperienceAnalyzeResponse>('/api/v1/experiences/analyze/pdf', formData);
+}
+
+export function analyzeExperienceMaterials({ file, pageId }: ExperienceAnalyzeMaterialsRequest) {
+  const formData = new FormData();
+
+  if (file) {
+    formData.append('file', file);
+  }
+
+  if (pageId) {
+    formData.append('pageId', pageId);
+  }
+
+  return api.post<ExperienceAnalyzeResponse>('/api/v1/experiences/analyze', formData);
 }
 
 export function getNotionAuthUrl() {

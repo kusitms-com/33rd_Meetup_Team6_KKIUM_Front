@@ -28,6 +28,7 @@ import {
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
 import {
+  useAnalyzeExperienceMaterials,
   useAnalyzeExperienceNotion,
   useAnalyzeExperiencePdf,
 } from '@/hooks/experience/useExperienceAdd';
@@ -47,7 +48,11 @@ export function ExperienceAddPageContent() {
   const [resultInfo, setResultInfo] = useState(createEmptyResultInfoForm);
   const analyzePdfMutation = useAnalyzeExperiencePdf();
   const analyzeNotionMutation = useAnalyzeExperienceNotion();
-  const isAnalyzing = analyzePdfMutation.isPending || analyzeNotionMutation.isPending;
+  const analyzeMaterialsMutation = useAnalyzeExperienceMaterials();
+  const isAnalyzing =
+    analyzePdfMutation.isPending ||
+    analyzeNotionMutation.isPending ||
+    analyzeMaterialsMutation.isPending;
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
 
@@ -91,17 +96,28 @@ export function ExperienceAddPageContent() {
 
   const goNextStep = async () => {
     if (currentStepIndex === 0) {
-      const selectedMaterial = materials[0];
+      const pdfMaterial = materials.find((material) => material.type === 'pdf');
+      const notionMaterial = materials.find((material) => material.type === 'notion');
 
       try {
-        if (selectedMaterial?.type === 'pdf') {
-          const analyzeResponse = await analyzePdfMutation.mutateAsync(selectedMaterial.file);
+        if (pdfMaterial && notionMaterial) {
+          const analyzeResponse = await analyzeMaterialsMutation.mutateAsync({
+            file: pdfMaterial?.file,
+            pageId: notionMaterial?.pageId,
+          });
+
           applyAnalyzeResponse(analyzeResponse);
           void clearExperienceAddPdfDraft().catch((error: unknown) => {
             console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
           });
-        } else if (selectedMaterial?.type === 'notion') {
-          const analyzeResponse = await analyzeNotionMutation.mutateAsync(selectedMaterial.pageId);
+        } else if (pdfMaterial) {
+          const analyzeResponse = await analyzePdfMutation.mutateAsync(pdfMaterial.file);
+          applyAnalyzeResponse(analyzeResponse);
+          void clearExperienceAddPdfDraft().catch((error: unknown) => {
+            console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
+          });
+        } else if (notionMaterial) {
+          const analyzeResponse = await analyzeNotionMutation.mutateAsync(notionMaterial.pageId);
           applyAnalyzeResponse(analyzeResponse);
         } else {
           setBasicInfo(createEmptyBasicInfoForm());

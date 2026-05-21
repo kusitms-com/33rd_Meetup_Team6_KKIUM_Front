@@ -40,6 +40,11 @@ export interface ExperienceAnalyzeResponse {
   tags: TagResponse[];
 }
 
+export interface ExperienceAnalyzeMaterialsRequest {
+  file?: File;
+  pageId?: string;
+}
+
 export interface NotionPageResponse {
   pageId: string;
   title: string;
