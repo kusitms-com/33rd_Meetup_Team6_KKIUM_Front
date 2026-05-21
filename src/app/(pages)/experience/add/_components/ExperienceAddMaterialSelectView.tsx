@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 
 interface ExperienceAddMaterialSelectViewProps {
   materials: ExperienceMaterial[];
+  hideNotionConnect?: boolean;
   onMaterialRemove: (materialId: string) => void;
   onNotionConnect: () => void;
   onPdfFilesAdd: (files: File[]) => void;
@@ -22,6 +23,7 @@ interface ExperienceAddMaterialSelectViewProps {
 
 export function ExperienceAddMaterialSelectView({
   materials,
+  hideNotionConnect = false,
   onMaterialRemove,
   onNotionConnect,
   onPdfFilesAdd,
@@ -91,7 +93,7 @@ export function ExperienceAddMaterialSelectView({
               </Button>
             </div>
             <p className="text-center body-2-regular text-gray-700">
-              HWP, DOC, DOCK 형식은 지원하지 않아요.
+              HWP, DOC, DOCX 형식은 지원하지 않아요.
             </p>
           </div>
         </section>
@@ -109,7 +111,7 @@ export function ExperienceAddMaterialSelectView({
           </div>
         )}
 
-        {pdfMaterials.length === 0 && (
+        {!hideNotionConnect && (
           <section className="flex w-full items-center justify-between rounded-lg border border-gray-300 p-5">
             <div className="flex items-center gap-5">
               <div className="flex size-[52px] shrink-0 items-center justify-center rounded-sm bg-gray-100">

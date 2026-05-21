@@ -42,15 +42,18 @@ export function ExperienceAddMaterialModal({
 }: ExperienceAddMaterialModalProps) {
   const [modalView, setModalView] = useState<ExperienceAddMaterialModalView>(initialView);
   const [draftMaterials, setDraftMaterials] = useState<ExperienceMaterial[]>(materials);
+  const [isPdfAddedInCurrentSession, setIsPdfAddedInCurrentSession] = useState(false);
   const notionPagesQuery = useNotionPages({ enabled: modalView === 'notion-pages' });
   const notionPages = notionPagesQuery.data?.pages ?? [];
+  const hasDraftPdf = draftMaterials.some((material) => material.type === 'pdf');
 
   useEffect(() => {
     setModalView(initialView);
   }, [initialView]);
 
   useEffect(() => {
-    setDraftMaterials(materials);
+    setDraftMaterials(materials.filter((material) => material.type !== 'pdf'));
+    setIsPdfAddedInCurrentSession(false);
   }, [materials]);
 
   useEffect(() => {
@@ -77,7 +80,11 @@ export function ExperienceAddMaterialModal({
       status: 'completed',
     };
 
-    setDraftMaterials([pdfMaterial]);
+    setDraftMaterials((currentMaterials) => [
+      ...currentMaterials.filter((material) => material.type !== 'pdf'),
+      pdfMaterial,
+    ]);
+    setIsPdfAddedInCurrentSession(true);
   };
 
   const handleMaterialRemove = (materialId: string) => {
@@ -94,11 +101,16 @@ export function ExperienceAddMaterialModal({
     setDraftMaterials((currentMaterials) => {
       const isSelected = currentMaterials.some((material) => material.id === page.pageId);
 
+      const materialsWithoutNotion = currentMaterials.filter(
+        (material) => material.type !== 'notion',
+      );
+
       if (isSelected) {
-        return [];
+        return materialsWithoutNotion;
       }
 
       return [
+        ...materialsWithoutNotion,
         {
           id: page.pageId,
           type: 'notion',
@@ -110,7 +122,11 @@ export function ExperienceAddMaterialModal({
   };
 
   const handleSave = () => {
-    onSave(draftMaterials);
+    const hiddenPdfMaterials = hasDraftPdf
+      ? []
+      : materials.filter((material) => material.type === 'pdf');
+
+    onSave([...hiddenPdfMaterials, ...draftMaterials]);
   };
 
   return (
@@ -139,6 +155,7 @@ export function ExperienceAddMaterialModal({
           ) : (
             <ExperienceAddMaterialSelectView
               materials={draftMaterials}
+              hideNotionConnect={isPdfAddedInCurrentSession && hasDraftPdf}
               onMaterialRemove={handleMaterialRemove}
               onNotionConnect={() => setModalView('notion-connect')}
               onPdfFilesAdd={handlePdfFilesAdd}
