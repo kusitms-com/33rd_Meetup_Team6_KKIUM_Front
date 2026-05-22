@@ -53,8 +53,8 @@ export const EXPERIENCE_TYPE_FIELD_GROUPS: Record<
     },
     {
       number: '03.',
-      label: '한 줄 소개',
-      fields: [{ name: 'oneLineIntro', placeholder: '제목을 작성해주세요.' }],
+      label: '한 줄 설명',
+      fields: [{ name: 'oneLineIntro', placeholder: '이 경험을 간단히 설명해주세요.' }],
     },
     {
       number: '04.',
@@ -86,8 +86,8 @@ export const EXPERIENCE_TYPE_FIELD_GROUPS: Record<
     },
     {
       number: '03.',
-      label: '한 줄 소개',
-      fields: [{ name: 'oneLineIntro', placeholder: '제목을 작성해주세요.' }],
+      label: '한 줄 설명',
+      fields: [{ name: 'oneLineIntro', placeholder: '이 경험을 간단히 설명해주세요.' }],
     },
     {
       number: '04.',
@@ -116,8 +116,8 @@ export const EXPERIENCE_TYPE_FIELD_GROUPS: Record<
     },
     {
       number: '03.',
-      label: '한 줄 소개',
-      fields: [{ name: 'oneLineIntro', placeholder: '제목을 작성해주세요.' }],
+      label: '한 줄 설명',
+      fields: [{ name: 'oneLineIntro', placeholder: '이 경험을 간단히 설명해주세요.' }],
     },
     {
       number: '04.',
@@ -146,8 +146,8 @@ export const EXPERIENCE_TYPE_FIELD_GROUPS: Record<
     },
     {
       number: '03.',
-      label: '한 줄 소개',
-      fields: [{ name: 'oneLineIntro', placeholder: '제목을 작성해주세요.' }],
+      label: '한 줄 설명',
+      fields: [{ name: 'oneLineIntro', placeholder: '이 경험을 간단히 설명해주세요.' }],
     },
     {
       number: '04.',
