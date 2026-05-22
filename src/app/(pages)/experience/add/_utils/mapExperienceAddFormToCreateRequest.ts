@@ -60,7 +60,7 @@ export function mapExperienceAddFormToCreateRequest({
   if (basicInfo.type === 'activity') {
     return {
       ...request,
-      name: toOptionalString(basicInfo.name),
+      name: toOptionalString(basicInfo.name) ?? basicInfo.title,
       teamNum: toOptionalNumber(basicInfo.teamNum),
       role: toOptionalString(basicInfo.role),
       contributionRate: toOptionalNumber(basicInfo.contributionRate),
@@ -79,7 +79,7 @@ export function mapExperienceAddFormToCreateRequest({
     return {
       ...request,
       organizationName: toOptionalString(basicInfo.organizationName),
-      name: toOptionalString(basicInfo.name),
+      name: toOptionalString(basicInfo.name) ?? basicInfo.title,
     };
   }
 
