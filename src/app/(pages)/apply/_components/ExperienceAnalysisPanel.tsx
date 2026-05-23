@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
 import type { ExperienceAnalysisData } from '@/app/(pages)/apply/_constants/applyMyExperienceMockData';
 import { BadIcon } from '@/components/common/icons/BadIcon';
@@ -7,9 +7,8 @@ import { cn } from '@/lib/utils';
 
 export type { ExperienceAnalysisData };
 
-export interface ExperienceAnalysisPanelProps {
+export interface ExperienceAnalysisPanelProps extends Omit<ComponentProps<'section'>, 'children'> {
   analysis: ExperienceAnalysisData;
-  className?: string;
 }
 
 function AnalysisPoint({
@@ -32,13 +31,18 @@ function AnalysisPoint({
   );
 }
 
-export function ExperienceAnalysisPanel({ analysis, className }: ExperienceAnalysisPanelProps) {
+export function ExperienceAnalysisPanel({
+  analysis,
+  className,
+  ...sectionProps
+}: ExperienceAnalysisPanelProps) {
   return (
     <section
       className={cn(
         'flex w-full flex-col gap-4 rounded-b-xl border-t border-border-default bg-background-w px-4 py-5',
         className,
       )}
+      {...sectionProps}
     >
       <h4 className="title-2-bold text-gray-900">경험 분석</h4>
 

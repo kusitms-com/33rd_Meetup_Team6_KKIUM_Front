@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { GraphIcon } from '@/assets/icons/GraphIcon';
 import { SaveIcon } from '@/assets/icons/SaveIcon';
@@ -35,20 +35,17 @@ export function ApplyJobHeader({
   onSave,
   backHref = '/apply/list',
 }: ApplyJobHeaderProps) {
-  const router = useRouter();
-
   return (
     <header className="flex w-full flex-col gap-4">
       <div className="flex items-start justify-between gap-4 self-stretch">
         <div className="flex min-w-0 items-start gap-1">
-          <button
-            type="button"
+          <Link
+            href={backHref}
             aria-label="뒤로 가기"
             className="flex size-8 shrink-0 items-center justify-center text-gray-main hover:text-strong"
-            onClick={() => router.push(backHref)}
           >
             <ChevronLeftIcon className="size-6" />
-          </button>
+          </Link>
 
           <div className="flex min-w-0 flex-col gap-1">
             <h1 className="text-2xl font-extrabold leading-9 text-strong">{title}</h1>
