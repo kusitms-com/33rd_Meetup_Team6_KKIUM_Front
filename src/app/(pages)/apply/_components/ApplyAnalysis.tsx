@@ -19,7 +19,7 @@ export function ApplyAnalysis() {
         competencies={applyJobAnalysisMockData.tags.competencies}
       />
 
-      <div className="flex w-full flex-col gap-6">
+      <div className="mb-9 flex w-full flex-col gap-6">
         {applyJobAnalysisMockData.sections.map((section) => (
           <ApplyText key={section.title} title={section.title} items={section.items} />
         ))}
