@@ -38,7 +38,7 @@ export function ApplyJobHeader({
   const router = useRouter();
 
   return (
-    <header className="flex w-full max-w-[1028px] flex-col gap-4">
+    <header className="flex w-full flex-col gap-4">
       <div className="flex items-start justify-between gap-4 self-stretch">
         <div className="flex min-w-0 items-start gap-1">
           <button
@@ -60,7 +60,14 @@ export function ApplyJobHeader({
           </div>
         </div>
 
-        <Button type="button" variant="line" size="default" leftIcon={<SaveIcon />} onClick={onSave}>
+        <Button
+          type="button"
+          variant="line"
+          size="default"
+          leftIcon={<SaveIcon />}
+          className="shrink-0"
+          onClick={onSave}
+        >
           저장하기
         </Button>
       </div>
