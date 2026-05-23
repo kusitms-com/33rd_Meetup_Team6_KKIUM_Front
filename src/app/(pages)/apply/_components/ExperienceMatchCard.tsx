@@ -130,39 +130,48 @@ export function ExperienceMatchCard({
       )}
       {...props}
     >
-      <div className="flex w-full flex-col gap-2.5 px-4 py-5">
-        <header className="flex w-full items-center gap-1">
-          <Image
-            src={iconMap[type]}
-            alt=""
-            aria-hidden
-            width={64}
-            height={64}
-            className="size-16 shrink-0"
-          />
-
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <h3 id={headingId} className="line-clamp-1 title-1-bold text-strong">
-              {title}
-            </h3>
-            <p className="line-clamp-1 body-3-regular text-tertiary">{description}</p>
-          </div>
-        </header>
-
-        {isInteractive ? (
+      <div className="relative flex w-full flex-col gap-2.5 px-4 py-5">
+        {isInteractive && (
           <button
             type="button"
-            className="flex w-full flex-col gap-2 text-left focus-visible:rounded-lg focus-visible:shadow-focus-ring focus-visible:outline-none"
+            className="absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:shadow-focus-ring focus-visible:outline-none"
             aria-expanded={expanded}
             aria-controls={panelId}
             aria-labelledby={headingId}
             onClick={handleToggle}
           >
-            <CardBodyContent skillTags={skillTags} competencyTags={competencyTags} score={score} />
+            <span className="sr-only">
+              {title} 경험 분석 {expanded ? '접기' : '펼치기'}
+            </span>
           </button>
-        ) : (
-          <CardBodyContent skillTags={skillTags} competencyTags={competencyTags} score={score} />
         )}
+
+        <div
+          className={cn(
+            'relative z-10 flex w-full flex-col gap-2.5',
+            isInteractive && 'pointer-events-none',
+          )}
+        >
+          <header className="flex w-full items-center gap-1">
+            <Image
+              src={iconMap[type]}
+              alt=""
+              aria-hidden
+              width={64}
+              height={64}
+              className="size-16 shrink-0"
+            />
+
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <h3 id={headingId} className="line-clamp-1 title-1-bold text-strong">
+                {title}
+              </h3>
+              <p className="line-clamp-1 body-3-regular text-tertiary">{description}</p>
+            </div>
+          </header>
+
+          <CardBodyContent skillTags={skillTags} competencyTags={competencyTags} score={score} />
+        </div>
       </div>
 
       {expanded && (
