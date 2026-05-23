@@ -27,12 +27,15 @@ const emptyDetail: ExperienceItem['detail'] = {
   taken: '',
 };
 
+const emptyBasicDetail: ExperienceItem['basicDetail'] = {};
+
 export function mapExperienceCardToItem(response: ExperienceCardResponse): ExperienceItem {
   const period = formatPeriod(response.startDate, response.endDate);
 
   return {
     ...mapCommonFields(response),
     detailInfo: [{ label: '기간', value: period }],
+    basicDetail: emptyBasicDetail,
     detail: emptyDetail,
   };
 }
@@ -49,6 +52,7 @@ export function mapExperienceDetailToItem(response: ExperienceDetailResponse): E
       tags: response.tags,
     }),
     detailInfo: getDetailInfo(response),
+    basicDetail: getBasicDetail(response),
     detail: {
       situation: response.situation,
       task: response.task,
@@ -57,6 +61,31 @@ export function mapExperienceDetailToItem(response: ExperienceDetailResponse): E
       taken: response.taken,
     },
   };
+}
+
+function getBasicDetail(response: ExperienceDetailResponse): ExperienceItem['basicDetail'] {
+  switch (response.type) {
+    case 'ACTIVITY':
+      return {
+        name: response.detail.name,
+        teamNum: String(response.detail.teamNum),
+        role: response.detail.role,
+        contributionRate: String(response.detail.contributionRate),
+      };
+    case 'CAREER':
+      return {
+        name: response.detail.name,
+        company: response.detail.company,
+        employmentStatus: response.detail.employmentStatus,
+      };
+    case 'EDUCATION':
+      return {
+        organizationName: response.detail.organizationName,
+        name: response.detail.name,
+      };
+    case 'ETC':
+      return {};
+  }
 }
 
 function mapCommonFields(response: CommonExperienceFields) {

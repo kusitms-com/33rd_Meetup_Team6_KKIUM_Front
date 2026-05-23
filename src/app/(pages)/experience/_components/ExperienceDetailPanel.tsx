@@ -17,7 +17,19 @@ export interface ExperienceDetailPanelProps extends Omit<
   open: boolean;
   onExpand?: () => void;
   onEdit?: () => void;
-  onSave?: (experience: Pick<ExperienceItem, 'detail' | 'skillTags' | 'competencyTags'>) => void;
+  onSave?: (
+    experience: Pick<
+      ExperienceItem,
+      | 'title'
+      | 'description'
+      | 'basicDetail'
+      | 'detail'
+      | 'skillTags'
+      | 'competencyTags'
+      | 'startDate'
+      | 'endDate'
+    >,
+  ) => void;
   detailError?: boolean;
   detailLoading?: boolean;
   onClose: () => void;

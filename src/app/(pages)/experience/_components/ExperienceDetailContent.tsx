@@ -27,6 +27,7 @@ const detailFields = [
 ] as const;
 
 type EditableTagGroupKey = 'skill' | 'competency';
+type BasicDetailKey = keyof ExperienceItem['basicDetail'];
 
 export interface ExperienceDetailContentProps extends React.ComponentProps<'div'> {
   experience: ExperienceItem;
@@ -37,7 +38,14 @@ export interface ExperienceDetailContentProps extends React.ComponentProps<'div'
   onSave?: (
     experience: Pick<
       ExperienceItem,
-      'detail' | 'skillTags' | 'competencyTags' | 'startDate' | 'endDate'
+      | 'title'
+      | 'description'
+      | 'basicDetail'
+      | 'detail'
+      | 'skillTags'
+      | 'competencyTags'
+      | 'startDate'
+      | 'endDate'
     >,
   ) => void;
 }
@@ -54,7 +62,10 @@ export function ExperienceDetailContent({
 }: ExperienceDetailContentProps) {
   const category = getExperienceCategoryMeta(experience.type);
   const isPage = variant === 'page';
+  const [title, setTitle] = React.useState(experience.title);
+  const [description, setDescription] = React.useState(experience.description);
   const [detail, setDetail] = React.useState(experience.detail);
+  const [basicDetail, setBasicDetail] = React.useState(experience.basicDetail);
   const [startDate, setStartDate] = React.useState(experience.startDate);
   const [endDate, setEndDate] = React.useState(experience.endDate);
   const [skillTags, setSkillTags] = React.useState(experience.skillTags);
@@ -73,7 +84,10 @@ export function ExperienceDetailContent({
     }
 
     previousExperienceIdRef.current = experience.id;
+    setTitle(experience.title);
+    setDescription(experience.description);
     setDetail(experience.detail);
+    setBasicDetail(experience.basicDetail);
     setStartDate(experience.startDate);
     setEndDate(experience.endDate);
     setSkillTags(experience.skillTags);
@@ -84,12 +98,15 @@ export function ExperienceDetailContent({
     setDatePickerTop(null);
   }, [
     defaultEditing,
+    experience.basicDetail,
     experience.competencyTags,
+    experience.description,
     experience.detail,
     experience.endDate,
     experience.id,
     experience.skillTags,
     experience.startDate,
+    experience.title,
   ]);
 
   React.useEffect(() => {
@@ -146,6 +163,13 @@ export function ExperienceDetailContent({
       }));
     };
 
+  const updateBasicDetail = (key: BasicDetailKey, value: string) => {
+    setBasicDetail((currentBasicDetail) => ({
+      ...currentBasicDetail,
+      [key]: value,
+    }));
+  };
+
   const handleEditClick = () => {
     onEdit?.();
     setIsEditing(true);
@@ -154,7 +178,10 @@ export function ExperienceDetailContent({
 
   const handleSaveEdit = () => {
     onSave?.({
+      title,
+      description,
       detail,
+      basicDetail,
       startDate,
       endDate,
       skillTags,
@@ -177,6 +204,10 @@ export function ExperienceDetailContent({
   };
 
   const periodLabel = formatPeriod(startDate, endDate);
+  const detailInfoItems = React.useMemo(
+    () => getDetailInfoItems(experience.type, basicDetail, periodLabel),
+    [basicDetail, experience.type, periodLabel],
+  );
 
   return (
     <div
@@ -186,13 +217,31 @@ export function ExperienceDetailContent({
     >
       <div className={cn('flex flex-col', isPage ? 'gap-7' : 'gap-6')}>
         <div className="flex min-w-0 items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-col gap-1">
-            <h3 className={cn('text-strong', isPage ? 'heading-2-bold' : 'title-1-bold')}>
-              {experience.title}
-            </h3>
-            <p className={cn('text-quaternary', isPage ? 'body-1-bold' : 'body-3-regular')}>
-              {experience.description}
-            </p>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            {isEditing ? (
+              <InlineTextArea
+                value={title}
+                ariaLabel="제목"
+                className={cn('text-strong', isPage ? 'heading-2-bold' : 'title-1-bold')}
+                onChange={setTitle}
+              />
+            ) : (
+              <h3 className={cn('text-strong', isPage ? 'heading-2-bold' : 'title-1-bold')}>
+                {title}
+              </h3>
+            )}
+            {isEditing ? (
+              <InlineTextArea
+                value={description}
+                ariaLabel="한 줄 설명"
+                className={cn('text-quaternary', isPage ? 'body-1-bold' : 'body-3-regular')}
+                onChange={setDescription}
+              />
+            ) : (
+              <p className={cn('text-quaternary', isPage ? 'body-1-bold' : 'body-3-regular')}>
+                {description}
+              </p>
+            )}
           </div>
 
           {isEditing ? (
@@ -225,19 +274,24 @@ export function ExperienceDetailContent({
             </span>
           </div>
 
-          <dl className="flex flex-col gap-1.5">
-            {experience.detailInfo.map((item) => (
-              <div key={item.label} className="flex items-center gap-4">
-                <dt className={cn('font-bold text-strong', isPage ? 'body-1-bold' : 'body-3-bold')}>
+          <dl className="flex w-full flex-col gap-1.5">
+            {detailInfoItems.map((item) => (
+              <div key={item.label} className="flex w-full items-start gap-4">
+                <dt
+                  className={cn(
+                    'shrink-0 font-bold text-strong',
+                    isPage ? 'body-1-bold' : 'body-3-bold',
+                  )}
+                >
                   {item.label}
                 </dt>
                 <dd
                   className={cn(
-                    'relative flex items-center gap-1 text-secondary',
+                    'relative flex min-w-0 flex-1 items-center gap-1 text-secondary',
                     isPage ? 'body-1-regular' : 'body-3-regular',
                   )}
                 >
-                  {isEditing && item.label === '기간' ? (
+                  {isEditing && item.type === 'period' ? (
                     <div ref={datePickerRootRef} className="relative flex items-center gap-1">
                       <button
                         ref={datePickerButtonRef}
@@ -290,7 +344,16 @@ export function ExperienceDetailContent({
                       )}
                     </div>
                   ) : null}
-                  <span>{item.label === '기간' ? periodLabel : item.value}</span>
+                  {isEditing && item.type === 'field' ? (
+                    <InlineTextArea
+                      value={item.value}
+                      ariaLabel={item.label}
+                      className="text-secondary"
+                      onChange={(value) => updateBasicDetail(item.name, value)}
+                    />
+                  ) : (
+                    <span>{item.type === 'field' ? item.displayValue : item.value}</span>
+                  )}
                 </dd>
               </div>
             ))}
@@ -371,6 +434,132 @@ export function ExperienceDetailContent({
         ))}
       </div>
     </div>
+  );
+}
+
+type EditableDetailInfoItem =
+  | {
+      type: 'period';
+      label: string;
+      value: string;
+    }
+  | {
+      type: 'field';
+      label: string;
+      value: string;
+      displayValue: string;
+      name: BasicDetailKey;
+    };
+
+function getDetailInfoItems(
+  type: ExperienceItem['type'],
+  basicDetail: ExperienceItem['basicDetail'],
+  periodLabel: string,
+): EditableDetailInfoItem[] {
+  switch (type) {
+    case 'activity':
+      const teamNum = basicDetail.teamNum ?? '';
+      const contributionRate = basicDetail.contributionRate ?? '';
+
+      return [
+        { type: 'period', label: '기간', value: periodLabel },
+        {
+          type: 'field',
+          label: '팀원 수',
+          value: teamNum,
+          displayValue: teamNum ? `${teamNum}명` : '',
+          name: 'teamNum',
+        },
+        {
+          type: 'field',
+          label: '내 역할',
+          value: basicDetail.role ?? '',
+          displayValue: basicDetail.role ?? '',
+          name: 'role',
+        },
+        {
+          type: 'field',
+          label: '기여도',
+          value: contributionRate,
+          displayValue: contributionRate ? `${contributionRate}%` : '',
+          name: 'contributionRate',
+        },
+      ];
+    case 'career':
+      return [
+        { type: 'period', label: '기간', value: periodLabel },
+        {
+          type: 'field',
+          label: '회사/기관/단체명',
+          value: basicDetail.company ?? '',
+          displayValue: basicDetail.company ?? '',
+          name: 'company',
+        },
+        {
+          type: 'field',
+          label: '고용 형태',
+          value: basicDetail.employmentStatus ?? '',
+          displayValue: basicDetail.employmentStatus ?? '',
+          name: 'employmentStatus',
+        },
+      ];
+    case 'education':
+      return [
+        { type: 'period', label: '기간', value: periodLabel },
+        {
+          type: 'field',
+          label: '기관명',
+          value: basicDetail.organizationName ?? '',
+          displayValue: basicDetail.organizationName ?? '',
+          name: 'organizationName',
+        },
+        {
+          type: 'field',
+          label: '수강명',
+          value: basicDetail.name ?? '',
+          displayValue: basicDetail.name ?? '',
+          name: 'name',
+        },
+      ];
+    case 'etc':
+      return [{ type: 'period', label: '기간', value: periodLabel }];
+  }
+}
+
+function InlineTextArea({
+  value,
+  ariaLabel,
+  className,
+  onChange,
+}: {
+  value: string;
+  ariaLabel: string;
+  className?: string;
+  onChange: (value: string) => void;
+}) {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) return;
+
+    textarea.style.height = '0px';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      aria-label={ariaLabel}
+      rows={1}
+      className={cn(
+        'block min-h-[1.48em] w-full min-w-0 resize-none overflow-hidden bg-transparent p-0 leading-[1.48] outline-none',
+        className,
+      )}
+      onChange={(event) => onChange(event.currentTarget.value)}
+    />
   );
 }
 

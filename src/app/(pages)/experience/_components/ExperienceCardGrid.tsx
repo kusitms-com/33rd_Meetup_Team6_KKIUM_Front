@@ -20,6 +20,15 @@ export interface ExperienceItem {
     label: string;
     value: string;
   }[];
+  basicDetail: {
+    name?: string;
+    teamNum?: string;
+    role?: string;
+    contributionRate?: string;
+    company?: string;
+    employmentStatus?: string;
+    organizationName?: string;
+  };
   skillTags: string[];
   competencyTags: string[];
   detail: {
