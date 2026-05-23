@@ -16,7 +16,11 @@ import {
 } from '@/app/(pages)/experience/_utils/mapExperienceResponse';
 import type { PieceType } from '@/app/api/experience/types';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useExperienceDetail, useInfiniteExperiences } from '@/hooks/experience/useExperiences';
+import {
+  useExperienceDetail,
+  useInfiniteExperiences,
+  useUpdateExperienceTitle,
+} from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
@@ -58,6 +62,7 @@ export function ExperienceBoard({
     selectedCategory === 'all' ? undefined : pieceTypeByCategory[selectedCategory];
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
     useInfiniteExperiences(selectedPieceType ? { type: selectedPieceType } : undefined);
+  const updateExperienceTitleMutation = useUpdateExperienceTitle();
   const experiences = React.useMemo(
     () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
     [data],
@@ -214,6 +219,22 @@ export function ExperienceBoard({
     [selectedCategory],
   );
 
+  const handleExperienceTitleSave = React.useCallback(
+    async (experience: ExperienceItem, nextTitle: string) => {
+      const experienceId = Number(experience.id);
+
+      if (!Number.isInteger(experienceId) || experienceId <= 0) {
+        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
+      }
+
+      await updateExperienceTitleMutation.mutateAsync({
+        experienceId,
+        request: { title: nextTitle },
+      });
+    },
+    [updateExperienceTitleMutation],
+  );
+
   const handlePanelClose = () => {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
@@ -266,6 +287,7 @@ export function ExperienceBoard({
             sortable
             onExperienceClick={handleExperienceSelect}
             onExperienceReorder={handleExperienceReorder}
+            onExperienceTitleSave={handleExperienceTitleSave}
           />
           <div ref={loadMoreRef} aria-hidden="true" className="h-1" />
           {/* TODO: 다음 페이지 로딩 UI가 확정되면 임시 문구를 교체한다. */}
