@@ -79,7 +79,9 @@ export function ExperienceDetailContent({
   const previousExperienceIdRef = React.useRef(experience.id);
 
   React.useEffect(() => {
-    if (previousExperienceIdRef.current === experience.id) {
+    const isSameExperience = previousExperienceIdRef.current === experience.id;
+
+    if (isSameExperience && isEditing) {
       return;
     }
 
@@ -108,6 +110,7 @@ export function ExperienceDetailContent({
     experience.skillTags,
     experience.startDate,
     experience.title,
+    isEditing,
   ]);
 
   React.useEffect(() => {
