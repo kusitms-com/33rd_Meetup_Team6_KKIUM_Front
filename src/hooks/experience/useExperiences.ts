@@ -1,12 +1,27 @@
 'use client';
 
-import { skipToken, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  skipToken,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import {
+  deleteExperience,
   getExperienceDetail,
   getExperiences,
+  updateExperience,
+  updateExperienceOrder,
+  updateExperienceTitle,
   type GetExperiencesParams,
 } from '@/app/api/experience';
+import type {
+  ExperienceOrderUpdateRequest,
+  ExperienceTitleUpdateRequest,
+  ExperienceUpdateRequest,
+} from '@/app/api/experience/types';
 
 export const experienceQueryKeys = {
   all: ['experiences'] as const,
@@ -45,5 +60,64 @@ export function useExperienceDetail(experienceId: number | null | undefined) {
   return useQuery({
     queryKey: experienceQueryKeys.detail(experienceId),
     queryFn: experienceId != null ? () => getExperienceDetail(experienceId) : skipToken,
+  });
+}
+
+export function useUpdateExperience() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      experienceId,
+      request,
+    }: {
+      experienceId: number;
+      request: ExperienceUpdateRequest;
+    }) => updateExperience(experienceId, request),
+    onSuccess: (_, { experienceId }) => {
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.detail(experienceId) });
+    },
+  });
+}
+
+export function useUpdateExperienceTitle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      experienceId,
+      request,
+    }: {
+      experienceId: number;
+      request: ExperienceTitleUpdateRequest;
+    }) => updateExperienceTitle(experienceId, request),
+    onSuccess: (_, { experienceId }) => {
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.detail(experienceId) });
+    },
+  });
+}
+
+export function useDeleteExperience() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteExperience,
+    onSuccess: (_, experienceId) => {
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.detail(experienceId) });
+    },
+  });
+}
+
+export function useUpdateExperienceOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: ExperienceOrderUpdateRequest) => updateExperienceOrder(request),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: experienceQueryKeys.lists() });
+    },
   });
 }
