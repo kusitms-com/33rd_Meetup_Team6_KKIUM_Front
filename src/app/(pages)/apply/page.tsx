@@ -5,39 +5,54 @@ import { useState } from 'react';
 import { ApplyAnalysis } from './_components/(analysis)/ApplyAnalysis';
 import { ApplyJobHeader, type ApplyJobTab } from './_components/(analysis)/ApplyJobHeader';
 import { ApplyMyExperience } from './_components/(analysis)/ApplyMyExperience';
+import { ApplyCoverLetterPanel } from './_components/(cover-letter)/ApplyCoverLetterPanel';
+import { ApplyCoverLetterRightPanel } from './_components/(cover-letter)/ApplyCoverLetterRightPanel';
 import { ResizableSplit } from './_components/ResizableSplit';
 import { applyJobMockData } from './_constants/applyJobMockData';
+import { cn } from '@/lib/utils';
 
 export default function ApplyPage() {
   const [activeTab, setActiveTab] = useState<ApplyJobTab>('analysis');
+  const isCoverLetterTab = activeTab === 'cover-letter';
 
   return (
-    <section className="w-full px-10">
-      <div className="mx-auto flex w-full min-w-0 flex-col gap-8">
-        <ApplyJobHeader
-          title={applyJobMockData.title}
-          companyName={applyJobMockData.companyName}
-          jobField={applyJobMockData.jobField}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+    <section
+      className={cn('flex w-full flex-col', isCoverLetterTab && 'min-h-[calc(100dvh-30px)]')}
+    >
+      <div
+        className={cn(
+          'mx-auto flex w-full min-w-0 flex-col gap-8',
+          isCoverLetterTab && 'min-h-0 flex-1',
+        )}
+      >
+        <div className="shrink-0 px-10">
+          <ApplyJobHeader
+            title={applyJobMockData.title}
+            companyName={applyJobMockData.companyName}
+            jobField={applyJobMockData.jobField}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </div>
 
         {activeTab === 'analysis' ? (
-          <ResizableSplit
-            separatorAriaLabel="공고 분석과 내 경험 패널 너비 조절"
-            left={<ApplyAnalysis />}
-            right={<ApplyMyExperience />}
-          />
+          <div className="px-10">
+            <ResizableSplit
+              separatorAriaLabel="공고 분석과 내 경험 패널 너비 조절"
+              left={<ApplyAnalysis />}
+              right={<ApplyMyExperience />}
+            />
+          </div>
         ) : (
-          <ResizableSplit
-            separatorAriaLabel="자기소개서 작성 패널 너비 조절"
-            left={
-              <p className="text-base font-bold leading-6 text-tertiary">
-                자기소개서 작성 콘텐츠가 여기에 표시됩니다.
-              </p>
-            }
-            right={null}
-          />
+          <div className="flex min-h-0 flex-1 flex-col pl-10">
+            <ResizableSplit
+              className="min-h-0 flex-1"
+              separatorAriaLabel="자기소개서 작성 패널 너비 조절"
+              rightClassName="bg-background-w"
+              left={<ApplyCoverLetterPanel />}
+              right={<ApplyCoverLetterRightPanel />}
+            />
+          </div>
         )}
       </div>
     </section>
