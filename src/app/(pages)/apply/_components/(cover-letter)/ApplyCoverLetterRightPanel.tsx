@@ -6,7 +6,7 @@ import {
   APPLY_COVER_LETTER_MAX_QUESTIONS,
   applyCoverLetterQuestionsMock,
   type ApplyCoverLetterQuestion,
-} from '../../_constants/applyCoverLetterMockData';
+} from '../../_constants/applyMockData';
 import { cn } from '@/lib/utils';
 
 import { ApplyCoverLetterQuestionEditor } from './ApplyCoverLetterQuestionEditor';
@@ -14,6 +14,10 @@ import { ApplyCoverLetterQuestionNav } from './ApplyCoverLetterQuestionNav';
 
 export interface ApplyCoverLetterRightPanelProps {
   className?: string;
+  questions?: ApplyCoverLetterQuestion[];
+  activeIndex?: number;
+  onActiveIndexChange?: (index: number) => void;
+  onQuestionsChange?: (questions: ApplyCoverLetterQuestion[]) => void;
   initialQuestions?: ApplyCoverLetterQuestion[];
 }
 
@@ -31,10 +35,38 @@ function createEmptyQuestion(index: number): ApplyCoverLetterQuestion {
 
 export function ApplyCoverLetterRightPanel({
   className,
+  questions: controlledQuestions,
+  activeIndex: controlledActiveIndex,
+  onActiveIndexChange,
+  onQuestionsChange,
   initialQuestions = applyCoverLetterQuestionsMock,
 }: ApplyCoverLetterRightPanelProps) {
-  const [questions, setQuestions] = React.useState(initialQuestions);
-  const [activeIndex, setActiveIndex] = React.useState(0);
+  const [uncontrolledQuestions, setUncontrolledQuestions] = React.useState(initialQuestions);
+  const [uncontrolledActiveIndex, setUncontrolledActiveIndex] = React.useState(0);
+
+  const isControlled = controlledQuestions != null && controlledActiveIndex != null;
+  const questions = isControlled ? controlledQuestions : uncontrolledQuestions;
+  const activeIndex = isControlled ? controlledActiveIndex : uncontrolledActiveIndex;
+
+  const setQuestions = (updater: React.SetStateAction<ApplyCoverLetterQuestion[]>) => {
+    const next = typeof updater === 'function' ? updater(questions) : updater;
+
+    if (onQuestionsChange) {
+      onQuestionsChange(next);
+      return;
+    }
+
+    setUncontrolledQuestions(next);
+  };
+
+  const setActiveIndex = (index: number) => {
+    if (onActiveIndexChange) {
+      onActiveIndexChange(index);
+      return;
+    }
+
+    setUncontrolledActiveIndex(index);
+  };
 
   const activeQuestion = questions[activeIndex];
 
@@ -62,15 +94,24 @@ export function ApplyCoverLetterRightPanel({
   };
 
   React.useEffect(() => {
-    if (activeIndex >= questions.length) {
-      setActiveIndex(Math.max(0, questions.length - 1));
+    if (activeIndex < questions.length) {
+      return;
     }
-  }, [activeIndex, questions.length]);
+
+    const nextIndex = Math.max(0, questions.length - 1);
+
+    if (onActiveIndexChange) {
+      onActiveIndexChange(nextIndex);
+      return;
+    }
+
+    setUncontrolledActiveIndex(nextIndex);
+  }, [activeIndex, onActiveIndexChange, questions.length]);
 
   if (!activeQuestion) {
     return null;
   }
-  //현재는 무조건 자소서 문항이 있다는 가정하에 구현됨 
+
   return (
     <section
       data-slot="cover-letter-right-panel"
@@ -90,8 +131,7 @@ export function ApplyCoverLetterRightPanel({
         value={activeQuestion.content}
         onChange={handleContentChange}
         onTitleChange={handleTitleChange}
-        onAiDraftClick={() => {
-        }}
+        onAiDraftClick={() => {}}
       />
     </section>
   );
