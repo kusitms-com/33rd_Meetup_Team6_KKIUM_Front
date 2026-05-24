@@ -5,10 +5,9 @@ import { useState } from 'react';
 import { ApplyAnalysis } from './_components/(analysis)/ApplyAnalysis';
 import { ApplyJobHeader, type ApplyJobTab } from './_components/(analysis)/ApplyJobHeader';
 import { ApplyMyExperience } from './_components/(analysis)/ApplyMyExperience';
-import { ApplyCoverLetterPanel } from './_components/(cover-letter)/ApplyCoverLetterPanel';
-import { ApplyCoverLetterRightPanel } from './_components/(cover-letter)/ApplyCoverLetterRightPanel';
+import { ApplyCoverLetterSection } from './_components/(cover-letter)/ApplyCoverLetterSection';
 import { ResizableSplit } from './_components/ResizableSplit';
-import { applyJobMockData } from './_constants/applyJobMockData';
+import { applyJobMockData } from './_constants/applyMockData';
 import { cn } from '@/lib/utils';
 
 export default function ApplyPage() {
@@ -44,15 +43,7 @@ export default function ApplyPage() {
             />
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col pl-10">
-            <ResizableSplit
-              className="min-h-0 flex-1"
-              separatorAriaLabel="자기소개서 작성 패널 너비 조절"
-              rightClassName="bg-background-w"
-              left={<ApplyCoverLetterPanel />}
-              right={<ApplyCoverLetterRightPanel />}
-            />
-          </div>
+          <ApplyCoverLetterSection />
         )}
       </div>
     </section>
