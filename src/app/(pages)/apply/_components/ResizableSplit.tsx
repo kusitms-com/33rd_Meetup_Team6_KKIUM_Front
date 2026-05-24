@@ -5,6 +5,7 @@ import * as React from 'react';
 import {
   RESIZABLE_SPLIT_HANDLE_WIDTH,
   RESIZABLE_SPLIT_MIN_CONTAINER_WIDTH,
+  RESIZABLE_SPLIT_MIN_HEIGHT,
   RESIZABLE_SPLIT_MIN_LEFT_WIDTH,
   RESIZABLE_SPLIT_MIN_RIGHT_WIDTH,
   RESIZABLE_SPLIT_PANEL_INSET,
@@ -17,12 +18,14 @@ export interface ResizableSplitLayout {
   handleWidth?: number;
   panelInset?: number;
   minContainerWidth?: number;
+  minHeight?: number;
 }
 
 export interface ResizableSplitProps {
   left: React.ReactNode;
   right: React.ReactNode;
   className?: string;
+  rightClassName?: string;
   separatorAriaLabel: string;
   layout?: ResizableSplitLayout;
 }
@@ -43,6 +46,7 @@ export function ResizableSplit({
   left,
   right,
   className,
+  rightClassName,
   separatorAriaLabel,
   layout,
 }: ResizableSplitProps) {
@@ -51,6 +55,7 @@ export function ResizableSplit({
   const handleWidth = layout?.handleWidth ?? RESIZABLE_SPLIT_HANDLE_WIDTH;
   const panelInset = layout?.panelInset ?? RESIZABLE_SPLIT_PANEL_INSET;
   const minContainerWidth = layout?.minContainerWidth ?? RESIZABLE_SPLIT_MIN_CONTAINER_WIDTH;
+  const minHeight = layout?.minHeight ?? RESIZABLE_SPLIT_MIN_HEIGHT;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const isDraggingRef = React.useRef(false);
@@ -134,13 +139,19 @@ export function ResizableSplit({
   return (
     <div
       ref={containerRef}
-      className={cn('flex w-full min-w-(--resizable-split-min-width) items-stretch', className)}
+      className={cn(
+        'flex w-full min-w-(--resizable-split-min-width) min-h-(--resizable-split-min-height) items-stretch',
+        className,
+      )}
       style={
-        { '--resizable-split-min-width': `${minContainerWidth}px` } as React.CSSProperties
+        {
+          '--resizable-split-min-width': `${minContainerWidth}px`,
+          '--resizable-split-min-height': `${minHeight}px`,
+        } as React.CSSProperties
       }
     >
       <div
-        className="shrink-0 overflow-y-auto"
+        className="flex min-h-full min-w-0 shrink-0 flex-col overflow-y-auto"
         style={{
           width: leftWidth,
           minWidth: minLeftWidth,
@@ -167,7 +178,10 @@ export function ResizableSplit({
       </button>
 
       <div
-        className="flex-1 overflow-y-auto"
+        className={cn(
+          'flex min-h-full min-w-0 flex-1 flex-col overflow-y-auto',
+          rightClassName,
+        )}
         style={{ minWidth: minRightWidth, paddingLeft: panelInset }}
       >
         {right}
