@@ -19,6 +19,7 @@ import { mapExperienceItemToUpdateRequest } from '@/app/(pages)/experience/_util
 import type { PieceType } from '@/app/api/experience/types';
 import { EmptyState } from '@/components/common/EmptyState';
 import {
+  useDeleteExperience,
   useExperienceDetail,
   useInfiniteExperiences,
   useUpdateExperience,
@@ -73,6 +74,7 @@ export function ExperienceBoard({
     selectedCategory === 'all' ? undefined : filterPieceTypeByCategory[selectedCategory];
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
     useInfiniteExperiences(selectedPieceType ? { type: selectedPieceType } : undefined);
+  const deleteExperienceMutation = useDeleteExperience();
   const updateExperienceMutation = useUpdateExperience();
   const updateExperienceOrderMutation = useUpdateExperienceOrder();
   const updateExperienceTitleMutation = useUpdateExperienceTitle();
@@ -274,6 +276,37 @@ export function ExperienceBoard({
     [updateExperienceTitleMutation],
   );
 
+  const handleExperienceDelete = React.useCallback(
+    async (experience: ExperienceItem) => {
+      const experienceId = Number(experience.id);
+
+      if (!Number.isInteger(experienceId) || experienceId <= 0) {
+        throw new Error('삭제할 경험 정보를 확인하지 못했습니다.');
+      }
+
+      await deleteExperienceMutation.mutateAsync(experienceId);
+
+      setExperienceOrderMap((currentOrderMap) =>
+        sortableCategories.reduce<ExperienceOrderMap>((nextOrderMap, category) => {
+          nextOrderMap[category] = currentOrderMap[category].filter((id) => id !== experience.id);
+          return nextOrderMap;
+        }, {} as ExperienceOrderMap),
+      );
+
+      if (selectedExperienceId === experience.id) {
+        if (closeTimerRef.current) {
+          clearTimeout(closeTimerRef.current);
+          closeTimerRef.current = null;
+        }
+
+        setPanelOpen(false);
+        setSelectedExperienceId(undefined);
+        router.replace('/experience', { scroll: false });
+      }
+    },
+    [deleteExperienceMutation, router, selectedExperienceId],
+  );
+
   const handleExperienceDetailSave = React.useCallback(
     async (nextExperience: ExperienceDetailSaveValue) => {
       if (!panelExperience) {
@@ -350,6 +383,7 @@ export function ExperienceBoard({
             selectedExperienceId={selectedExperienceId}
             sortable
             onExperienceClick={handleExperienceSelect}
+            onExperienceDelete={handleExperienceDelete}
             onExperienceReorder={handleExperienceReorder}
             onExperienceTitleSave={handleExperienceTitleSave}
           />

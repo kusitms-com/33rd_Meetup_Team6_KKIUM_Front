@@ -44,6 +44,7 @@ export interface ExperienceCardProps
   skillTags: string[];
   competencyTags: string[];
   disableActivationKeys?: boolean;
+  onDelete?: () => Promise<void> | void;
   onTitleSave?: (nextTitle: string) => Promise<void> | void;
 }
 
@@ -61,6 +62,7 @@ export const ExperienceCard = React.forwardRef<HTMLElement, ExperienceCardProps>
       onClick,
       onKeyDown,
       disableActivationKeys = false,
+      onDelete,
       onTitleSave,
       ...props
     },
@@ -181,7 +183,11 @@ export const ExperienceCard = React.forwardRef<HTMLElement, ExperienceCardProps>
             height={72}
             className="size-[72px] shrink-0"
           />
-          <ExperienceCardDropdownMenu triggerClassName="shrink-0" onEditTitle={startTitleEdit} />
+          <ExperienceCardDropdownMenu
+            triggerClassName="shrink-0"
+            onEditTitle={startTitleEdit}
+            onDelete={() => void onDelete?.()}
+          />
         </div>
 
         <div className="flex w-full flex-col items-start gap-3">

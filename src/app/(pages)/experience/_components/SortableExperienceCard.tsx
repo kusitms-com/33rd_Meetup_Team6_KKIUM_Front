@@ -9,6 +9,7 @@ export interface SortableExperienceCardProps {
   index: number;
   selected?: boolean;
   onClick?: (experience: ExperienceItem) => void;
+  onDelete?: (experience: ExperienceItem) => Promise<void> | void;
   onTitleSave?: (experience: ExperienceItem, nextTitle: string) => Promise<void> | void;
 }
 
@@ -17,6 +18,7 @@ export function SortableExperienceCard({
   index,
   selected = false,
   onClick,
+  onDelete,
   onTitleSave,
 }: SortableExperienceCardProps) {
   const { ref, isDragSource, isDragging } = useSortable({
@@ -39,6 +41,7 @@ export function SortableExperienceCard({
       disableActivationKeys
       className={cn('max-w-none', isDragSource && 'relative z-10 opacity-90')}
       onClick={() => onClick?.(experience)}
+      onDelete={() => onDelete?.(experience)}
       onTitleSave={(nextTitle) => onTitleSave?.(experience, nextTitle)}
     />
   );

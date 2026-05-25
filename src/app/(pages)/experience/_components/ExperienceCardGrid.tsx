@@ -45,6 +45,7 @@ export interface ExperienceCardGridProps extends React.ComponentProps<'div'> {
   selectedExperienceId?: string;
   sortable?: boolean;
   onExperienceClick?: (experience: ExperienceItem) => void;
+  onExperienceDelete?: (experience: ExperienceItem) => Promise<void> | void;
   onExperienceReorder?: (experienceIds: string[]) => void;
   onExperienceTitleSave?: (experience: ExperienceItem, nextTitle: string) => Promise<void> | void;
 }
@@ -54,6 +55,7 @@ export function ExperienceCardGrid({
   selectedExperienceId,
   sortable = false,
   onExperienceClick,
+  onExperienceDelete,
   onExperienceReorder,
   onExperienceTitleSave,
   className,
@@ -98,6 +100,7 @@ export function ExperienceCardGrid({
             index={index}
             selected={selectedExperienceId === experience.id}
             onClick={onExperienceClick}
+            onDelete={onExperienceDelete}
             onTitleSave={onExperienceTitleSave}
           />
         ) : (
@@ -111,6 +114,7 @@ export function ExperienceCardGrid({
             selected={selectedExperienceId === experience.id}
             className="max-w-none"
             onClick={() => onExperienceClick?.(experience)}
+            onDelete={() => onExperienceDelete?.(experience)}
             onTitleSave={(nextTitle) => onExperienceTitleSave?.(experience, nextTitle)}
           />
         ),
