@@ -1,4 +1,5 @@
-export type PieceType = 'ACTIVITY' | 'CAREER' | 'EDUCATION' | 'ETC';
+export type PieceType = 'ALL' | 'ACTIVITY' | 'CAREER' | 'EDUCATION' | 'ETC';
+export type ExperiencePieceType = Exclude<PieceType, 'ALL'>;
 
 export type TagCategory = 'TECH' | 'COMPETENCY';
 
@@ -17,7 +18,7 @@ export interface TagResponse {
 export interface ExperienceCardResponse {
   pieceId: number;
   experienceId: number;
-  type: PieceType;
+  type: ExperiencePieceType;
   title: string;
   oneLineIntro: string;
   startDate: ISODateString;

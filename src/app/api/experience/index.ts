@@ -3,14 +3,14 @@ import { api } from '@/app/api/client';
 import type {
   ExperienceDetailResponse,
   ExperienceListResponse,
+  ExperiencePieceType,
   ExperienceOrderUpdateRequest,
   ExperienceTitleUpdateRequest,
   ExperienceUpdateRequest,
-  PieceType,
 } from './types';
 
 export type GetExperiencesParams = {
-  type?: PieceType;
+  type?: ExperiencePieceType;
   cursor?: number | null;
   size?: number;
 };

@@ -1,7 +1,7 @@
 import type {
   ExperienceCardResponse,
   ExperienceDetailResponse,
-  PieceType,
+  ExperiencePieceType,
   TagResponse,
 } from '@/app/api/experience/types';
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
@@ -12,7 +12,7 @@ type CommonExperienceFields = Pick<
   'experienceId' | 'type' | 'title' | 'oneLineIntro' | 'tags' | 'startDate' | 'endDate'
 >;
 
-const typeMap: Record<PieceType, UiExperienceType> = {
+const typeMap: Record<ExperiencePieceType, UiExperienceType> = {
   ACTIVITY: 'activity',
   CAREER: 'career',
   EDUCATION: 'education',

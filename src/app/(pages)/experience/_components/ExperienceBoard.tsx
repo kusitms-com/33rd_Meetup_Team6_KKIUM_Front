@@ -22,6 +22,7 @@ import {
   useExperienceDetail,
   useInfiniteExperiences,
   useUpdateExperience,
+  useUpdateExperienceOrder,
   useUpdateExperienceTitle,
 } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
@@ -33,7 +34,14 @@ export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
 type ExperienceOrderMap = Record<ExperienceCategory, string[]>;
 
 const sortableCategories: ExperienceCategory[] = ['all', 'activity', 'career', 'education', 'etc'];
-const pieceTypeByCategory: Record<Exclude<ExperienceCategory, 'all'>, PieceType> = {
+const orderPieceTypeByCategory: Record<ExperienceCategory, PieceType> = {
+  all: 'ALL',
+  activity: 'ACTIVITY',
+  career: 'CAREER',
+  education: 'EDUCATION',
+  etc: 'ETC',
+};
+const filterPieceTypeByCategory: Record<Exclude<ExperienceCategory, 'all'>, Exclude<PieceType, 'ALL'>> = {
   activity: 'ACTIVITY',
   career: 'CAREER',
   education: 'EDUCATION',
@@ -62,10 +70,11 @@ export function ExperienceBoard({
     selectedExperienceIdFromQuery,
   );
   const selectedPieceType =
-    selectedCategory === 'all' ? undefined : pieceTypeByCategory[selectedCategory];
+    selectedCategory === 'all' ? undefined : filterPieceTypeByCategory[selectedCategory];
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
     useInfiniteExperiences(selectedPieceType ? { type: selectedPieceType } : undefined);
   const updateExperienceMutation = useUpdateExperience();
+  const updateExperienceOrderMutation = useUpdateExperienceOrder();
   const updateExperienceTitleMutation = useUpdateExperienceTitle();
   const experiences = React.useMemo(
     () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
@@ -215,12 +224,38 @@ export function ExperienceBoard({
 
   const handleExperienceReorder = React.useCallback(
     (orderedExperienceIds: string[]) => {
+      const previousOrderIds = experienceOrderMap[selectedCategory];
+      const parsedExperienceIds = orderedExperienceIds.map(Number);
+
+      if (
+        parsedExperienceIds.some(
+          (experienceId) => !Number.isInteger(experienceId) || experienceId <= 0,
+        )
+      ) {
+        return;
+      }
+
       setExperienceOrderMap((currentOrderMap) => ({
         ...currentOrderMap,
         [selectedCategory]: orderedExperienceIds,
       }));
+
+      updateExperienceOrderMutation.mutate(
+        {
+          type: orderPieceTypeByCategory[selectedCategory],
+          experienceIds: parsedExperienceIds,
+        },
+        {
+          onError: () => {
+            setExperienceOrderMap((currentOrderMap) => ({
+              ...currentOrderMap,
+              [selectedCategory]: previousOrderIds,
+            }));
+          },
+        },
+      );
     },
-    [selectedCategory],
+    [experienceOrderMap, selectedCategory, updateExperienceOrderMutation],
   );
 
   const handleExperienceTitleSave = React.useCallback(
