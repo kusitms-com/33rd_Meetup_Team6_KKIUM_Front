@@ -145,16 +145,20 @@ export function ExperienceBoard({
     setSelectedExperienceId(undefined);
     setPanelOpen(false);
 
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete('selected');
 
     if (selectedCategory !== 'all') {
       params.set('category', selectedCategory);
+    } else {
+      params.delete('category');
     }
 
     router.replace(params.size > 0 ? `/experience?${params.toString()}` : '/experience', {
       scroll: false,
     });
-  }, [keyword, router, selectedCategory]);
+  }, [keyword, router, searchParams, selectedCategory]);
 
   React.useEffect(() => {
     if (hasAppliedInitialSelectionRef.current || !selectedExperienceIdFromQuery) {
