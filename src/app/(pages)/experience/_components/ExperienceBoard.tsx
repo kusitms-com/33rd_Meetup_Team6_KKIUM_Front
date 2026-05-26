@@ -17,6 +17,7 @@ import {
 } from '@/app/(pages)/experience/_utils/mapExperienceResponse';
 import { mapExperienceItemToUpdateRequest } from '@/app/(pages)/experience/_utils/mapExperienceItemToUpdateRequest';
 import type { PieceType } from '@/app/api/experience/types';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import {
   useDeleteExperience,
@@ -95,6 +96,8 @@ export function ExperienceBoard({
     createExperienceOrderMap(experiences),
   );
   const [panelOpen, setPanelOpen] = React.useState(Boolean(selectedExperienceIdFromQuery));
+  const [deleteTargetExperience, setDeleteTargetExperience] =
+    React.useState<ExperienceItem | null>(null);
   const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadMoreRef = React.useRef<HTMLDivElement>(null);
   const hasAppliedInitialSelectionRef = React.useRef(false);
@@ -316,7 +319,17 @@ export function ExperienceBoard({
     [updateExperienceTitleMutation],
   );
 
-  const handleExperienceDelete = React.useCallback(
+  const handleExperienceDeleteRequest = React.useCallback((experience: ExperienceItem) => {
+    setDeleteTargetExperience(experience);
+  }, []);
+
+  const handleDeleteDialogOpenChange = React.useCallback((open: boolean) => {
+    if (!open && !deleteExperienceMutation.isPending) {
+      setDeleteTargetExperience(null);
+    }
+  }, [deleteExperienceMutation.isPending]);
+
+  const handleExperienceDeleteConfirm = React.useCallback(
     async (experience: ExperienceItem) => {
       const experienceId = Number(experience.id);
 
@@ -349,6 +362,8 @@ export function ExperienceBoard({
         }
       } catch (error) {
         window.alert(error instanceof Error ? error.message : '경험 삭제 중 오류가 발생했습니다.');
+      } finally {
+        setDeleteTargetExperience(null);
       }
     },
     [deleteExperienceMutation, router, selectedExperienceId],
@@ -430,7 +445,7 @@ export function ExperienceBoard({
             selectedExperienceId={selectedExperienceId}
             sortable
             onExperienceClick={handleExperienceSelect}
-            onExperienceDelete={handleExperienceDelete}
+            onExperienceDelete={handleExperienceDeleteRequest}
             onExperienceReorder={handleExperienceReorder}
             onExperienceTitleSave={handleExperienceTitleSave}
           />
@@ -460,6 +475,20 @@ export function ExperienceBoard({
           onClose={handlePanelClose}
         />
       )}
+      <ConfirmDialog
+        open={Boolean(deleteTargetExperience)}
+        title="정말로 삭제하시겠습니까?"
+        description="삭제시 모든 기록과 분석 내용이 소멸됩니다."
+        confirmLabel="삭제하기"
+        confirming={deleteExperienceMutation.isPending}
+        destructive
+        onOpenChange={handleDeleteDialogOpenChange}
+        onConfirm={() => {
+          if (deleteTargetExperience) {
+            void handleExperienceDeleteConfirm(deleteTargetExperience);
+          }
+        }}
+      />
     </section>
   );
 }
