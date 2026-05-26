@@ -4,24 +4,31 @@ import * as React from 'react';
 
 import { ResizableSplit } from '../ResizableSplit';
 import {
-  applyCoverLetterQuestionsMock,
   coverLetterQuestionExperiencesMock,
   getCoverLetterQuestionDisplayText,
-  type ApplyCoverLetterQuestion,
 } from '../../_constants/applyMockData';
+import { useApplyCoverLetterStore } from '../../_stores/useApplyCoverLetterStore';
 import { ApplyCoverLetterExperienceSelectModal } from './ApplyCoverLetterExperienceSelectModal';
 import { ApplyCoverLetterPanel } from './ApplyCoverLetterPanel';
 import { ApplyCoverLetterRightPanel } from './ApplyCoverLetterRightPanel';
 
 export function ApplyCoverLetterSection() {
-  const [questions, setQuestions] = React.useState<ApplyCoverLetterQuestion[]>(
-    applyCoverLetterQuestionsMock,
+  const questions = useApplyCoverLetterStore((state) => state.questions);
+  const setQuestions = useApplyCoverLetterStore((state) => state.setQuestions);
+  const activeQuestionIndex = useApplyCoverLetterStore((state) => state.activeQuestionIndex);
+  const setActiveQuestionIndex = useApplyCoverLetterStore(
+    (state) => state.setActiveQuestionIndex,
   );
-  const [activeQuestionIndex, setActiveQuestionIndex] = React.useState(0);
+  const selectedExperienceIdsByQuestion = useApplyCoverLetterStore(
+    (state) => state.selectedExperienceIdsByQuestion,
+  );
+  const setQuestionExperienceIds = useApplyCoverLetterStore(
+    (state) => state.setQuestionExperienceIds,
+  );
+  const removeQuestionExperienceId = useApplyCoverLetterStore(
+    (state) => state.removeQuestionExperienceId,
+  );
   const [experienceModalOpen, setExperienceModalOpen] = React.useState(false);
-  const [selectedExperienceIdsByQuestion, setSelectedExperienceIdsByQuestion] = React.useState<
-    Record<string, string[]>
-  >({});
 
   const activeQuestion = questions[activeQuestionIndex];
 
@@ -29,7 +36,7 @@ export function ApplyCoverLetterSection() {
     if (activeQuestionIndex >= questions.length) {
       setActiveQuestionIndex(Math.max(0, questions.length - 1));
     }
-  }, [activeQuestionIndex, questions.length]);
+  }, [activeQuestionIndex, questions.length, setActiveQuestionIndex]);
 
   const activeQuestionSelectedExperiences = React.useMemo(
     () => {
@@ -54,10 +61,7 @@ export function ApplyCoverLetterSection() {
       return;
     }
 
-    setSelectedExperienceIdsByQuestion((current) => ({
-      ...current,
-      [activeQuestion.id]: (current[activeQuestion.id] ?? []).filter((id) => id !== experienceId),
-    }));
+    removeQuestionExperienceId(activeQuestion.id, experienceId);
   };
 
   const handleSaveExperiences = (experienceIds: string[]) => {
@@ -65,10 +69,7 @@ export function ApplyCoverLetterSection() {
       return;
     }
 
-    setSelectedExperienceIdsByQuestion((current) => ({
-      ...current,
-      [activeQuestion.id]: experienceIds,
-    }));
+    setQuestionExperienceIds(activeQuestion.id, experienceIds);
   };
 
   return (
