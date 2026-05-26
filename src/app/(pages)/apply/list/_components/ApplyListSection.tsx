@@ -44,7 +44,7 @@ export function ApplyListSection({ cards }: ApplyListSectionProps) {
     closeTimerRef.current = setTimeout(() => {
       setActiveId(null);
       closeTimerRef.current = null;
-    }, 300);
+    }, 560);
   }
 
   function handleCardOpen(cardId: string) {
