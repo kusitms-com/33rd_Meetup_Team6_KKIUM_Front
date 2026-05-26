@@ -1,6 +1,7 @@
 import type { ApiErrorPayload, ApiResponse } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const TEMP_ACCESS_TOKEN = process.env.NEXT_PUBLIC_TEMP_ACCESS_TOKEN?.trim();
 
 type QueryParamValue = string | number | boolean | null | undefined;
 type QueryParams = Record<string, QueryParamValue>;
@@ -26,10 +27,10 @@ export class ApiError extends Error {
   }
 }
 
-// TODO: 로그인 구현 전까지 localStorage의 임시 accessToken을 사용한다.
+// 로그인 완성 전까지 로컬 env의 임시 accessToken로 테스트 
 function getAccessToken() {
-  if (typeof window === 'undefined') return null;
-  return window.sessionStorage.getItem('mg_access_token');
+  if (typeof window === 'undefined') return TEMP_ACCESS_TOKEN || null;
+  return window.sessionStorage.getItem('mg_access_token') || TEMP_ACCESS_TOKEN || null;
 }
 
 // API 요청 보낼 최종 URL을 만들어주는 함수
