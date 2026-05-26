@@ -258,6 +258,7 @@ export type ApplyListItem = {
   companyName: string;
   jobField: string;
   period: string;
+  isTarget?: boolean;
   coverLetter: ApplyListCoverLetter;
 };
 
@@ -286,6 +287,7 @@ export const applyListMockData: ApplyListItem[] = [
     companyName: '네이버',
     jobField: '프론트엔드 개발자',
     period: '2026.05.10 10:00~05.24 17:00',
+    isTarget: true,
     coverLetter: sampleListCoverLetter,
   },
   {

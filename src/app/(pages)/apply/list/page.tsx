@@ -1,11 +1,15 @@
+'use client';
+
+import * as React from 'react';
+
 import { ApplyAddJobPostingModal } from './_components/ApplyAddJobPostingModal';
 import { ApplyListSection } from './_components/ApplyListSection';
-import { applyListMockData } from '../_constants/applyMockData';
-import { EmptyState } from '@/components/common/EmptyState';
 import { SearchBar } from '@/components/common/SearchBar';
+import { useDebouncedValue } from '@/hooks/experience/useDebouncedValue';
 
 export default function ApplyListPage() {
-  const hasCards = applyListMockData.length > 0;
+  const [keyword, setKeyword] = React.useState('');
+  const debouncedKeyword = useDebouncedValue(keyword.trim(), 300);
 
   return (
     <section className="w-full px-32">
@@ -18,22 +22,16 @@ export default function ApplyListPage() {
           <SearchBar
             placeholder="공고명, 기업명, 모집 분야를 검색해주세요"
             className="h-11 w-[551px]"
+            value={keyword}
+            onChange={(event) => setKeyword(event.currentTarget.value)}
+            onClear={() => setKeyword('')}
           />
           <div className="ml-auto shrink-0">
             <ApplyAddJobPostingModal />
           </div>
         </div>
 
-        {hasCards ? (
-          <ApplyListSection cards={applyListMockData} />
-        ) : (
-          <EmptyState
-            className="h-[823px] w-full py-64"
-            illustrationLabel="생성된 공고 없음"
-            title="아직 생성된 공고가 없어요"
-            description="공고를 추가해 파일에 끼워넣어볼까요?"
-          />
-        )}
+        <ApplyListSection keyword={debouncedKeyword} />
       </div>
     </section>
   );

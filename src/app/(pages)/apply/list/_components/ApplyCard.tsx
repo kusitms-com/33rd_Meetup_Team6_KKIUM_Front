@@ -11,21 +11,33 @@ import { PencilIcon } from '@/components/common/icons/PencilIcon';
 import { cn } from '@/lib/utils';
 
 export interface ApplyCardProps extends React.ComponentProps<'article'> {
+  jobPostingId: string;
   applyTitle: string;
   companyName: string;
   jobField: string;
   period: string;
+  isTargeted?: boolean;
+  menuActionDisabled?: boolean;
   selected?: boolean;
   onCardClick?: React.MouseEventHandler<HTMLElement>;
+  onUpdateTitle?: (jobPostingId: string, nextTitle: string) => void;
+  onToggleTarget?: (jobPostingId: string) => void;
+  onDelete?: (jobPostingId: string) => void;
 }
 
 export function ApplyCard({
+  jobPostingId,
   applyTitle,
   companyName,
   jobField,
   period,
+  isTargeted = false,
+  menuActionDisabled = false,
   selected = false,
   onCardClick,
+  onUpdateTitle,
+  onToggleTarget,
+  onDelete,
   onClick,
   onKeyDown,
   className,
@@ -33,7 +45,21 @@ export function ApplyCard({
 }: ApplyCardProps) {
   const isInteractive = Boolean(onCardClick);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isTitleEditing, setIsTitleEditing] = React.useState(false);
+  const [titleDraft, setTitleDraft] = React.useState(applyTitle);
   const menuContainerRef = React.useRef<HTMLDivElement>(null);
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setTitleDraft(applyTitle);
+  }, [applyTitle]);
+
+  React.useEffect(() => {
+    if (isTitleEditing) {
+      titleInputRef.current?.focus();
+      titleInputRef.current?.select();
+    }
+  }, [isTitleEditing]);
 
   React.useEffect(() => {
     if (!isMenuOpen) {
@@ -72,6 +98,30 @@ export function ApplyCard({
     }
   };
 
+  const startTitleEditing = () => {
+    setTitleDraft(applyTitle);
+    setIsTitleEditing(true);
+    setIsMenuOpen(false);
+  };
+
+  const cancelTitleEditing = () => {
+    setTitleDraft(applyTitle);
+    setIsTitleEditing(false);
+  };
+
+  const commitTitleEditing = () => {
+    const nextTitle = titleDraft.trim();
+
+    if (!nextTitle || nextTitle === applyTitle) {
+      cancelTitleEditing();
+      return;
+    }
+
+    onUpdateTitle?.(jobPostingId, nextTitle);
+    setTitleDraft(nextTitle);
+    setIsTitleEditing(false);
+  };
+
   return (
     <article
       data-slot="apply-card"
@@ -79,7 +129,7 @@ export function ApplyCard({
       tabIndex={isInteractive ? 0 : undefined}
       role={isInteractive ? 'button' : undefined}
       className={cn(
-        'flex h-60 w-full max-w-[494px] flex-col justify-between gap-7 overflow-hidden rounded-xl border border-border-default bg-background-w px-5 py-7',
+        'flex h-60 w-full max-w-[520px] flex-col justify-between gap-7 overflow-hidden rounded-xl border border-border-default bg-background-w px-5 py-7',
         selected &&
           'shadow-[0px_0px_0px_3px_rgba(114,224,206,1.00)] outline-1 -outline-offset-1 outline-border-default',
         isInteractive &&
@@ -100,9 +150,36 @@ export function ApplyCard({
           className="h-auto w-28 shrink-0"
         />
 
-        <div className="flex w-full items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
           <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-            <h3 className="w-full truncate title-1-bold text-gray-main">{applyTitle}</h3>
+            {isTitleEditing ? (
+              <input
+                ref={titleInputRef}
+                value={titleDraft}
+                aria-label="공고 제목 수정"
+                className="w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap rounded-md border border-border-default bg-background-w px-1 title-1-bold text-gray-main outline-none focus-visible:shadow-focus-ring"
+                onClick={(event) => event.stopPropagation()}
+                onChange={(event) => setTitleDraft(event.currentTarget.value)}
+                onBlur={commitTitleEditing}
+                onKeyDown={(event) => {
+                  event.stopPropagation();
+
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    commitTitleEditing();
+                  }
+
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    cancelTitleEditing();
+                  }
+                }}
+              />
+            ) : (
+              <h3 className="w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap title-1-bold text-gray-main">
+                {applyTitle}
+              </h3>
+            )}
 
             <div className="flex flex-col items-start gap-0.5">
               <div className="flex items-center gap-1.5 body-1-regular text-gray-800">
@@ -116,12 +193,14 @@ export function ApplyCard({
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-0.5 label-3-regular text-gray-600">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-0.5 whitespace-nowrap label-3-regular text-gray-600">
                 <CalendarIcon className="size-5 text-gray-600" />
                 <span>모집 기간</span>
               </div>
-              <span className="label-3-regular text-gray-600">{period}</span>
+              <span className="min-w-0 flex-1 truncate whitespace-nowrap label-3-regular text-gray-600">
+                {period}
+              </span>
             </div>
           </div>
 
@@ -139,7 +218,21 @@ export function ApplyCard({
               <MoreVerticalIcon className="size-6" />
             </button>
 
-            {isMenuOpen && <ApplyCardMenuDropdown />}
+            {isMenuOpen && (
+              <ApplyCardMenuDropdown
+                isTargeted={isTargeted}
+                disabled={menuActionDisabled}
+                onEditTitle={startTitleEditing}
+                onToggleTarget={() => {
+                  onToggleTarget?.(jobPostingId);
+                  setIsMenuOpen(false);
+                }}
+                onDelete={() => {
+                  onDelete?.(jobPostingId);
+                  setIsMenuOpen(false);
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
