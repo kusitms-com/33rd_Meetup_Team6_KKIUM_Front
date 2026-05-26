@@ -1,20 +1,29 @@
 'use client';
 
+import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { ApplyCoverLetterExperienceEmptyState } from './ApplyCoverLetterExperienceEmptyState';
+import { ApplyCoverLetterSelectedExperienceCard } from './SelectedExperienceCard';
+import { ApplyCoverLetterWritingGuideCard } from './ApplyCoverLetterWritingGuideCard';
 
 export interface ApplyCoverLetterPanelProps {
   className?: string;
   onSelectExperienceClick?: () => void;
+  selectedExperiences?: ExperienceItem[];
+  onSelectedExperienceRemove?: (experienceId: string) => void;
 }
 
 export function ApplyCoverLetterPanel({
   className,
   onSelectExperienceClick,
+  selectedExperiences = [],
+  onSelectedExperienceRemove,
 }: ApplyCoverLetterPanelProps) {
+  const hasSelectedExperiences = selectedExperiences.length > 0;
+
   return (
     <section
       data-slot="cover-letter-panel"
@@ -34,8 +43,26 @@ export function ApplyCoverLetterPanel({
         경험 선택하기
       </Button>
 
-      <div className="flex flex-1 flex-col items-center pt-8">
-        <ApplyCoverLetterExperienceEmptyState />
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 flex-col',
+          hasSelectedExperiences ? 'gap-3 overflow-y-auto pr-1 pt-2' : 'items-center pt-8',
+        )}
+      >
+        {hasSelectedExperiences ? (
+          <>
+            <ApplyCoverLetterWritingGuideCard />
+            {selectedExperiences.map((experience) => (
+              <ApplyCoverLetterSelectedExperienceCard
+                key={experience.id}
+                experience={experience}
+                onRemove={() => onSelectedExperienceRemove?.(experience.id)}
+              />
+            ))}
+          </>
+        ) : (
+          <ApplyCoverLetterExperienceEmptyState />
+        )}
       </div>
     </section>
   );

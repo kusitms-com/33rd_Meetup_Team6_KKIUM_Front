@@ -5,6 +5,7 @@ import * as React from 'react';
 import { ResizableSplit } from '../ResizableSplit';
 import {
   applyCoverLetterQuestionsMock,
+  coverLetterQuestionExperiencesMock,
   getCoverLetterQuestionDisplayText,
   type ApplyCoverLetterQuestion,
 } from '../../_constants/applyMockData';
@@ -30,6 +31,35 @@ export function ApplyCoverLetterSection() {
     }
   }, [activeQuestionIndex, questions.length]);
 
+  const activeQuestionSelectedExperiences = React.useMemo(
+    () => {
+      if (!activeQuestion) {
+        return [];
+      }
+
+      return (selectedExperienceIdsByQuestion[activeQuestion.id] ?? [])
+        .map(
+          (experienceId) =>
+            coverLetterQuestionExperiencesMock.find(
+              ({ experience }) => experience.id === experienceId,
+            )?.experience,
+        )
+        .filter((experience) => experience != null);
+    },
+    [activeQuestion, selectedExperienceIdsByQuestion],
+  );
+
+  const handleRemoveSelectedExperience = (experienceId: string) => {
+    if (!activeQuestion) {
+      return;
+    }
+
+    setSelectedExperienceIdsByQuestion((current) => ({
+      ...current,
+      [activeQuestion.id]: (current[activeQuestion.id] ?? []).filter((id) => id !== experienceId),
+    }));
+  };
+
   const handleSaveExperiences = (experienceIds: string[]) => {
     if (!activeQuestion) {
       return;
@@ -49,7 +79,11 @@ export function ApplyCoverLetterSection() {
           separatorAriaLabel="자기소개서 작성 패널 너비 조절"
           rightClassName="bg-background-w"
           left={
-            <ApplyCoverLetterPanel onSelectExperienceClick={() => setExperienceModalOpen(true)} />
+            <ApplyCoverLetterPanel
+              selectedExperiences={activeQuestionSelectedExperiences}
+              onSelectedExperienceRemove={handleRemoveSelectedExperience}
+              onSelectExperienceClick={() => setExperienceModalOpen(true)}
+            />
           }
           right={
             <ApplyCoverLetterRightPanel
@@ -57,6 +91,7 @@ export function ApplyCoverLetterSection() {
               activeIndex={activeQuestionIndex}
               onActiveIndexChange={setActiveQuestionIndex}
               onQuestionsChange={setQuestions}
+              selectedExperienceIdsByQuestion={selectedExperienceIdsByQuestion}
             />
           }
         />

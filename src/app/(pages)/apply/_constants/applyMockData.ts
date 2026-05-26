@@ -212,6 +212,28 @@ export const applyCoverLetterQuestionsMock: ApplyCoverLetterQuestion[] = [
   { id: 'cover-letter-q3', title: '입사 후 포부', content: '' },
 ];
 
+export const coverLetterAiDraftMock =
+  '기존 결제 시스템이 트래픽 급증 시 다운타임이 발생하여 매출 손실이 발생했던 경험을 통해 문제 해결의 중요성을 깊이 이해하게 되었습니다. 이후 Redis 캐싱 레이어를 구축하고 MySQL 쿼리를 최적화하여 TPS를 500에서 2000으로 향상시켰으며, 검색 응답 속도를 50% 개선했습니다. 이러한 경험을 바탕으로 귀사의 대규모 트래픽 환경에서도 안정적인 서비스를 제공하고, 기술적 의사결정에 적극적으로 기여하겠습니다.';
+
+export const coverLetterWritingGuideMock = {
+  sections: [
+    {
+      title: '핵심 키워드',
+      content: '수치화된 성과, Java, MySQL, Redis',
+    },
+    {
+      title: '공고와의 연결점',
+      content:
+        'Java, MySQL, Redis, Elasticsearch 기술을 활용한 구체적인 성과가 이 공고에서 요구하는 실행력과 문제 해결 능력을 증명합니다. 수치화된 결과를 중심으로 작성하면 설득력이 높아집니다.',
+    },
+    {
+      title: '작성 가이드',
+      content:
+        '하나의 스토리로 자연스럽게 연결하세요. 구체적인 수치나 데이터를 제시하여 성과를 명확히 보여주는 것이 중요합니다.',
+    },
+  ],
+} as const;
+
 // --- 지원 목록 ---
 
 export type ApplyListCoverLetter = {

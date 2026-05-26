@@ -18,6 +18,7 @@ export interface ApplyCoverLetterRightPanelProps {
   activeIndex?: number;
   onActiveIndexChange?: (index: number) => void;
   onQuestionsChange?: (questions: ApplyCoverLetterQuestion[]) => void;
+  selectedExperienceIdsByQuestion?: Record<string, string[]>;
   initialQuestions?: ApplyCoverLetterQuestion[];
 }
 
@@ -39,6 +40,7 @@ export function ApplyCoverLetterRightPanel({
   activeIndex: controlledActiveIndex,
   onActiveIndexChange,
   onQuestionsChange,
+  selectedExperienceIdsByQuestion = {},
   initialQuestions = applyCoverLetterQuestionsMock,
 }: ApplyCoverLetterRightPanelProps) {
   const [uncontrolledQuestions, setUncontrolledQuestions] = React.useState(initialQuestions);
@@ -131,7 +133,9 @@ export function ApplyCoverLetterRightPanel({
         value={activeQuestion.content}
         onChange={handleContentChange}
         onTitleChange={handleTitleChange}
-        onAiDraftClick={() => {}}
+        hasSelectedExperiences={
+          (selectedExperienceIdsByQuestion[activeQuestion.id] ?? []).length > 0
+        }
       />
     </section>
   );
