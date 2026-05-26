@@ -188,6 +188,19 @@ export function ExperienceBoard({
     };
   }, []);
 
+  const experienceMap = React.useMemo(
+    () => new Map(experiences.map((experience) => [experience.id, experience])),
+    [experiences],
+  );
+
+  const filteredExperiences = React.useMemo(
+    () =>
+      experienceOrderMap[selectedCategory]
+        .map((id) => experienceMap.get(id))
+        .filter((experience): experience is ExperienceItem => Boolean(experience)),
+    [experienceMap, experienceOrderMap, selectedCategory],
+  );
+
   React.useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
 
@@ -209,20 +222,7 @@ export function ExperienceBoard({
     return () => {
       observer.disconnect();
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  const experienceMap = React.useMemo(
-    () => new Map(experiences.map((experience) => [experience.id, experience])),
-    [experiences],
-  );
-
-  const filteredExperiences = React.useMemo(
-    () =>
-      experienceOrderMap[selectedCategory]
-        .map((id) => experienceMap.get(id))
-        .filter((experience): experience is ExperienceItem => Boolean(experience)),
-    [experienceMap, experienceOrderMap, selectedCategory],
-  );
+  }, [fetchNextPage, filteredExperiences.length, hasNextPage, isFetchingNextPage]);
 
   const selectedExperience = filteredExperiences.find(
     (experience) => experience.id === selectedExperienceId,
