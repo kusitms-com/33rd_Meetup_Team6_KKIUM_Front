@@ -201,7 +201,13 @@ export function ExperienceAddPageContent() {
       {!isCompleteStep && (
         <footer className="mt-10 flex justify-end gap-4">
           {!isAnalyzing && (
-            <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-40"
+              disabled={isFirstStep}
+              onClick={goPreviousStep}
+            >
               이전
             </Button>
           )}
