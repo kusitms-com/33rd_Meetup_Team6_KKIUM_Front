@@ -197,6 +197,8 @@ export function ExperienceDetailContent({
       setEditingTagGroup(null);
       setDatePickerOpen(false);
       setDatePickerTop(null);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : '경험 수정 중 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }
