@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { Button } from '@/components/ui/button';
@@ -8,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { ApplyCoverLetterExperienceEmptyState } from './ApplyCoverLetterExperienceEmptyState';
 import { ApplyCoverLetterSelectedExperienceCard } from './SelectedExperienceCard';
 import { ApplyCoverLetterWritingGuideCard } from './ApplyCoverLetterWritingGuideCard';
+import { SelectedExperienceDetailPanel } from './SelectedExperienceDetailPanel';
 
 export interface ApplyCoverLetterPanelProps {
   className?: string;
@@ -23,6 +26,28 @@ export function ApplyCoverLetterPanel({
   onSelectedExperienceRemove,
 }: ApplyCoverLetterPanelProps) {
   const hasSelectedExperiences = selectedExperiences.length > 0;
+  const [detailExperienceId, setDetailExperienceId] = React.useState<string | null>(null);
+  const detailExperience = selectedExperiences.find(
+    (experience) => experience.id === detailExperienceId,
+  );
+
+  React.useEffect(() => {
+    if (!detailExperienceId || detailExperience) {
+      return;
+    }
+
+    setDetailExperienceId(null);
+  }, [detailExperience, detailExperienceId]);
+
+  if (detailExperience) {
+    return (
+      <SelectedExperienceDetailPanel
+        experience={detailExperience}
+        className={className}
+        onClose={() => setDetailExperienceId(null)}
+      />
+    );
+  }
 
   return (
     <section
@@ -56,6 +81,7 @@ export function ApplyCoverLetterPanel({
               <ApplyCoverLetterSelectedExperienceCard
                 key={experience.id}
                 experience={experience}
+                onSelect={() => setDetailExperienceId(experience.id)}
                 onRemove={() => onSelectedExperienceRemove?.(experience.id)}
               />
             ))}
