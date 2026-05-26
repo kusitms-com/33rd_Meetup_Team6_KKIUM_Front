@@ -11,14 +11,12 @@ export function ExperiencePageContent() {
   const [keyword, setKeyword] = React.useState('');
   const debouncedKeyword = useDebouncedValue(keyword.trim(), 500);
 
-  void debouncedKeyword;
-
   return (
     <div className="mx-16 flex min-h-[calc(100vh-32px)] flex-col">
       <div className="flex flex-1 flex-col gap-5">
         <ExperiencePageHeader keyword={keyword} onKeywordChange={setKeyword} />
         <Suspense>
-          <ExperienceBoard />
+          <ExperienceBoard keyword={debouncedKeyword || undefined} />
         </Suspense>
       </div>
     </div>

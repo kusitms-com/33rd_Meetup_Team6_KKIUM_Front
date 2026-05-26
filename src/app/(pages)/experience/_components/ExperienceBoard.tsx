@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
   initialSelectedExperienceId?: string;
+  keyword?: string;
 }
 
 type ExperienceOrderMap = Record<ExperienceCategory, string[]>;
@@ -55,6 +56,7 @@ function isExperienceCategory(category: string | null): category is ExperienceCa
 
 export function ExperienceBoard({
   initialSelectedExperienceId,
+  keyword,
   className,
   ...props
 }: ExperienceBoardProps) {
@@ -72,8 +74,15 @@ export function ExperienceBoard({
   );
   const selectedPieceType =
     selectedCategory === 'all' ? undefined : filterPieceTypeByCategory[selectedCategory];
+  const experienceParams = React.useMemo(
+    () => ({
+      ...(selectedPieceType ? { type: selectedPieceType } : {}),
+      ...(keyword ? { keyword } : {}),
+    }),
+    [keyword, selectedPieceType],
+  );
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
-    useInfiniteExperiences(selectedPieceType ? { type: selectedPieceType } : undefined);
+    useInfiniteExperiences(experienceParams);
   const deleteExperienceMutation = useDeleteExperience();
   const updateExperienceMutation = useUpdateExperience();
   const updateExperienceOrderMutation = useUpdateExperienceOrder();
