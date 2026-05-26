@@ -50,7 +50,7 @@ export function ApplyListSection({ cards }: ApplyListSectionProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-5 [@media(min-width:1855px)]:grid-cols-3">
         {cards.map((card) => (
           <ApplyCard
             key={card.id}
