@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
 
+import { ApplyCardMenuDropdown } from '@/app/(pages)/apply/list/_components/ApplyCardMenuDropdown';
 import { CalendarIcon } from '@/components/common/icons/CalendarIcon';
 import { MoreVerticalIcon } from '@/components/common/icons/MoreVerticalIcon';
 import { PencilIcon } from '@/components/common/icons/PencilIcon';
@@ -14,7 +15,6 @@ export interface ApplyCardProps extends React.ComponentProps<'article'> {
   companyName: string;
   jobField: string;
   period: string;
-  actionLabel?: string;
   selected?: boolean;
   onCardClick?: React.MouseEventHandler<HTMLElement>;
 }
@@ -24,7 +24,6 @@ export function ApplyCard({
   companyName,
   jobField,
   period,
-  actionLabel = '지원서 작성하기',
   selected = false,
   onCardClick,
   onClick,
@@ -33,6 +32,23 @@ export function ApplyCard({
   ...props
 }: ApplyCardProps) {
   const isInteractive = Boolean(onCardClick);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const menuContainerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!menuContainerRef.current?.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [isMenuOpen]);
 
   const handleClick: React.MouseEventHandler<HTMLElement> = (event) => {
     onClick?.(event);
@@ -65,7 +81,7 @@ export function ApplyCard({
       className={cn(
         'flex h-60 w-full max-w-[494px] flex-col justify-between gap-7 overflow-hidden rounded-xl border border-border-default bg-background-w px-5 py-7',
         selected &&
-          'shadow-[0px_0px_0px_3px_rgba(114,224,206,1.00)] outline-1 outline-offset-[-1px] outline-border-default',
+          'shadow-[0px_0px_0px_3px_rgba(114,224,206,1.00)] outline-1 -outline-offset-1 outline-border-default',
         isInteractive &&
           'cursor-pointer hover:shadow-md focus-visible:shadow-focus-ring focus-visible:outline-none',
         className,
@@ -109,23 +125,32 @@ export function ApplyCard({
             </div>
           </div>
 
-          <button
-            type="button"
-            aria-label="카드 메뉴"
-            className="flex size-8 shrink-0 items-center justify-center rounded bg-background-w text-gray-main"
-          >
-            <MoreVerticalIcon className="size-6" />
-          </button>
+          <div ref={menuContainerRef} className="relative shrink-0">
+            <button
+              type="button"
+              aria-label="카드 메뉴"
+              aria-expanded={isMenuOpen}
+              className="flex size-8 cursor-pointer items-center justify-center rounded bg-background-w text-gray-main hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-default"
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsMenuOpen((prev) => !prev);
+              }}
+            >
+              <MoreVerticalIcon className="size-6" />
+            </button>
+
+            {isMenuOpen && <ApplyCardMenuDropdown />}
+          </div>
         </div>
       </div>
 
       <Link
         href="/apply"
-        className="inline-flex h-10 w-full items-center justify-center gap-1 rounded-lg bg-mint-50 px-3 py-1 text-mint-600"
+        className="inline-flex h-10 w-full items-center justify-center gap-1 overflow-hidden rounded-lg bg-background-w px-3 py-1 text-gray-600 outline -outline-offset-1 outline-border-default"
         onClick={(event) => event.stopPropagation()}
       >
-        <PencilIcon className="size-6" />
-        <span className="body-1-bold">{actionLabel}</span>
+        <PencilIcon className="size-6 text-gray-600" />
+        <span className="body-1-bold text-gray-600">자기소개서 작성하기</span>
       </Link>
     </article>
   );

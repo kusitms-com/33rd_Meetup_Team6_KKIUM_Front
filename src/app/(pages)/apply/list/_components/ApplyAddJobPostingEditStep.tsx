@@ -190,7 +190,7 @@ export function ApplyAddJobPostingEditStep({
             onClick={onAddCoverQuestion}
           >
             <span className="flex size-8 shrink-0 items-center justify-center">
-              <PlusIcon className="size-6 text-tertiary" />
+              <PlusIcon className="size-5 text-tertiary" />
             </span>
             추가하기
           </button>
@@ -198,7 +198,7 @@ export function ApplyAddJobPostingEditStep({
       </div>
 
       <ModalClose asChild>
-        <Button type="button" variant="default" size="default" className="w-full text-xs font-bold leading-5">
+        <Button type="button" variant="default" size="default" className="w-full text-base font-bold leading-6">
           저장하기
         </Button>
       </ModalClose>
