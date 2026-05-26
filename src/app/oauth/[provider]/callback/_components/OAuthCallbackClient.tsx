@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { requestSocialLogin } from '@/app/_utils/authFetch';
 
-export default function KakaoOAuthCallbackPage() {
+export type OAuthProvider = 'google' | 'kakao';
+
+export function OAuthCallbackClient({ provider }: { provider: OAuthProvider }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedRef = useRef(false);
@@ -26,7 +28,7 @@ export default function KakaoOAuthCallbackPage() {
       return;
     }
 
-    void requestSocialLogin('kakao', code)
+    void requestSocialLogin(provider, code)
       .then(() => {
         router.replace('/');
       })
@@ -34,7 +36,7 @@ export default function KakaoOAuthCallbackPage() {
         const message = err instanceof Error ? err.message : 'auth_failed';
         router.replace(`/login?error=${encodeURIComponent(message)}`);
       });
-  }, [router, searchParams]);
+  }, [provider, router, searchParams]);
 
   return null;
 }
