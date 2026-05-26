@@ -120,7 +120,7 @@ export function ExperienceBoard({
 
   React.useEffect(() => {
     setExperienceOrderMap((currentOrderMap) => {
-      const nextOrderMap = syncExperienceOrderMap(currentOrderMap, experiences);
+      const nextOrderMap = syncExperienceOrderMap(currentOrderMap, experiences, selectedCategory);
 
       if (areExperienceOrderMapsEqual(currentOrderMap, nextOrderMap)) {
         return currentOrderMap;
@@ -128,7 +128,7 @@ export function ExperienceBoard({
 
       return nextOrderMap;
     });
-  }, [experiences]);
+  }, [experiences, selectedCategory]);
 
   React.useEffect(() => {
     if (previousKeywordRef.current === keyword) {
@@ -470,10 +470,20 @@ function createExperienceOrderMap(experiences: ExperienceItem[]): ExperienceOrde
 function syncExperienceOrderMap(
   currentOrderMap: ExperienceOrderMap,
   experiences: ExperienceItem[],
+  syncedCategory: ExperienceCategory,
 ): ExperienceOrderMap {
   const defaultOrderMap = createExperienceOrderMap(experiences);
 
+  if (syncedCategory === 'all') {
+    return defaultOrderMap;
+  }
+
   return sortableCategories.reduce<ExperienceOrderMap>((nextOrderMap, category) => {
+    if (category === syncedCategory) {
+      nextOrderMap[category] = defaultOrderMap[category];
+      return nextOrderMap;
+    }
+
     const nextIds = defaultOrderMap[category];
     const nextIdSet = new Set(nextIds);
     const currentIds = currentOrderMap[category];
