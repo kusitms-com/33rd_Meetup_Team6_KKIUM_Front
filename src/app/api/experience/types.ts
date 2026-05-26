@@ -1,8 +1,14 @@
-export type PieceType = 'ACTIVITY' | 'CAREER' | 'EDUCATION' | 'ETC';
+export type PieceType = 'ALL' | 'ACTIVITY' | 'CAREER' | 'EDUCATION' | 'ETC';
+export type ExperiencePieceType = Exclude<PieceType, 'ALL'>;
 
 export type TagCategory = 'TECH' | 'COMPETENCY';
 
 type ISODateString = string;
+
+export interface TagRequest {
+  category: TagCategory;
+  field: string;
+}
 
 export interface TagResponse {
   category: TagCategory;
@@ -12,7 +18,7 @@ export interface TagResponse {
 export interface ExperienceCardResponse {
   pieceId: number;
   experienceId: number;
-  type: PieceType;
+  type: ExperiencePieceType;
   title: string;
   oneLineIntro: string;
   startDate: ISODateString;
@@ -85,3 +91,36 @@ export type ExperienceDetailResponse =
       type: 'ETC';
       detail: EtcDetail;
     });
+
+export interface ExperienceUpdateDetailRequest {
+  name?: string;
+  teamNum?: number;
+  role?: string;
+  contributionRate?: number;
+  company?: string;
+  employmentStatus?: string;
+  organizationName?: string;
+  startDate: ISODateString;
+  endDate: ISODateString;
+}
+
+export interface ExperienceUpdateRequest {
+  title: string;
+  oneLineIntro: string;
+  tags: TagRequest[];
+  situation?: string;
+  task?: string;
+  act?: string;
+  result?: string;
+  taken?: string;
+  detail: ExperienceUpdateDetailRequest;
+}
+
+export interface ExperienceTitleUpdateRequest {
+  title: string;
+}
+
+export interface ExperienceOrderUpdateRequest {
+  type: PieceType;
+  experienceIds: number[];
+}

@@ -5,6 +5,9 @@ type ExperienceType = Exclude<ExperienceCategory, 'all'>;
 
 const defaultExperienceDetail = {
   description: '복잡한 비즈니스 로직을 DDD 패턴으로 설계하여 유지보수성 향상',
+  startDate: '2026-04-01',
+  endDate: '2026-04-28',
+  basicDetail: {},
   detail: {
     situation: '기존 서비스는 결제 도메인의 정책과 예외 처리가 여러 계층에 흩어져 있어 변경 영향 범위를 예측하기 어려웠습니다.',
     task: '결제 정책을 명확한 도메인 모델로 분리하고, 추후 기능 확장 시에도 유지보수하기 쉬운 구조를 설계해야 했습니다.',
@@ -12,13 +15,17 @@ const defaultExperienceDetail = {
     result: '결제 정책 변경 시 수정 지점이 줄어들었고, 주요 플로우에 대한 테스트 작성 범위도 명확해졌습니다.',
     taken: '복잡한 비즈니스 로직은 UI나 인프라보다 도메인 규칙을 먼저 정리해야 장기적인 변경 비용을 줄일 수 있다는 점을 배웠습니다.',
   },
-} satisfies Pick<ExperienceItem, 'description' | 'detail'>;
+} satisfies Pick<
+  ExperienceItem,
+  'description' | 'startDate' | 'endDate' | 'basicDetail' | 'detail'
+>;
 
 const detailInfoMap = {
   activity: [
     { label: '기간', value: '2026.04.01~04.28' },
     { label: '팀원 수', value: '1인' },
-    { label: '내 역할 및 기여도', value: '팀장, 100%' },
+    { label: '내 역할', value: '팀장' },
+    { label: '기여도', value: '100%' },
   ],
   career: [
     { label: '기간', value: '2026.04.01~04.28' },
@@ -50,6 +57,10 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      organizationName: '큐시즘대학교',
+      name: '데이터베이스시스템',
+    },
     detailInfo: detailInfoMap.education,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -60,6 +71,11 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      teamNum: '1',
+      role: '팀장',
+      contributionRate: '100',
+    },
     detailInfo: detailInfoMap.activity,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -70,6 +86,10 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      company: '리트머스',
+      employmentStatus: '인턴',
+    },
     detailInfo: detailInfoMap.career,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -90,6 +110,10 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      organizationName: '큐시즘대학교',
+      name: '데이터베이스시스템',
+    },
     detailInfo: detailInfoMap.education,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -100,6 +124,11 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      teamNum: '1',
+      role: '팀장',
+      contributionRate: '100',
+    },
     detailInfo: detailInfoMap.activity,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -110,6 +139,10 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      company: '리트머스',
+      employmentStatus: '인턴',
+    },
     detailInfo: detailInfoMap.career,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -130,6 +163,10 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      organizationName: '큐시즘대학교',
+      name: '데이터베이스시스템',
+    },
     detailInfo: detailInfoMap.education,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -140,6 +177,11 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      teamNum: '1',
+      role: '팀장',
+      contributionRate: '100',
+    },
     detailInfo: detailInfoMap.activity,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],
@@ -150,6 +192,10 @@ export const experienceMockData: ExperienceItem[] = [
     title: '고가용성 결제 시스템 설계 및 운영',
     period: '2026.04.01~04.28',
     ...defaultExperienceDetail,
+    basicDetail: {
+      company: '리트머스',
+      employmentStatus: '인턴',
+    },
     detailInfo: detailInfoMap.career,
     skillTags: ['기술', '기술'],
     competencyTags: ['역량', '역량'],

@@ -9,24 +9,41 @@ import {
 } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import type { ExperienceCategory } from '@/app/(pages)/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/(pages)/experience/_components/ExperienceCategoryTabs';
+import type { ExperienceDetailSaveValue } from '@/app/(pages)/experience/_components/ExperienceDetailContent';
 import { ExperienceDetailPanel } from '@/app/(pages)/experience/_components/ExperienceDetailPanel';
 import {
   mapExperienceCardToItem,
   mapExperienceDetailToItem,
 } from '@/app/(pages)/experience/_utils/mapExperienceResponse';
+import { mapExperienceItemToUpdateRequest } from '@/app/(pages)/experience/_utils/mapExperienceItemToUpdateRequest';
 import type { PieceType } from '@/app/api/experience/types';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useExperienceDetail, useInfiniteExperiences } from '@/hooks/experience/useExperiences';
+import {
+  useDeleteExperience,
+  useExperienceDetail,
+  useInfiniteExperiences,
+  useUpdateExperience,
+  useUpdateExperienceOrder,
+  useUpdateExperienceTitle,
+} from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
   initialSelectedExperienceId?: string;
+  keyword?: string;
 }
 
 type ExperienceOrderMap = Record<ExperienceCategory, string[]>;
 
 const sortableCategories: ExperienceCategory[] = ['all', 'activity', 'career', 'education', 'etc'];
-const pieceTypeByCategory: Record<Exclude<ExperienceCategory, 'all'>, PieceType> = {
+const orderPieceTypeByCategory: Record<ExperienceCategory, PieceType> = {
+  all: 'ALL',
+  activity: 'ACTIVITY',
+  career: 'CAREER',
+  education: 'EDUCATION',
+  etc: 'ETC',
+};
+const filterPieceTypeByCategory: Record<Exclude<ExperienceCategory, 'all'>, Exclude<PieceType, 'ALL'>> = {
   activity: 'ACTIVITY',
   career: 'CAREER',
   education: 'EDUCATION',
@@ -39,6 +56,7 @@ function isExperienceCategory(category: string | null): category is ExperienceCa
 
 export function ExperienceBoard({
   initialSelectedExperienceId,
+  keyword,
   className,
   ...props
 }: ExperienceBoardProps) {
@@ -55,9 +73,20 @@ export function ExperienceBoard({
     selectedExperienceIdFromQuery,
   );
   const selectedPieceType =
-    selectedCategory === 'all' ? undefined : pieceTypeByCategory[selectedCategory];
+    selectedCategory === 'all' ? undefined : filterPieceTypeByCategory[selectedCategory];
+  const experienceParams = React.useMemo(
+    () => ({
+      ...(selectedPieceType ? { type: selectedPieceType } : {}),
+      ...(keyword ? { keyword } : {}),
+    }),
+    [keyword, selectedPieceType],
+  );
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
-    useInfiniteExperiences(selectedPieceType ? { type: selectedPieceType } : undefined);
+    useInfiniteExperiences(experienceParams);
+  const deleteExperienceMutation = useDeleteExperience();
+  const updateExperienceMutation = useUpdateExperience();
+  const updateExperienceOrderMutation = useUpdateExperienceOrder();
+  const updateExperienceTitleMutation = useUpdateExperienceTitle();
   const experiences = React.useMemo(
     () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
     [data],
@@ -69,6 +98,7 @@ export function ExperienceBoard({
   const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadMoreRef = React.useRef<HTMLDivElement>(null);
   const hasAppliedInitialSelectionRef = React.useRef(false);
+  const previousKeywordRef = React.useRef(keyword);
   const selectedExperienceNumericId = selectedExperienceId ? Number(selectedExperienceId) : null;
   const {
     data: selectedExperienceDetail,
@@ -90,7 +120,7 @@ export function ExperienceBoard({
 
   React.useEffect(() => {
     setExperienceOrderMap((currentOrderMap) => {
-      const nextOrderMap = syncExperienceOrderMap(currentOrderMap, experiences);
+      const nextOrderMap = syncExperienceOrderMap(currentOrderMap, experiences, selectedCategory);
 
       if (areExperienceOrderMapsEqual(currentOrderMap, nextOrderMap)) {
         return currentOrderMap;
@@ -98,7 +128,37 @@ export function ExperienceBoard({
 
       return nextOrderMap;
     });
-  }, [experiences]);
+  }, [experiences, selectedCategory]);
+
+  React.useEffect(() => {
+    if (previousKeywordRef.current === keyword) {
+      return;
+    }
+
+    previousKeywordRef.current = keyword;
+
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    setSelectedExperienceId(undefined);
+    setPanelOpen(false);
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete('selected');
+
+    if (selectedCategory !== 'all') {
+      params.set('category', selectedCategory);
+    } else {
+      params.delete('category');
+    }
+
+    router.replace(params.size > 0 ? `/experience?${params.toString()}` : '/experience', {
+      scroll: false,
+    });
+  }, [keyword, router, searchParams, selectedCategory]);
 
   React.useEffect(() => {
     if (hasAppliedInitialSelectionRef.current || !selectedExperienceIdFromQuery) {
@@ -132,6 +192,19 @@ export function ExperienceBoard({
     };
   }, []);
 
+  const experienceMap = React.useMemo(
+    () => new Map(experiences.map((experience) => [experience.id, experience])),
+    [experiences],
+  );
+
+  const filteredExperiences = React.useMemo(
+    () =>
+      experienceOrderMap[selectedCategory]
+        .map((id) => experienceMap.get(id))
+        .filter((experience): experience is ExperienceItem => Boolean(experience)),
+    [experienceMap, experienceOrderMap, selectedCategory],
+  );
+
   React.useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
 
@@ -153,20 +226,7 @@ export function ExperienceBoard({
     return () => {
       observer.disconnect();
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  const experienceMap = React.useMemo(
-    () => new Map(experiences.map((experience) => [experience.id, experience])),
-    [experiences],
-  );
-
-  const filteredExperiences = React.useMemo(
-    () =>
-      experienceOrderMap[selectedCategory]
-        .map((id) => experienceMap.get(id))
-        .filter((experience): experience is ExperienceItem => Boolean(experience)),
-    [experienceMap, experienceOrderMap, selectedCategory],
-  );
+  }, [fetchNextPage, filteredExperiences.length, hasNextPage, isFetchingNextPage]);
 
   const selectedExperience = filteredExperiences.find(
     (experience) => experience.id === selectedExperienceId,
@@ -206,12 +266,117 @@ export function ExperienceBoard({
 
   const handleExperienceReorder = React.useCallback(
     (orderedExperienceIds: string[]) => {
+      const previousOrderIds = experienceOrderMap[selectedCategory];
+      const parsedExperienceIds = orderedExperienceIds.map(Number);
+
+      if (
+        parsedExperienceIds.some(
+          (experienceId) => !Number.isInteger(experienceId) || experienceId <= 0,
+        )
+      ) {
+        return;
+      }
+
       setExperienceOrderMap((currentOrderMap) => ({
         ...currentOrderMap,
         [selectedCategory]: orderedExperienceIds,
       }));
+
+      updateExperienceOrderMutation.mutate(
+        {
+          type: orderPieceTypeByCategory[selectedCategory],
+          experienceIds: parsedExperienceIds,
+        },
+        {
+          onError: () => {
+            setExperienceOrderMap((currentOrderMap) => ({
+              ...currentOrderMap,
+              [selectedCategory]: previousOrderIds,
+            }));
+          },
+        },
+      );
     },
-    [selectedCategory],
+    [experienceOrderMap, selectedCategory, updateExperienceOrderMutation],
+  );
+
+  const handleExperienceTitleSave = React.useCallback(
+    async (experience: ExperienceItem, nextTitle: string) => {
+      const experienceId = Number(experience.id);
+
+      if (!Number.isInteger(experienceId) || experienceId <= 0) {
+        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
+      }
+
+      await updateExperienceTitleMutation.mutateAsync({
+        experienceId,
+        request: { title: nextTitle },
+      });
+    },
+    [updateExperienceTitleMutation],
+  );
+
+  const handleExperienceDelete = React.useCallback(
+    async (experience: ExperienceItem) => {
+      const experienceId = Number(experience.id);
+
+      if (!Number.isInteger(experienceId) || experienceId <= 0) {
+        window.alert('삭제할 경험 정보를 확인하지 못했습니다.');
+        return;
+      }
+
+      try {
+        await deleteExperienceMutation.mutateAsync(experienceId);
+
+        setExperienceOrderMap((currentOrderMap) =>
+          sortableCategories.reduce<ExperienceOrderMap>((nextOrderMap, category) => {
+            nextOrderMap[category] = currentOrderMap[category].filter(
+              (id) => id !== experience.id,
+            );
+            return nextOrderMap;
+          }, {} as ExperienceOrderMap),
+        );
+
+        if (selectedExperienceId === experience.id) {
+          if (closeTimerRef.current) {
+            clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+          }
+
+          setPanelOpen(false);
+          setSelectedExperienceId(undefined);
+          router.replace('/experience', { scroll: false });
+        }
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : '경험 삭제 중 오류가 발생했습니다.');
+      }
+    },
+    [deleteExperienceMutation, router, selectedExperienceId],
+  );
+
+  const handleExperienceDetailSave = React.useCallback(
+    async (nextExperience: ExperienceDetailSaveValue) => {
+      if (!panelExperience) {
+        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
+      }
+
+      const experienceId = Number(panelExperience.id);
+
+      if (!Number.isInteger(experienceId) || experienceId <= 0) {
+        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
+      }
+
+      const updatedExperience = {
+        ...panelExperience,
+        ...nextExperience,
+      };
+
+      await updateExperienceMutation.mutateAsync({
+        experienceId,
+        request: mapExperienceItemToUpdateRequest(updatedExperience),
+      });
+    },
+    [panelExperience, updateExperienceMutation],
   );
 
   const handlePanelClose = () => {
@@ -265,7 +430,9 @@ export function ExperienceBoard({
             selectedExperienceId={selectedExperienceId}
             sortable
             onExperienceClick={handleExperienceSelect}
+            onExperienceDelete={handleExperienceDelete}
             onExperienceReorder={handleExperienceReorder}
+            onExperienceTitleSave={handleExperienceTitleSave}
           />
           <div ref={loadMoreRef} aria-hidden="true" className="h-1" />
           {/* TODO: 다음 페이지 로딩 UI가 확정되면 임시 문구를 교체한다. */}
@@ -289,6 +456,7 @@ export function ExperienceBoard({
           detailError={isDetailError}
           detailLoading={showDetailLoading}
           onExpand={handlePanelExpand}
+          onSave={handleExperienceDetailSave}
           onClose={handlePanelClose}
         />
       )}
@@ -313,13 +481,23 @@ function createExperienceOrderMap(experiences: ExperienceItem[]): ExperienceOrde
 function syncExperienceOrderMap(
   currentOrderMap: ExperienceOrderMap,
   experiences: ExperienceItem[],
+  syncedCategory: ExperienceCategory,
 ): ExperienceOrderMap {
   const defaultOrderMap = createExperienceOrderMap(experiences);
 
+  if (syncedCategory === 'all') {
+    return defaultOrderMap;
+  }
+
   return sortableCategories.reduce<ExperienceOrderMap>((nextOrderMap, category) => {
+    if (category === syncedCategory) {
+      nextOrderMap[category] = defaultOrderMap[category];
+      return nextOrderMap;
+    }
+
     const nextIds = defaultOrderMap[category];
     const nextIdSet = new Set(nextIds);
-    const currentIds = currentOrderMap[category];
+    const currentIds = currentOrderMap[category] ?? [];
     const currentIdSet = new Set(currentIds);
     const preservedIds = currentIds.filter((id) => nextIdSet.has(id));
     const addedIds = nextIds.filter((id) => !currentIdSet.has(id));

@@ -13,11 +13,22 @@ export interface ExperienceItem {
   type: Exclude<ExperienceCategory, 'all'>;
   title: string;
   description: string;
+  startDate: string;
+  endDate: string;
   period: string;
   detailInfo: {
     label: string;
     value: string;
   }[];
+  basicDetail: {
+    name?: string;
+    teamNum?: string;
+    role?: string;
+    contributionRate?: string;
+    company?: string;
+    employmentStatus?: string;
+    organizationName?: string;
+  };
   skillTags: string[];
   competencyTags: string[];
   detail: {
@@ -34,7 +45,9 @@ export interface ExperienceCardGridProps extends React.ComponentProps<'div'> {
   selectedExperienceId?: string;
   sortable?: boolean;
   onExperienceClick?: (experience: ExperienceItem) => void;
+  onExperienceDelete?: (experience: ExperienceItem) => Promise<void> | void;
   onExperienceReorder?: (experienceIds: string[]) => void;
+  onExperienceTitleSave?: (experience: ExperienceItem, nextTitle: string) => Promise<void> | void;
 }
 
 export function ExperienceCardGrid({
@@ -42,7 +55,9 @@ export function ExperienceCardGrid({
   selectedExperienceId,
   sortable = false,
   onExperienceClick,
+  onExperienceDelete,
   onExperienceReorder,
+  onExperienceTitleSave,
   className,
   ...props
 }: ExperienceCardGridProps) {
@@ -85,6 +100,8 @@ export function ExperienceCardGrid({
             index={index}
             selected={selectedExperienceId === experience.id}
             onClick={onExperienceClick}
+            onDelete={onExperienceDelete}
+            onTitleSave={onExperienceTitleSave}
           />
         ) : (
           <ExperienceCard
@@ -97,6 +114,8 @@ export function ExperienceCardGrid({
             selected={selectedExperienceId === experience.id}
             className="max-w-none"
             onClick={() => onExperienceClick?.(experience)}
+            onDelete={() => onExperienceDelete?.(experience)}
+            onTitleSave={(nextTitle) => onExperienceTitleSave?.(experience, nextTitle)}
           />
         ),
       )}
