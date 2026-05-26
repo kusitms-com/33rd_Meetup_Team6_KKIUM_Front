@@ -14,6 +14,7 @@ import {
   parseJdOcr,
   parseJdUrl,
   toggleJdTarget,
+  updateJdOrder,
   updateJdTitle,
 } from '@/app/api/apply';
 import type {
@@ -22,6 +23,7 @@ import type {
   JdListParams,
   JdId,
   ParseJdUrlRequest,
+  UpdateJdOrderRequest,
   UpdateJdTitleRequest,
 } from '@/app/api/apply/types';
 
@@ -87,6 +89,17 @@ export function useParseApplyJobPostingUrl() {
 export function useParseApplyJobPostingOcr() {
   return useMutation({
     mutationFn: (file: File) => parseJdOcr(file),
+  });
+}
+
+export function useUpdateApplyJobPostingOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: UpdateJdOrderRequest) => updateJdOrder(request),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: applyJobPostingQueryKeys.lists() });
+    },
   });
 }
 

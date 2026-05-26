@@ -13,6 +13,7 @@ import {
   useDeleteApplyJobPosting,
   useInfiniteApplyJobPostings,
   useToggleApplyTargetJobPosting,
+  useUpdateApplyJobPostingOrder,
   useUpdateApplyJobPostingTitle,
 } from '@/hooks/apply/useApplyJobPostings';
 import { ApplyCard } from './ApplyCard';
@@ -38,6 +39,7 @@ function serializeQueryError(error: unknown) {
 }
 
 export function ApplyListSection({ keyword }: ApplyListSectionProps) {
+  const isDragDisabled = Boolean(keyword?.trim());
   const listParams = React.useMemo(
     () => ({
       size: 10,
@@ -72,10 +74,14 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
   const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadMoreRef = React.useRef<HTMLDivElement>(null);
   const updateTitleMutation = useUpdateApplyJobPostingTitle();
+  const updateOrderMutation = useUpdateApplyJobPostingOrder();
   const toggleTargetMutation = useToggleApplyTargetJobPosting();
   const deleteMutation = useDeleteApplyJobPosting();
   const menuActionDisabled =
-    updateTitleMutation.isPending || toggleTargetMutation.isPending || deleteMutation.isPending;
+    updateTitleMutation.isPending ||
+    updateOrderMutation.isPending ||
+    toggleTargetMutation.isPending ||
+    deleteMutation.isPending;
 
   React.useEffect(() => {
     setOrderedCards(cards);
@@ -218,25 +224,46 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
     });
   }
 
-  const handleDragEnd = React.useCallback((event: DragEndEvent) => {
-    if (event.canceled) {
-      return;
-    }
+  const handleDragEnd = React.useCallback(
+    (event: DragEndEvent) => {
+      if (isDragDisabled) {
+        return;
+      }
 
-    const { source } = event.operation;
+      if (event.canceled) {
+        return;
+      }
 
-    if (!isSortable(source)) {
-      return;
-    }
+      const { source } = event.operation;
 
-    const { initialIndex, index } = source;
+      if (!isSortable(source)) {
+        return;
+      }
 
-    if (initialIndex === index) {
-      return;
-    }
+      const { initialIndex, index } = source;
 
-    setOrderedCards((prev) => arrayMove(prev, initialIndex, index));
-  }, []);
+      if (initialIndex === index) {
+        return;
+      }
+
+      const previousOrder = orderedCards;
+      const nextOrder = arrayMove(orderedCards, initialIndex, index);
+      setOrderedCards(nextOrder);
+
+      updateOrderMutation.mutate(
+        { jdIds: nextOrder.map((card) => Number(card.id)).filter(Number.isFinite) },
+        {
+          onError: (error) => {
+            console.error('[ApplyListSection] 공고 순서 저장 실패', {
+              error: serializeQueryError(error),
+            });
+            setOrderedCards(previousOrder);
+          },
+        },
+      );
+    },
+    [isDragDisabled, orderedCards, updateOrderMutation],
+  );
 
   if (isPending) {
     return (
@@ -288,6 +315,7 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
               index={index}
               selected={sidebarOpen && activeId === card.id}
               menuActionDisabled={menuActionDisabled}
+              dragDisabled={isDragDisabled}
               onCardClick={handleCardOpen}
               onUpdateTitle={handleUpdateTitle}
               onToggleTarget={handleToggleTarget}
@@ -318,6 +346,7 @@ interface SortableApplyCardProps {
   index: number;
   selected: boolean;
   menuActionDisabled: boolean;
+  dragDisabled: boolean;
   onCardClick: (cardId: string) => void;
   onUpdateTitle: (cardId: string, nextTitle: string) => void;
   onToggleTarget: (cardId: string) => void;
@@ -329,6 +358,7 @@ function SortableApplyCard({
   index,
   selected,
   menuActionDisabled,
+  dragDisabled,
   onCardClick,
   onUpdateTitle,
   onToggleTarget,
@@ -339,6 +369,7 @@ function SortableApplyCard({
     index,
     type: 'apply-card',
     accept: 'apply-card',
+    disabled: dragDisabled,
   });
 
   return (

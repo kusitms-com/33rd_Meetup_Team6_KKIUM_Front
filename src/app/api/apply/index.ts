@@ -10,11 +10,13 @@ import {
   parseJdOcrResponseSchema,
   parseJdUrlRequestSchema,
   parsedJdUrlResponseSchema,
+  updateJdOrderRequestSchema,
   updateJdTitleRequestSchema,
   type CreateJdAiRequest,
   type JdListParams,
   type JdId,
   type ParseJdUrlRequest,
+  type UpdateJdOrderRequest,
   type UpdateJdTitleRequest,
 } from './types';
 
@@ -35,6 +37,13 @@ export async function updateJdTitle(jdId: JdId, request: UpdateJdTitleRequest) {
   const parsedJdId = parseJdId(jdId);
   const parsedRequest = updateJdTitleRequestSchema.parse(request);
   const response = await api.patch<unknown>(`/api/v1/jd/${parsedJdId}/title`, parsedRequest);
+
+  return jdMutationResponseSchema.parse(response);
+}
+
+export async function updateJdOrder(request: UpdateJdOrderRequest) {
+  const parsedRequest = updateJdOrderRequestSchema.parse(request);
+  const response = await api.patch<unknown>('/api/v1/jd/order', parsedRequest);
 
   return jdMutationResponseSchema.parse(response);
 }

@@ -83,6 +83,10 @@ export const updateJdTitleRequestSchema = z.object({
   title: z.string().trim().min(1, '공고 제목을 입력해주세요.'),
 });
 
+export const updateJdOrderRequestSchema = z.object({
+  jdIds: z.array(z.coerce.number().int().positive()),
+});
+
 export const parseJdUrlRequestSchema = z.object({
   linkUrl: z.string().trim().url('공고 링크 형식이 올바르지 않습니다.'),
 });
@@ -118,6 +122,7 @@ export type CreateJdAiResponse = z.infer<typeof createJdAiResponseSchema>;
 export type ParseJdUrlRequest = z.infer<typeof parseJdUrlRequestSchema>;
 export type ParseJdOcrResponse = z.infer<typeof parseJdOcrResponseSchema>;
 export type ParsedJdUrlResponse = z.infer<typeof parsedJdUrlResponseSchema>;
+export type UpdateJdOrderRequest = z.infer<typeof updateJdOrderRequestSchema>;
 export type UpdateJdTitleRequest = z.infer<typeof updateJdTitleRequestSchema>;
 export type JdMutationResponse = z.infer<typeof jdMutationResponseSchema>;
 
