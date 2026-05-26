@@ -3,15 +3,9 @@
 import Image from 'next/image';
 
 import type { ExperienceCategory } from '@/app/(pages)/experience/_components/ExperienceCategoryTab';
+import { getExperienceCategoryIconSrc } from '@/app/(pages)/experience/_utils/ExperienceCategory';
 import { CheckButton } from '@/components/common/CheckButton';
 import { cn } from '@/lib/utils';
-
-const iconMap: Record<Exclude<ExperienceCategory, 'all'>, string> = {
-  activity: '/activity-selected.svg',
-  career: '/career-selected.svg',
-  education: '/education-selected.svg',
-  etc: '/etc-selected.svg',
-};
 
 export interface ExperienceSelectProps {
   type: Exclude<ExperienceCategory, 'all'>;
@@ -75,7 +69,7 @@ export function ExperienceSelect({
         )}
       >
         <Image
-          src={iconMap[type]}
+          src={getExperienceCategoryIconSrc(type)}
           alt=""
           aria-hidden
           width={40}
