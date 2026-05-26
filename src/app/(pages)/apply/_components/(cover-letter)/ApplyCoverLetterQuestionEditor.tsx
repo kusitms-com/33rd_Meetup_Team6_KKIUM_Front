@@ -1,9 +1,13 @@
 'use client';
 
-import { StarIcon } from '@/components/common/icons/StarIcon';
-import { Button } from '@/components/ui/button';
+import * as React from 'react';
+
+import { coverLetterAiDraftMock } from '../../_constants/applyMockData';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+
+import { AiDraftButton } from './AiDraftButton';
+import { ApplyCoverLetterAiDraftPanel } from './AiDraftPanel';
 
 export interface ApplyCoverLetterQuestionEditorProps {
   order: number;
@@ -11,7 +15,8 @@ export interface ApplyCoverLetterQuestionEditorProps {
   value: string;
   onChange: (value: string) => void;
   onTitleChange: (title: string) => void;
-  onAiDraftClick?: () => void;
+  hasSelectedExperiences?: boolean;
+  aiDraft?: string;
   className?: string;
 }
 
@@ -25,9 +30,38 @@ export function ApplyCoverLetterQuestionEditor({
   value,
   onChange,
   onTitleChange,
-  onAiDraftClick,
+  hasSelectedExperiences = false,
+  aiDraft = coverLetterAiDraftMock,
   className,
 }: ApplyCoverLetterQuestionEditorProps) {
+  const [aiDraftOpen, setAiDraftOpen] = React.useState(false);
+  const [draftContent, setDraftContent] = React.useState('');
+
+  React.useEffect(() => {
+    setAiDraftOpen(false);
+    setDraftContent('');
+  }, [order]);
+
+  const canUseAiDraft = hasSelectedExperiences;
+  const hasDraft = draftContent.length > 0;
+
+  const openAiDraft = () => {
+    setDraftContent(aiDraft);
+    setAiDraftOpen(true);
+  };
+
+  const handleAiDraftClick = () => {
+    if (!canUseAiDraft) {
+      return;
+    }
+
+    openAiDraft();
+  };
+
+  const handleExpandedChange = (expanded: boolean) => {
+    setAiDraftOpen(expanded);
+  };
+
   return (
     <article
       data-slot="cover-letter-question-editor"
@@ -49,26 +83,30 @@ export function ApplyCoverLetterQuestionEditor({
             className="h-7 min-w-0 flex-1 border-none bg-transparent p-0 text-xl font-bold leading-7 text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
           />
         </div>
-        <Button
-          type="button"
-          variant="ai"
-          size="small"
-          className="shrink-0"
-          leftIcon={<StarIcon className="text-on-fill" />}
-          onClick={onAiDraftClick}
-        >
-          AI 초안
-        </Button>
+        <AiDraftButton disabled={!canUseAiDraft} onClick={handleAiDraftClick} />
       </div>
 
-      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <Textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder="여기에 자기소개서를 작성해보세요."
           aria-label={`${formatQuestionOrder(order)} ${title} 답변`}
-          className="h-full min-h-0 flex-1 resize-none border-none bg-transparent p-0 body-1-regular leading-6 text-strong shadow-none placeholder:text-tertiary focus-visible:border-none focus-visible:bg-transparent focus-visible:ring-0"
+          className={cn(
+            'h-full min-h-0 flex-1 resize-none border-none bg-transparent p-0 body-1-regular leading-6 text-strong shadow-none placeholder:text-tertiary focus-visible:border-none focus-visible:bg-transparent focus-visible:ring-0',
+            canUseAiDraft && hasDraft && 'pb-11',
+            canUseAiDraft && aiDraftOpen && hasDraft && 'pb-56',
+          )}
         />
+
+        {canUseAiDraft && hasDraft && (
+          <ApplyCoverLetterAiDraftPanel
+            expanded={aiDraftOpen}
+            onExpandedChange={handleExpandedChange}
+            draft={draftContent}
+            hasDraft={hasDraft}
+          />
+        )}
       </div>
     </article>
   );
