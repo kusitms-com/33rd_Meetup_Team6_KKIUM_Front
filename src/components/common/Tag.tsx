@@ -77,7 +77,7 @@ export function Tag({
           aria-disabled={disabled || undefined}
           disabled={disabled}
           className={cn(
-            'flex shrink-0 items-center justify-center disabled:cursor-not-allowed',
+            'flex shrink-0 cursor-pointer items-center justify-center disabled:cursor-not-allowed',
             actionButtonClassName,
           )}
           onClick={canRemove ? onRemove : undefined}

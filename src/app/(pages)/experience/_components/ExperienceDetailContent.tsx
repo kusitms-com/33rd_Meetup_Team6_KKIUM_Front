@@ -311,7 +311,7 @@ export function ExperienceDetailContent({
                         type="button"
                         aria-label="기간 선택"
                         aria-expanded={datePickerOpen}
-                        className="flex size-[21px] shrink-0 items-center justify-center rounded-sm text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
+                        className="flex size-[21px] shrink-0 cursor-pointer items-center justify-center rounded-sm text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
                         onClick={toggleDatePicker}
                       >
                         <CalendarIcon className="size-[21px]" />
