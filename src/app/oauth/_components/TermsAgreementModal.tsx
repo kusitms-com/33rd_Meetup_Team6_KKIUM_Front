@@ -54,18 +54,14 @@ function AgreementItem({
 interface TermsDetailViewProps {
   type: Exclude<TermsDetailType, null>;
   checked: boolean;
-  isSaving: boolean;
   onClose: () => void;
-  onSave: () => void;
   onCheckedChange: (nextChecked: boolean) => void;
 }
 
 function TermsDetailView({
   type,
   checked,
-  isSaving,
   onClose,
-  onSave,
   onCheckedChange,
 }: TermsDetailViewProps) {
   const title = type === 'terms' ? '서비스 이용약관' : '개인정보 수집 및 이용';
@@ -95,8 +91,8 @@ function TermsDetailView({
       <Button
         type="button"
         variant="secondary"
-        disabled={!checked || isSaving}
-        onClick={onSave}
+        disabled={!checked}
+        onClick={onClose}
         className="w-full"
       >
         저장하기
@@ -162,9 +158,7 @@ export function TermsAgreementModal({ open, onDismiss, onComplete }: TermsAgreem
           <TermsDetailView
             type={detailType}
             checked={detailType === 'terms' ? agreeTerms : agreePrivacy}
-            isSaving={isSaving}
             onClose={() => setDetailType(null)}
-            onSave={handleSave}
             onCheckedChange={(nextChecked) => {
               if (detailType === 'terms') {
                 setAgreeTerms(nextChecked);
@@ -189,8 +183,8 @@ export function TermsAgreementModal({ open, onDismiss, onComplete }: TermsAgreem
                 </div>
 
                 <div className="inline-flex items-center gap-3">
-                  <div className="flex size-20 items-center justify-center rounded-lg bg-mint-50">
-                    <Image src="/logo-big.svg" alt="KKIUM 로고" width={64} height={44} priority />
+                  <div className="flex size-20 items-center justify-center rounded-lg">
+                    <Image src="/file.svg" alt="KKIUM 로고" width={64} height={44} priority />
                   </div>
                   <div className="flex flex-col gap-2">
                     <h2 className="heading-3-extra-bold text-strong">KKIUM</h2>

@@ -151,13 +151,26 @@ export async function requestSocialLogin(provider: 'google' | 'kakao', code: str
 export async function requestTermsAgreement(termsAgreed: boolean) {
   const response = await authFetch('auth/terms', {
     method: 'POST',
+    headers: {
+      Accept: 'application/json',
+    },
     body: JSON.stringify({
       termsAgreed,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Terms agreement failed (${response.status})`);
+    const contentType = response.headers.get('Content-Type') ?? '';
+    let message = `Terms agreement failed (${response.status})`;
+    if (contentType.includes('application/json')) {
+      try {
+        const payload = (await response.json()) as { message?: string };
+        if (payload.message) message = payload.message;
+      } catch {
+        /* ignore malformed JSON */
+      }
+    }
+    throw new Error(message);
   }
 }
 

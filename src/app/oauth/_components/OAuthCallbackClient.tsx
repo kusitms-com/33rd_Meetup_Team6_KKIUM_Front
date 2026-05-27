@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { consumeOAuthState, requestSocialLoginOnce } from '@/app/_utils/authFetch';
 import { TermsAgreementModal } from '@/app/oauth/_components/TermsAgreementModal';
@@ -11,8 +11,15 @@ export function OAuthCallbackClient({ provider }: { provider: OAuthProvider }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showTermsAgreement, setShowTermsAgreement] = useState(false);
+  /** Ensures OAuth callback logic (incl. consumeOAuthState) runs once per mount; avoids Strict Mode / dependency re-runs wiping state. */
+  const requestedRef = useRef(false);
 
   useEffect(() => {
+    if (requestedRef.current) {
+      return;
+    }
+    requestedRef.current = true;
+
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const incomingState = searchParams.get('state');
