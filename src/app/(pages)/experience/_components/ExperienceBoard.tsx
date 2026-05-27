@@ -337,6 +337,7 @@ export function ExperienceBoard({
 
       if (!Number.isInteger(experienceId) || experienceId <= 0) {
         setErrorMessage('삭제할 경험 정보를 확인하지 못했습니다.');
+        setDeleteTargetExperience(null);
         return;
       }
 
