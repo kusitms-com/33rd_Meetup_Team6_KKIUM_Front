@@ -11,10 +11,12 @@ import type {
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
+import { EXPERIENCE_TYPE_FIELD_GROUPS } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
 import {
   createEmptyBasicInfoForm,
   createEmptyCoreInfoForm,
   createEmptyResultInfoForm,
+  type ExperienceAddBasicInfoForm,
 } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 import {
   mapAnalyzeResponseToBasicInfoForm,
@@ -60,6 +62,9 @@ export function ExperienceAddPageContent() {
   const isSaving = createExperienceMutation.isPending;
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
+  const isBasicInfoStep = currentStepIndex === 1;
+  const isNextStepDisabled =
+    isAnalyzing || isSaving || (isBasicInfoStep && !isBasicInfoComplete(basicInfo));
 
   useEffect(() => {
     if (!isNotionConnected) return;
@@ -214,7 +219,7 @@ export function ExperienceAddPageContent() {
           <Button
             type="button"
             className="w-40"
-            disabled={isAnalyzing || isSaving}
+            disabled={isNextStepDisabled}
             onClick={goNextStep}
           >
             {currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1 ? '저장하기' : '다음'}
@@ -222,5 +227,13 @@ export function ExperienceAddPageContent() {
         </footer>
       )}
     </div>
+  );
+}
+
+function isBasicInfoComplete(basicInfo: ExperienceAddBasicInfoForm) {
+  if (!basicInfo.type) return false;
+
+  return EXPERIENCE_TYPE_FIELD_GROUPS[basicInfo.type].every((fieldGroup) =>
+    fieldGroup.fields.every((field) => basicInfo[field.name].trim().length > 0),
   );
 }
