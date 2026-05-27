@@ -47,6 +47,11 @@ export function TagSet({
     setInputValue('');
     setErrorMessage('');
   }, [maxTagCount, onChange, tags, trimmedInputValue]);
+  const addTagRef = React.useRef(addTag);
+
+  React.useEffect(() => {
+    addTagRef.current = addTag;
+  }, [addTag]);
 
   React.useEffect(() => {
     if (!onRequestClose) return;
@@ -56,7 +61,7 @@ export function TagSet({
 
       if (root?.contains(event.target as Node)) return;
 
-      addTag();
+      addTagRef.current();
       onRequestClose();
     };
 
@@ -65,7 +70,7 @@ export function TagSet({
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown, true);
     };
-  }, [addTag, onRequestClose]);
+  }, [onRequestClose]);
 
   const removeTag = (targetIndex: number) => {
     onChange?.(tags.filter((_, index) => index !== targetIndex));
