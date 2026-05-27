@@ -44,7 +44,7 @@ export function ExperienceAddCoreStep({ value, onChange }: ExperienceAddCoreStep
         </div>
         <ul className="flex flex-col gap-0.5 pl-8">
           {CORE_EXPERIENCE_TIPS.map((tip) => (
-            <li key={tip} className="body-3-bold text-gray-500">
+            <li key={tip} className="body-3-bold text-secondary">
               {tip}
             </li>
           ))}
