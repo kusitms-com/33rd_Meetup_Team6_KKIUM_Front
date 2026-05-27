@@ -12,6 +12,28 @@ interface SocialLoginData {
   refreshToken?: string;
   refresh_token?: string;
   termsAgreed?: boolean;
+  terms_agreed?: boolean;
+}
+
+export interface SocialLoginResult {
+  accessToken: string;
+  /** true only when the API explicitly reports the user has agreed to terms. */
+  termsAgreed: boolean;
+}
+
+function isExplicitTermsAgreed(data: SocialLoginData | undefined): boolean {
+  if (!data) return false;
+  const raw: unknown = data.termsAgreed ?? data.terms_agreed;
+  if (raw === true) return true;
+  if (raw === false) return false;
+  if (typeof raw === 'string') {
+    const normalized = raw.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1' || normalized === 'y' || normalized === 'yes') {
+      return true;
+    }
+  }
+  if (typeof raw === 'number' && raw === 1) return true;
+  return false;
 }
 
 interface SocialLoginResponse {
@@ -56,6 +78,25 @@ export function resolveOAuthRedirectUri(provider: 'google' | 'kakao'): string {
     );
   }
   return `${window.location.origin}/oauth/${provider}/callback`;
+}
+
+const inflightSocialLogins = new Map<string, Promise<SocialLoginResult>>();
+
+/**
+ * Deduplicates in-flight social login for the same provider/code (e.g. React Strict Mode
+ * double mount) so every subscriber receives the same result and terms UI can open.
+ */
+export function requestSocialLoginOnce(provider: 'google' | 'kakao', code: string) {
+  const normalizedCode = code.trim();
+  const key = `${provider}:${normalizedCode}`;
+  const existing = inflightSocialLogins.get(key);
+  if (existing) return existing;
+
+  const started = requestSocialLogin(provider, code).finally(() => {
+    inflightSocialLogins.delete(key);
+  });
+  inflightSocialLogins.set(key, started);
+  return started;
 }
 
 export async function requestSocialLogin(provider: 'google' | 'kakao', code: string) {
@@ -103,7 +144,7 @@ export async function requestSocialLogin(provider: 'google' | 'kakao', code: str
 
   return {
     accessToken,
-    termsAgreed: payload?.data?.termsAgreed === true,
+    termsAgreed: isExplicitTermsAgreed(payload.data),
   };
 }
 

@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { consumeOAuthState, requestSocialLogin } from '@/app/_utils/authFetch';
+import { consumeOAuthState, requestSocialLoginOnce } from '@/app/_utils/authFetch';
 import { TermsAgreementModal } from '@/app/oauth/_components/TermsAgreementModal';
 
 export type OAuthProvider = 'google' | 'kakao';
-
-const requestedLoginRequests = new Set<string>();
 
 export function OAuthCallbackClient({ provider }: { provider: OAuthProvider }) {
   const router = useRouter();
@@ -19,11 +17,6 @@ export function OAuthCallbackClient({ provider }: { provider: OAuthProvider }) {
     const error = searchParams.get('error');
     const incomingState = searchParams.get('state');
     const persistedState = consumeOAuthState(provider);
-    const requestKey = code ? `${provider}:${code}` : provider;
-
-    if (requestedLoginRequests.has(requestKey)) return;
-    requestedLoginRequests.add(requestKey);
-
     if (!incomingState || !persistedState || incomingState !== persistedState) {
       router.replace('/login?error=invalid_state');
       return;
@@ -39,9 +32,9 @@ export function OAuthCallbackClient({ provider }: { provider: OAuthProvider }) {
       return;
     }
 
-    void requestSocialLogin(provider, code)
+    void requestSocialLoginOnce(provider, code)
       .then((result) => {
-        if (result.termsAgreed) {
+        if (result.termsAgreed === true) {
           router.replace('/');
           return;
         }
