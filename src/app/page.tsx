@@ -7,14 +7,19 @@ import { ExperienceUpdateCard } from '@/app/_components/ExperienceUpdateCard';
 import { JobTypeCard } from '@/app/_components/JobTypeCard';
 import { TargetPostingSection } from '@/app/_components/ExperienceMatchSection';
 
+function formatTodayLabelKo(date: Date) {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'long' }).format(date);
+  return `${month}월 ${day}일 ${weekday}`;
+}
+
 export default function Home() {
   const hasMatchData = true;
   const targetPostingCount = 3;
   const [currentPostingIndex, setCurrentPostingIndex] = useState(0);
-  const today = new Date();
-  const month = today.getMonth() + 1;
-  const day = today.getDate();
-  const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'long' }).format(today);
+  const todayLabel = formatTodayLabelKo(new Date());
+
   const canGoPrev = hasMatchData && currentPostingIndex > 0;
   const canGoNext = hasMatchData && currentPostingIndex < targetPostingCount - 1;
 
@@ -32,7 +37,12 @@ export default function Home() {
     <section className="flex w-full min-w-0 flex-col items-stretch gap-6 px-4 pb-12 sm:px-6 lg:px-10">
       <div className="mx-auto inline-flex w-full max-w-[1120px] flex-col items-start gap-2">
         <div className="flex flex-col items-start gap-0.5">
-          <p className="text-base font-bold leading-6 text-gray-900">{`${month}월 ${day}일 ${weekday}`}</p>
+          <p
+            className="text-base font-bold leading-6 text-gray-900 tabular-nums"
+            suppressHydrationWarning
+          >
+            {todayLabel}
+          </p>
           <h1 className="text-3xl font-extrabold leading-[47.36px] text-strong">경험 한눈에 보기</h1>
         </div>
         <p className="text-base font-bold leading-6 text-gray-500">나의 경험을 한눈에 분석하고 관리하세요</p>
