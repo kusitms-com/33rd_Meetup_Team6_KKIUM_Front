@@ -1,4 +1,25 @@
+import type * as React from 'react';
+
+import { NotionIcon } from '@/components/common/icons/NotionIcon';
 import type { Tag } from '@/components/common/Tag';
+
+export function NotionPageIcon({ icon }: { icon?: string | null }) {
+  if (!icon) {
+    return <NotionIcon className="size-6" />;
+  }
+
+  if (isUrlIcon(icon)) {
+    return (
+      <span
+        aria-hidden="true"
+        className="size-6 rounded-sm bg-cover bg-center"
+        style={{ backgroundImage: `url("${icon}")` }}
+      />
+    );
+  }
+
+  return <span className="text-xl leading-none">{icon}</span>;
+}
 
 export function isUrlIcon(icon: string) {
   return icon.startsWith('http://') || icon.startsWith('https://');

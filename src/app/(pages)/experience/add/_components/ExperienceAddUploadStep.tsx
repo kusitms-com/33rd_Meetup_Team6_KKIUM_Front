@@ -17,12 +17,11 @@ import {
   formatLastEditedTime,
   getNotionTagTone,
   getNotionTypeLabel,
-  isUrlIcon,
+  NotionPageIcon,
 } from '@/app/(pages)/experience/add/_utils/notionPageDisplay';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Modal } from '@/components/common/Modal';
 import { Tag } from '@/components/common/Tag';
-import { NotionIcon } from '@/components/common/icons/NotionIcon';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
 import { Button } from '@/components/ui/button';
@@ -183,7 +182,7 @@ function ExperienceMaterialCard({
           {material.type === 'pdf' ? (
             <Image src="/pdf.svg" alt="" width={22} height={28} className="h-7 w-[22px]" />
           ) : (
-            <NotionMaterialIcon icon={material.icon} />
+            <NotionPageIcon icon={material.icon} />
           )}
         </div>
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -225,22 +224,4 @@ function formatFileSize(size: number) {
   }
 
   return `${Math.round(size / 1024)} KB`;
-}
-
-function NotionMaterialIcon({ icon }: { icon?: string | null }) {
-  if (!icon) {
-    return <NotionIcon className="size-6" />;
-  }
-
-  if (isUrlIcon(icon)) {
-    return (
-      <span
-        aria-hidden="true"
-        className="size-6 rounded-sm bg-cover bg-center"
-        style={{ backgroundImage: `url("${icon}")` }}
-      />
-    );
-  }
-
-  return <span className="text-xl leading-none">{icon}</span>;
 }
