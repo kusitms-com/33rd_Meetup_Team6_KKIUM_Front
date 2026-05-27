@@ -74,8 +74,12 @@ export interface ExperienceCreateRequest {
 export interface NotionPageResponse {
   pageId: string;
   title: string;
+  icon?: string | null;
+  type?: string | null;
+  lastEditedTime?: string | null;
 }
 
 export interface NotionPageListResponse {
+  workspaceName: string;
   pages: NotionPageResponse[];
 }

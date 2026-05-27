@@ -13,10 +13,15 @@ import {
   clearExperienceAddPdfDraft,
   saveExperienceAddPdfDraft,
 } from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
+import {
+  formatLastEditedTime,
+  getNotionTagTone,
+  getNotionTypeLabel,
+  NotionPageIcon,
+} from '@/app/(pages)/experience/add/_utils/notionPageDisplay';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Modal } from '@/components/common/Modal';
 import { Tag } from '@/components/common/Tag';
-import { NotionIcon } from '@/components/common/icons/NotionIcon';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
 import { Button } from '@/components/ui/button';
@@ -177,7 +182,7 @@ function ExperienceMaterialCard({
           {material.type === 'pdf' ? (
             <Image src="/pdf.svg" alt="" width={22} height={28} className="h-7 w-[22px]" />
           ) : (
-            <NotionIcon className="size-6" />
+            <NotionPageIcon icon={material.icon} />
           )}
         </div>
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -190,9 +195,11 @@ function ExperienceMaterialCard({
             </p>
           ) : (
             <div className="flex items-center gap-2.5">
-              <Tag tone="competency">페이지</Tag>
+              <Tag tone={getNotionTagTone(material.notionType)}>
+                {getNotionTypeLabel(material.notionType)}
+              </Tag>
               <span className="body-2-regular text-gray-600">
-                {material.updatedAt ?? '최근 수정일 정보 없음'}
+                {formatLastEditedTime(material.lastEditedTime)}
               </span>
             </div>
           )}
