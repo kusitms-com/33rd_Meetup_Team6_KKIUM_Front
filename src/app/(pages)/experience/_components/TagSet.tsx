@@ -116,6 +116,7 @@ export function TagSet({
       <div className="flex h-[54px] w-full items-center border-t border-border-default bg-background-w">
         <input
           value={inputValue}
+          aria-label={`${label} 태그 입력`}
           placeholder={placeholder}
           className="h-full min-w-0 flex-1 bg-transparent px-5 py-4 body-2-bold text-strong outline-none placeholder:text-quaternary"
           onBlur={addTag}
