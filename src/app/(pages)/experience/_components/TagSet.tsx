@@ -16,6 +16,7 @@ interface TagSetProps {
   placeholder?: string;
   maxTagCount?: number;
   onChange?: (tags: string[]) => void;
+  onRequestClose?: () => void;
 }
 
 export function TagSet({
@@ -26,13 +27,15 @@ export function TagSet({
   placeholder = `적용하고 싶은 ${label}을 작성해주세요`,
   maxTagCount = DEFAULT_MAX_TAG_COUNT,
   onChange,
+  onRequestClose,
 }: TagSetProps) {
   const [inputValue, setInputValue] = React.useState('');
   const [errorMessage, setErrorMessage] = React.useState('');
+  const rootRef = React.useRef<HTMLDivElement>(null);
   const trimmedInputValue = inputValue.trim();
   const canShowAddButton = trimmedInputValue.length > 0;
 
-  const addTag = () => {
+  const addTag = React.useCallback(() => {
     if (!trimmedInputValue || tags.includes(trimmedInputValue)) return;
 
     if (tags.length >= maxTagCount) {
@@ -43,7 +46,26 @@ export function TagSet({
     onChange?.([...tags, trimmedInputValue]);
     setInputValue('');
     setErrorMessage('');
-  };
+  }, [maxTagCount, onChange, tags, trimmedInputValue]);
+
+  React.useEffect(() => {
+    if (!onRequestClose) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const root = rootRef.current;
+
+      if (root?.contains(event.target as Node)) return;
+
+      addTag();
+      onRequestClose();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, true);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+    };
+  }, [addTag, onRequestClose]);
 
   const removeTag = (targetIndex: number) => {
     onChange?.(tags.filter((_, index) => index !== targetIndex));
@@ -60,6 +82,7 @@ export function TagSet({
 
   return (
     <div
+      ref={rootRef}
       className={cn(
         'flex shrink-0 flex-col items-start overflow-hidden rounded-lg border border-border-default bg-background-w shadow-lg',
         className,

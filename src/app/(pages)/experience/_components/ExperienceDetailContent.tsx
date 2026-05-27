@@ -385,6 +385,7 @@ export function ExperienceDetailContent({
               viewTagSize="large"
               onChange={setSkillTags}
               onEdit={() => setEditingTagGroup('skill')}
+              onRequestClose={() => setEditingTagGroup(null)}
             />
             <EditableTagGroup
               label="역량"
@@ -396,6 +397,7 @@ export function ExperienceDetailContent({
               borderBottom
               onChange={setCompetencyTags}
               onEdit={() => setEditingTagGroup('competency')}
+              onRequestClose={() => setEditingTagGroup(null)}
             />
           </div>
         ) : (
@@ -613,6 +615,7 @@ interface EditableTagGroupProps {
   viewTagSize?: React.ComponentProps<typeof Tag>['size'];
   onChange?: (tags: string[]) => void;
   onEdit?: () => void;
+  onRequestClose?: () => void;
 }
 
 function EditableTagGroup({
@@ -625,6 +628,7 @@ function EditableTagGroup({
   viewTagSize = 'large',
   onChange,
   onEdit,
+  onRequestClose,
 }: EditableTagGroupProps) {
   if (editing) {
     return (
@@ -634,8 +638,8 @@ function EditableTagGroup({
           label={label}
           tags={tags}
           tone={tone}
-          // className={tagSetClassName}
           onChange={onChange}
+          onRequestClose={onRequestClose}
         />
       </div>
     );

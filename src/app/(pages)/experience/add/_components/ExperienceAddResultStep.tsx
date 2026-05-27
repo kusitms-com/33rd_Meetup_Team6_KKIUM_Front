@@ -94,6 +94,7 @@ export function ExperienceAddResultStep({
             })
           }
           onEdit={() => setEditingTagGroup('skill')}
+          onRequestClose={() => setEditingTagGroup(null)}
         />
         <ResultTagGroup
           label="역량"
@@ -107,6 +108,7 @@ export function ExperienceAddResultStep({
             })
           }
           onEdit={() => setEditingTagGroup('competency')}
+          onRequestClose={() => setEditingTagGroup(null)}
         />
       </ResultSection>
 
@@ -203,6 +205,7 @@ function ResultTagGroup({
   editing,
   onChange,
   onEdit,
+  onRequestClose,
 }: {
   label: string;
   tags: readonly string[];
@@ -210,6 +213,7 @@ function ResultTagGroup({
   editing?: boolean;
   onChange: (tags: string[]) => void;
   onEdit: () => void;
+  onRequestClose: () => void;
 }) {
   if (editing) {
     return (
@@ -220,6 +224,7 @@ function ResultTagGroup({
           tags={tags}
           tone={tone}
           onChange={onChange}
+          onRequestClose={onRequestClose}
         />
       </div>
     );
