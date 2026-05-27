@@ -1,7 +1,12 @@
 import { CheckedBoxIcon } from '@/components/common/icons/CheckedBoxIcon';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { EmptyBoxIcon } from '@/components/common/icons/EmptyBoxIcon';
-import { NotionIcon } from '@/components/common/icons/NotionIcon';
+import {
+  formatLastEditedTime,
+  getNotionTagTone,
+  getNotionTypeLabel,
+  NotionPageIcon,
+} from '@/app/(pages)/experience/add/_utils/notionPageDisplay';
 import { ModalClose, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { Tag } from '@/components/common/Tag';
 import { Button } from '@/components/ui/button';
@@ -10,11 +15,14 @@ import { cn } from '@/lib/utils';
 interface NotionPage {
   pageId: string;
   title: string;
-  updatedAt?: string;
+  icon?: string | null;
+  type?: string | null;
+  lastEditedTime?: string | null;
 }
 
 interface ExperienceAddNotionPageSelectViewProps {
   pages: NotionPage[];
+  workspaceName?: string;
   isLoading?: boolean;
   errorMessage?: string;
   selectedPageIds: string[];
@@ -26,6 +34,7 @@ interface ExperienceAddNotionPageSelectViewProps {
 
 export function ExperienceAddNotionPageSelectView({
   pages,
+  workspaceName,
   isLoading = false,
   errorMessage,
   selectedPageIds,
@@ -51,7 +60,7 @@ export function ExperienceAddNotionPageSelectView({
           <div className="flex flex-col gap-0.5">
             <ModalTitle>노션에서 가져오기</ModalTitle>
             <div className="flex flex-wrap items-center gap-x-[19px] gap-y-2">
-              <ModalDescription>/홍길동의 Notion</ModalDescription>
+              <ModalDescription>/{workspaceName ?? 'Notion'}</ModalDescription>
               <Button
                 type="button"
                 variant="secondary"
@@ -116,14 +125,14 @@ export function ExperienceAddNotionPageSelectView({
                   )}
                 </span>
                 <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-background-w">
-                  <NotionIcon className="size-6" />
+                  <NotionPageIcon icon={page.icon} />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate body-1-bold text-strong">{page.title}</span>
                   <span className="flex items-center gap-2.5">
-                    <Tag tone="competency">페이지</Tag>
+                    <Tag tone={getNotionTagTone(page.type)}>{getNotionTypeLabel(page.type)}</Tag>
                     <span className="body-2-regular text-gray-600">
-                      {page.updatedAt ?? '최근 수정일 정보 없음'}
+                      {formatLastEditedTime(page.lastEditedTime)}
                     </span>
                   </span>
                 </span>

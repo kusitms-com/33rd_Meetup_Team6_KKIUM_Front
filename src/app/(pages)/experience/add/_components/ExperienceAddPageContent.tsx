@@ -11,10 +11,12 @@ import type {
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
+import { EXPERIENCE_TYPE_FIELD_GROUPS } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
 import {
   createEmptyBasicInfoForm,
   createEmptyCoreInfoForm,
   createEmptyResultInfoForm,
+  type ExperienceAddBasicInfoForm,
 } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 import {
   mapAnalyzeResponseToBasicInfoForm,
@@ -26,6 +28,7 @@ import {
   clearExperienceAddPdfDraft,
   getExperienceAddPdfDraft,
 } from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
+import { ErrorDialog } from '@/components/common/ErrorDialog';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,6 +51,7 @@ export function ExperienceAddPageContent() {
   const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
   const [coreInfo, setCoreInfo] = useState(createEmptyCoreInfoForm);
   const [resultInfo, setResultInfo] = useState(createEmptyResultInfoForm);
+  const [errorMessage, setErrorMessage] = useState('');
   const isProcessingRef = useRef(false);
   const analyzePdfMutation = useAnalyzeExperiencePdf();
   const analyzeNotionMutation = useAnalyzeExperienceNotion();
@@ -60,6 +64,9 @@ export function ExperienceAddPageContent() {
   const isSaving = createExperienceMutation.isPending;
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
+  const isBasicInfoStep = currentStepIndex === 1;
+  const isNextStepDisabled =
+    isAnalyzing || isSaving || (isBasicInfoStep && !isBasicInfoComplete(basicInfo));
 
   useEffect(() => {
     if (!isNotionConnected) return;
@@ -135,7 +142,7 @@ export function ExperienceAddPageContent() {
             setResultInfo(createEmptyResultInfoForm());
           }
         } catch (error) {
-          window.alert(
+          setErrorMessage(
             error instanceof Error ? error.message : '자료 분석 중 오류가 발생했습니다.',
           );
           return;
@@ -152,7 +159,7 @@ export function ExperienceAddPageContent() {
             }),
           );
         } catch (error) {
-          window.alert(
+          setErrorMessage(
             error instanceof Error ? error.message : '경험 저장 중 오류가 발생했습니다.',
           );
           return;
@@ -195,26 +202,50 @@ export function ExperienceAddPageContent() {
           coreInfo={coreInfo}
           onCoreInfoChange={setCoreInfo}
           resultInfo={resultInfo}
+          onResultInfoChange={setResultInfo}
         />
       </main>
 
       {!isCompleteStep && (
         <footer className="mt-10 flex justify-end gap-4">
           {!isAnalyzing && (
-            <Button type="button" className="w-40" disabled={isFirstStep} onClick={goPreviousStep}>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-40"
+              disabled={isFirstStep}
+              onClick={goPreviousStep}
+            >
               이전
             </Button>
           )}
           <Button
             type="button"
             className="w-40"
-            disabled={isAnalyzing || isSaving}
+            disabled={isNextStepDisabled}
             onClick={goNextStep}
           >
             {currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1 ? '저장하기' : '다음'}
           </Button>
         </footer>
       )}
+      <ErrorDialog
+        open={errorMessage.length > 0}
+        message={errorMessage}
+        onOpenChange={(open) => {
+          if (!open) {
+            setErrorMessage('');
+          }
+        }}
+      />
     </div>
+  );
+}
+
+function isBasicInfoComplete(basicInfo: ExperienceAddBasicInfoForm) {
+  if (!basicInfo.type) return false;
+
+  return EXPERIENCE_TYPE_FIELD_GROUPS[basicInfo.type].every((fieldGroup) =>
+    fieldGroup.fields.every((field) => (basicInfo[field.name] ?? '').trim().length > 0),
   );
 }

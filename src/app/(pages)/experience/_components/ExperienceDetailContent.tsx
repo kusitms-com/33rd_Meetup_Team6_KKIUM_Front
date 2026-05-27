@@ -4,10 +4,11 @@ import Image from 'next/image';
 import * as React from 'react';
 
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
+import { EditableTagGroup } from '@/app/(pages)/experience/_components/EditableTagGroup';
 import { getExperienceCategoryMeta } from '@/app/(pages)/experience/_utils/ExperienceCategory';
 import { formatExperiencePeriod } from '@/app/(pages)/experience/_utils/formatExperiencePeriod';
+import { ErrorDialog } from '@/components/common/ErrorDialog';
 import { CalendarIcon } from '@/components/common/icons/CalendarIcon';
-import { EditIcon } from '@/components/common/icons/EditIcon';
 import { Tag } from '@/components/common/Tag';
 import { DetailInput } from '@/components/common/DetailInput';
 import {
@@ -16,7 +17,6 @@ import {
 } from '@/components/common/SingleMonthRangeCalendar';
 import { type CalendarDateRange, RangeCalendar } from '@/components/common/RangeCalendar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 const detailFields = [
@@ -75,6 +75,7 @@ export function ExperienceDetailContent({
   const [editingTagGroup, setEditingTagGroup] = React.useState<EditableTagGroupKey | null>(null);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [datePickerTop, setDatePickerTop] = React.useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState('');
   const datePickerRootRef = React.useRef<HTMLDivElement>(null);
   const datePickerButtonRef = React.useRef<HTMLButtonElement>(null);
   const previousExperienceIdRef = React.useRef(experience.id);
@@ -199,7 +200,7 @@ export function ExperienceDetailContent({
       setDatePickerOpen(false);
       setDatePickerTop(null);
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : '경험 수정 중 오류가 발생했습니다.');
+      setErrorMessage(error instanceof Error ? error.message : '경험 수정 중 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -310,7 +311,7 @@ export function ExperienceDetailContent({
                         type="button"
                         aria-label="기간 선택"
                         aria-expanded={datePickerOpen}
-                        className="flex size-[21px] shrink-0 items-center justify-center rounded-sm text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
+                        className="flex size-[21px] shrink-0 cursor-pointer items-center justify-center rounded-sm text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
                         onClick={toggleDatePicker}
                       >
                         <CalendarIcon className="size-[21px]" />
@@ -380,9 +381,10 @@ export function ExperienceDetailContent({
               tags={skillTags}
               editing={editingTagGroup === 'skill'}
               variant="bordered-row"
-              viewTagSize="default"
+              viewTagSize="large"
               onChange={setSkillTags}
               onEdit={() => setEditingTagGroup('skill')}
+              onRequestClose={() => setEditingTagGroup(null)}
             />
             <EditableTagGroup
               label="역량"
@@ -390,17 +392,18 @@ export function ExperienceDetailContent({
               tags={competencyTags}
               editing={editingTagGroup === 'competency'}
               variant="bordered-row"
-              viewTagSize="default"
+              viewTagSize="large"
               borderBottom
               onChange={setCompetencyTags}
               onEdit={() => setEditingTagGroup('competency')}
+              onRequestClose={() => setEditingTagGroup(null)}
             />
           </div>
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-1">
               {skillTags.map((tag, index) => (
-                <Tag key={`skill-${tag}-${index}`} tone="skill" size={isPage ? 'large' : 'default'}>
+                <Tag key={`skill-${tag}-${index}`} tone="skill" size='large'>
                   {tag}
                 </Tag>
               ))}
@@ -411,7 +414,7 @@ export function ExperienceDetailContent({
                 <Tag
                   key={`competency-${tag}-${index}`}
                   tone="competency"
-                  size={isPage ? 'large' : 'default'}
+                  size='large'
                 >
                   {tag}
                 </Tag>
@@ -445,6 +448,15 @@ export function ExperienceDetailContent({
           </div>
         ))}
       </div>
+      <ErrorDialog
+        open={errorMessage.length > 0}
+        message={errorMessage}
+        onOpenChange={(open) => {
+          if (!open) {
+            setErrorMessage('');
+          }
+        }}
+      />
     </div>
   );
 }
@@ -590,126 +602,4 @@ function formatDateValue(date: Date) {
   const day = String(date.getDate()).padStart(2, '0');
 
   return `${year}-${month}-${day}`;
-}
-
-interface EditableTagGroupProps {
-  label: string;
-  tags: readonly string[];
-  tone: React.ComponentProps<typeof Tag>['tone'];
-  editing?: boolean;
-  borderBottom?: boolean;
-  variant?: 'default' | 'bordered-row';
-  viewTagSize?: React.ComponentProps<typeof Tag>['size'];
-  onChange?: (tags: string[]) => void;
-  onEdit?: () => void;
-}
-
-function EditableTagGroup({
-  label,
-  tags,
-  tone,
-  editing = false,
-  borderBottom = false,
-  variant = 'default',
-  viewTagSize = 'large',
-  onChange,
-  onEdit,
-}: EditableTagGroupProps) {
-  const [inputValue, setInputValue] = React.useState('');
-
-  React.useEffect(() => {
-    if (!editing) {
-      setInputValue('');
-    }
-  }, [editing]);
-
-  const handleAddTag = () => {
-    const nextTag = inputValue.trim();
-
-    if (!nextTag || tags.includes(nextTag)) {
-      return;
-    }
-
-    onChange?.([...tags, nextTag]);
-    setInputValue('');
-  };
-
-  const handleRemoveTag = (targetIndex: number) => {
-    onChange?.(tags.filter((_, index) => index !== targetIndex));
-  };
-
-  const handleInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-    if (event.nativeEvent.isComposing) {
-      return;
-    }
-
-    if (event.key !== 'Enter') {
-      return;
-    }
-
-    event.preventDefault();
-    handleAddTag();
-  };
-
-  if (editing) {
-    return (
-      <div className="flex w-full flex-col gap-2.5">
-        <p className="body-2-regular text-strong">{label}</p>
-        <div className="flex w-full flex-col overflow-hidden rounded-lg border border-border-default bg-background-w shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)]">
-          <div className="flex min-h-[66px] flex-wrap items-center gap-2.5 px-5 py-4">
-            {tags.map((tag, index) => (
-              <Tag
-                key={`${tag}-${index}`}
-                tone={tone}
-                size="large"
-                removable
-                onRemove={() => handleRemoveTag(index)}
-              >
-                {tag}
-              </Tag>
-            ))}
-          </div>
-          <Input
-            value={inputValue}
-            placeholder={`적용하고 싶은 ${label}을 작성해주세요`}
-            className="rounded-none border-x-0 border-b-0"
-            onBlur={handleAddTag}
-            onChange={(event) => setInputValue(event.target.value)}
-            onKeyDown={handleInputKeyDown}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        'flex w-full items-center justify-between gap-2.5',
-        variant === 'bordered-row' && 'min-h-[65px] border-t border-border-default pt-1',
-        variant === 'bordered-row' && borderBottom && 'min-h-[75px] border-b pb-2.5',
-      )}
-    >
-      <div className="flex min-w-0 flex-col gap-2.5">
-        <p className="body-2-regular text-strong">{label}</p>
-        <div className="flex flex-wrap gap-2.5">
-          {tags.map((tag) => (
-            <Tag key={tag} tone={tone} size={viewTagSize}>
-              {tag}
-            </Tag>
-          ))}
-        </div>
-      </div>
-      {onEdit ? (
-        <button
-          type="button"
-          aria-label={`${label} 태그 수정`}
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
-          onClick={onEdit}
-        >
-          <EditIcon className="size-6" />
-        </button>
-      ) : null}
-    </div>
-  );
 }

@@ -84,7 +84,7 @@ export function TextField(props: TextFieldProps) {
           data-invalid={error || undefined}
           disabled={disabled}
           className={cn(
-            'flex h-[54px] w-full items-center gap-2 rounded-lg border-[1.5px] border-solid border-border-bold bg-background-w px-4 py-4 body-2-regular text-quaternary transition-colors outline-none focus-visible:border-mint-main focus-visible:bg-mint-50/40 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-background-default data-[invalid=true]:border-red-700 data-[invalid=true]:bg-red-50/40',
+            'flex h-[54px] w-full cursor-pointer items-center gap-2 rounded-lg border-[1.5px] border-solid border-border-bold bg-background-w px-4 py-4 body-2-regular text-quaternary transition-colors outline-none focus-visible:border-mint-main focus-visible:bg-mint-50/40 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-background-default data-[invalid=true]:border-red-700 data-[invalid=true]:bg-red-50/40',
             className,
           )}
           {...buttonProps}

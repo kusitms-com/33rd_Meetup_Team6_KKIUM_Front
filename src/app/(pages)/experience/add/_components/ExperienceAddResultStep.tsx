@@ -8,12 +8,10 @@ import type {
   ExperienceAddCoreInfoForm,
   ExperienceAddResultInfoForm,
 } from '@/app/(pages)/experience/add/_types/experienceAddForm';
-import { Tag } from '@/components/common/Tag';
+import { EditableTagGroup } from '@/app/(pages)/experience/_components/EditableTagGroup';
 import { TextField } from '@/components/common/TextField';
-import { EditIcon } from '@/components/common/icons/EditIcon';
-import { Input } from '@/components/ui/input';
 
-type EditableTagGroup = 'skill' | 'competency';
+type EditableTagGroupKey = 'skill' | 'competency';
 
 interface ExperienceAddResultStepProps {
   basicInfo: ExperienceAddBasicInfoForm;
@@ -21,6 +19,7 @@ interface ExperienceAddResultStepProps {
   resultInfo: ExperienceAddResultInfoForm;
   onBasicInfoChange: (value: ExperienceAddBasicInfoForm) => void;
   onCoreInfoChange: (value: ExperienceAddCoreInfoForm) => void;
+  onResultInfoChange: (value: ExperienceAddResultInfoForm) => void;
 }
 
 const BASIC_RESULT_FIELDS = [
@@ -33,7 +32,7 @@ const CORE_RESULT_FIELDS = [
   { name: 'task', label: 'Task (해결 과제)' },
   { name: 'act', label: 'Act (실제 행동)' },
   { name: 'result', label: 'Result (결과 및 성과)' },
-  { name: 'taken', label: 'Taken (배운점)' },
+  { name: 'taken', label: 'Taken (배운 점)' },
 ] as const;
 
 export function ExperienceAddResultStep({
@@ -42,8 +41,9 @@ export function ExperienceAddResultStep({
   resultInfo,
   onBasicInfoChange,
   onCoreInfoChange,
+  onResultInfoChange,
 }: ExperienceAddResultStepProps) {
-  const [editingTagGroup, setEditingTagGroup] = useState<EditableTagGroup | null>(null);
+  const [editingTagGroup, setEditingTagGroup] = useState<EditableTagGroupKey | null>(null);
 
   return (
     <section
@@ -80,19 +80,36 @@ export function ExperienceAddResultStep({
       </ResultSection>
 
       <ResultSection number="02." title="태그">
-        <ResultTagGroup
+        <EditableTagGroup
           label="기술"
           tags={resultInfo.skillTags}
           tone="skill"
           editing={editingTagGroup === 'skill'}
+          variant='bordered-row'
+          onChange={(tags) =>
+            onResultInfoChange({
+              ...resultInfo,
+              skillTags: tags,
+            })
+          }
           onEdit={() => setEditingTagGroup('skill')}
+          onRequestClose={() => setEditingTagGroup(null)}
         />
-        <ResultTagGroup
+        <EditableTagGroup
           label="역량"
           tags={resultInfo.competencyTags}
           tone="competency"
           editing={editingTagGroup === 'competency'}
+          variant='bordered-row'
+          borderBottom
+          onChange={(tags) =>
+            onResultInfoChange({
+              ...resultInfo,
+              competencyTags: tags,
+            })
+          }
           onEdit={() => setEditingTagGroup('competency')}
+          onRequestClose={() => setEditingTagGroup(null)}
         />
       </ResultSection>
 
@@ -179,63 +196,5 @@ function ResultTextareaField({
         onChange={(event) => onChange(event.currentTarget.value)}
       />
     </label>
-  );
-}
-
-function ResultTagGroup({
-  label,
-  tags,
-  tone,
-  editing,
-  onEdit,
-}: {
-  label: string;
-  tags: readonly string[];
-  tone: React.ComponentProps<typeof Tag>['tone'];
-  editing?: boolean;
-  onEdit: () => void;
-}) {
-  if (editing) {
-    return (
-      <div className="flex w-full flex-col gap-2.5">
-        <p className="body-2-regular text-strong">{label}</p>
-        <div className="flex w-full flex-col overflow-hidden rounded-lg border border-border-default bg-background-w">
-          <div className="flex min-h-[66px] flex-wrap items-center gap-2.5 px-5 py-4">
-            {tags.map((tag) => (
-              <Tag key={tag} tone={tone} size="large" removable>
-                {tag}
-              </Tag>
-            ))}
-          </div>
-          <Input
-            placeholder={`적용하고 싶은 ${label}을 작성해주세요`}
-            className="rounded-none border-x-0 border-b-0"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex w-full items-center justify-between gap-2.5">
-      <div className="flex min-w-0 flex-col gap-2.5">
-        <p className="body-2-regular text-strong">{label}</p>
-        <div className="flex flex-wrap gap-2.5">
-          {tags.map((tag) => (
-            <Tag key={tag} tone={tone} size="large">
-              {tag}
-            </Tag>
-          ))}
-        </div>
-      </div>
-      <button
-        type="button"
-        aria-label={`${label} 태그 수정`}
-        className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded focus-visible:shadow-focus-ring focus-visible:outline-none"
-        onClick={onEdit}
-      >
-        <EditIcon className="size-6 text-tertiary" />
-      </button>
-    </div>
   );
 }
