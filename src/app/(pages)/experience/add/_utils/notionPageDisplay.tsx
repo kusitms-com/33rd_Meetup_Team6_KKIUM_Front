@@ -8,12 +8,14 @@ export function NotionPageIcon({ icon }: { icon?: string | null }) {
     return <NotionIcon className="size-6" />;
   }
 
-  if (isUrlIcon(icon)) {
+  const urlIcon = parseHttpUrlIcon(icon);
+
+  if (urlIcon) {
     return (
       <span
         aria-hidden="true"
         className="size-6 rounded-sm bg-cover bg-center"
-        style={{ backgroundImage: `url("${icon}")` }}
+        style={{ backgroundImage: `url(${JSON.stringify(urlIcon.href)})` }}
       />
     );
   }
@@ -22,7 +24,17 @@ export function NotionPageIcon({ icon }: { icon?: string | null }) {
 }
 
 export function isUrlIcon(icon: string) {
-  return icon.startsWith('http://') || icon.startsWith('https://');
+  return parseHttpUrlIcon(icon) !== null;
+}
+
+function parseHttpUrlIcon(icon: string) {
+  try {
+    const url = new URL(icon);
+
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
 }
 
 export function getNotionTypeLabel(type?: string | null) {
