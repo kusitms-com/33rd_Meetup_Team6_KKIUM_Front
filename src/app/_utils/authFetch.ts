@@ -66,6 +66,22 @@ export function saveAuthTokensToSession(accessToken: string) {
   storage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
 }
 
+export function getAccessTokenFromSession(): string | null {
+  const storage = getStorage();
+  if (!storage) return null;
+
+  const token = storage.getItem(ACCESS_TOKEN_STORAGE_KEY)?.trim();
+  return token || null;
+}
+
+// 로그인 없이 접근 가능한 경로 
+export function isPublicAuthPath(pathname: string) {
+  const path = pathname.replace(/\/$/, '') || '/';
+  return (
+    path === '/login' || path.startsWith('/oauth') || path.startsWith('/auth/callback')
+  );
+}
+
 export function resolveOAuthRedirectUri(provider: 'google' | 'kakao'): string {
   const fromEnv =
     provider === 'google'
@@ -204,8 +220,7 @@ export function consumeOAuthState(provider: 'google' | 'kakao') {
 }
 
 export async function authFetch(path: string, init: AuthFetchInit = {}) {
-  const storage = getStorage();
-  const accessToken = storage?.getItem(ACCESS_TOKEN_STORAGE_KEY) ?? null;
+  const accessToken = getAccessTokenFromSession();
 
   if (!accessToken) {
     throw new Error('Access token session is missing.');
