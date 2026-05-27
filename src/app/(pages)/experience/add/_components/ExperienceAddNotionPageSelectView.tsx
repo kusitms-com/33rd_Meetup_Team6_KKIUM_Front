@@ -10,11 +10,14 @@ import { cn } from '@/lib/utils';
 interface NotionPage {
   pageId: string;
   title: string;
-  updatedAt?: string;
+  icon?: string | null;
+  type?: string | null;
+  lastEditedTime?: string | null;
 }
 
 interface ExperienceAddNotionPageSelectViewProps {
   pages: NotionPage[];
+  workspaceName?: string;
   isLoading?: boolean;
   errorMessage?: string;
   selectedPageIds: string[];
@@ -26,6 +29,7 @@ interface ExperienceAddNotionPageSelectViewProps {
 
 export function ExperienceAddNotionPageSelectView({
   pages,
+  workspaceName,
   isLoading = false,
   errorMessage,
   selectedPageIds,
@@ -51,7 +55,7 @@ export function ExperienceAddNotionPageSelectView({
           <div className="flex flex-col gap-0.5">
             <ModalTitle>노션에서 가져오기</ModalTitle>
             <div className="flex flex-wrap items-center gap-x-[19px] gap-y-2">
-              <ModalDescription>/홍길동의 Notion</ModalDescription>
+              <ModalDescription>/{workspaceName ?? 'Notion'}</ModalDescription>
               <Button
                 type="button"
                 variant="secondary"
@@ -116,14 +120,14 @@ export function ExperienceAddNotionPageSelectView({
                   )}
                 </span>
                 <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-background-w">
-                  <NotionIcon className="size-6" />
+                  <NotionPageIcon icon={page.icon} />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate body-1-bold text-strong">{page.title}</span>
                   <span className="flex items-center gap-2.5">
-                    <Tag tone="competency">페이지</Tag>
+                    <Tag tone={getNotionTagTone(page.type)}>{getNotionTypeLabel(page.type)}</Tag>
                     <span className="body-2-regular text-gray-600">
-                      {page.updatedAt ?? '최근 수정일 정보 없음'}
+                      {formatLastEditedTime(page.lastEditedTime)}
                     </span>
                   </span>
                 </span>
@@ -146,4 +150,52 @@ export function ExperienceAddNotionPageSelectView({
       </div>
     </>
   );
+}
+
+function NotionPageIcon({ icon }: { icon?: string | null }) {
+  if (!icon) {
+    return <NotionIcon className="size-6" />;
+  }
+
+  if (isUrlIcon(icon)) {
+    return (
+      <span
+        aria-hidden="true"
+        className="size-6 rounded-sm bg-cover bg-center"
+        style={{ backgroundImage: `url("${icon}")` }}
+      />
+    );
+  }
+
+  return <span className="text-xl leading-none">{icon}</span>;
+}
+
+function isUrlIcon(icon: string) {
+  return icon.startsWith('http://') || icon.startsWith('https://');
+}
+
+function getNotionTypeLabel(type?: string | null) {
+  return type === 'database' ? '데이터베이스' : '페이지';
+}
+
+function getNotionTagTone(type?: string | null): React.ComponentProps<typeof Tag>['tone'] {
+  return type === 'database' ? 'skill' : 'competency';
+}
+
+function formatLastEditedTime(lastEditedTime?: string | null) {
+  if (!lastEditedTime) {
+    return '최근 수정일 정보 없음';
+  }
+
+  const date = new Date(lastEditedTime);
+
+  if (Number.isNaN(date.getTime())) {
+    return lastEditedTime;
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}.${month}.${day}`;
 }

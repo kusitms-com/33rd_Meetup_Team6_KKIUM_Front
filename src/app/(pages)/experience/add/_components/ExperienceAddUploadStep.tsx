@@ -177,7 +177,7 @@ function ExperienceMaterialCard({
           {material.type === 'pdf' ? (
             <Image src="/pdf.svg" alt="" width={22} height={28} className="h-7 w-[22px]" />
           ) : (
-            <NotionIcon className="size-6" />
+            <NotionMaterialIcon icon={material.icon} />
           )}
         </div>
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -190,9 +190,11 @@ function ExperienceMaterialCard({
             </p>
           ) : (
             <div className="flex items-center gap-2.5">
-              <Tag tone="competency">페이지</Tag>
+              <Tag tone={getNotionTagTone(material.notionType)}>
+                {getNotionTypeLabel(material.notionType)}
+              </Tag>
               <span className="body-2-regular text-gray-600">
-                {material.updatedAt ?? '최근 수정일 정보 없음'}
+                {formatLastEditedTime(material.lastEditedTime)}
               </span>
             </div>
           )}
@@ -217,4 +219,52 @@ function formatFileSize(size: number) {
   }
 
   return `${Math.round(size / 1024)} KB`;
+}
+
+function NotionMaterialIcon({ icon }: { icon?: string | null }) {
+  if (!icon) {
+    return <NotionIcon className="size-6" />;
+  }
+
+  if (isUrlIcon(icon)) {
+    return (
+      <span
+        aria-hidden="true"
+        className="size-6 rounded-sm bg-cover bg-center"
+        style={{ backgroundImage: `url("${icon}")` }}
+      />
+    );
+  }
+
+  return <span className="text-xl leading-none">{icon}</span>;
+}
+
+function isUrlIcon(icon: string) {
+  return icon.startsWith('http://') || icon.startsWith('https://');
+}
+
+function getNotionTypeLabel(type?: string | null) {
+  return type === 'database' ? '데이터베이스' : '페이지';
+}
+
+function getNotionTagTone(type?: string | null): React.ComponentProps<typeof Tag>['tone'] {
+  return type === 'database' ? 'skill' : 'competency';
+}
+
+function formatLastEditedTime(lastEditedTime?: string | null) {
+  if (!lastEditedTime) {
+    return '최근 수정일 정보 없음';
+  }
+
+  const date = new Date(lastEditedTime);
+
+  if (Number.isNaN(date.getTime())) {
+    return lastEditedTime;
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}.${month}.${day}`;
 }

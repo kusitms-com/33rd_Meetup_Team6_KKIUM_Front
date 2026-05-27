@@ -23,7 +23,9 @@ export interface NotionMaterial {
   type: 'notion';
   pageId: string;
   title: string;
-  updatedAt?: string;
+  icon?: string | null;
+  notionType?: string | null;
+  lastEditedTime?: string | null;
 }
 
 export type ExperienceMaterial = PdfMaterial | NotionMaterial;
@@ -44,6 +46,7 @@ export function ExperienceAddMaterialModal({
   const [draftMaterials, setDraftMaterials] = useState<ExperienceMaterial[]>(materials);
   const [isPdfAddedInCurrentSession, setIsPdfAddedInCurrentSession] = useState(false);
   const notionPagesQuery = useNotionPages({ enabled: modalView === 'notion-pages' });
+  const workspaceName = notionPagesQuery.data?.workspaceName;
   const notionPages = notionPagesQuery.data?.pages ?? [];
   const hasDraftPdf = draftMaterials.some((material) => material.type === 'pdf');
 
@@ -116,6 +119,9 @@ export function ExperienceAddMaterialModal({
           type: 'notion',
           pageId: page.pageId,
           title: page.title,
+          icon: page.icon,
+          notionType: page.type,
+          lastEditedTime: page.lastEditedTime,
         },
       ];
     });
@@ -134,6 +140,7 @@ export function ExperienceAddMaterialModal({
       {modalView === 'notion-pages' ? (
         <ExperienceAddNotionPageSelectView
           pages={notionPages}
+          workspaceName={workspaceName}
           isLoading={notionPagesQuery.isPending}
           errorMessage={
             notionPagesQuery.isError && notionPagesQuery.error instanceof Error
