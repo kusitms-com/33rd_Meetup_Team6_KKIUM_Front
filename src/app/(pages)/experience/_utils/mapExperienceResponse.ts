@@ -1,10 +1,11 @@
 import type {
   ExperienceCardResponse,
   ExperienceDetailResponse,
-  PieceType,
+  ExperiencePieceType,
   TagResponse,
 } from '@/app/api/experience/types';
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
+import { formatExperiencePeriod } from '@/app/(pages)/experience/_utils/formatExperiencePeriod';
 
 type UiExperienceType = ExperienceItem['type'];
 type CommonExperienceFields = Pick<
@@ -12,7 +13,7 @@ type CommonExperienceFields = Pick<
   'experienceId' | 'type' | 'title' | 'oneLineIntro' | 'tags' | 'startDate' | 'endDate'
 >;
 
-const typeMap: Record<PieceType, UiExperienceType> = {
+const typeMap: Record<ExperiencePieceType, UiExperienceType> = {
   ACTIVITY: 'activity',
   CAREER: 'career',
   EDUCATION: 'education',
@@ -27,12 +28,15 @@ const emptyDetail: ExperienceItem['detail'] = {
   taken: '',
 };
 
+const emptyBasicDetail: ExperienceItem['basicDetail'] = {};
+
 export function mapExperienceCardToItem(response: ExperienceCardResponse): ExperienceItem {
-  const period = formatPeriod(response.startDate, response.endDate);
+  const period = formatExperiencePeriod(response.startDate, response.endDate);
 
   return {
     ...mapCommonFields(response),
     detailInfo: [{ label: '기간', value: period }],
+    basicDetail: emptyBasicDetail,
     detail: emptyDetail,
   };
 }
@@ -49,6 +53,7 @@ export function mapExperienceDetailToItem(response: ExperienceDetailResponse): E
       tags: response.tags,
     }),
     detailInfo: getDetailInfo(response),
+    basicDetail: getBasicDetail(response),
     detail: {
       situation: response.situation,
       task: response.task,
@@ -59,30 +64,55 @@ export function mapExperienceDetailToItem(response: ExperienceDetailResponse): E
   };
 }
 
+function getBasicDetail(response: ExperienceDetailResponse): ExperienceItem['basicDetail'] {
+  switch (response.type) {
+    case 'ACTIVITY':
+      return {
+        name: response.detail.name,
+        teamNum: String(response.detail.teamNum),
+        role: response.detail.role,
+        contributionRate: String(response.detail.contributionRate),
+      };
+    case 'CAREER':
+      return {
+        name: response.detail.name,
+        company: response.detail.company,
+        employmentStatus: response.detail.employmentStatus,
+      };
+    case 'EDUCATION':
+      return {
+        organizationName: response.detail.organizationName,
+        name: response.detail.name,
+      };
+    case 'ETC':
+      return {};
+  }
+}
+
 function mapCommonFields(response: CommonExperienceFields) {
   return {
     id: String(response.experienceId),
     type: typeMap[response.type],
     title: response.title,
     description: response.oneLineIntro,
-    period: formatPeriod(response.startDate, response.endDate),
+    startDate: response.startDate,
+    endDate: response.endDate,
+    period: formatExperiencePeriod(response.startDate, response.endDate),
     skillTags: getTagsByCategory(response.tags, 'TECH'),
     competencyTags: getTagsByCategory(response.tags, 'COMPETENCY'),
   };
 }
 
 function getDetailInfo(response: ExperienceDetailResponse): ExperienceItem['detailInfo'] {
-  const period = formatPeriod(response.detail.startDate, response.detail.endDate);
+  const period = formatExperiencePeriod(response.detail.startDate, response.detail.endDate);
 
   switch (response.type) {
     case 'ACTIVITY':
       return [
         { label: '기간', value: period },
         { label: '팀원 수', value: `${response.detail.teamNum}명` },
-        {
-          label: '내 역할 및 기여도',
-          value: `${response.detail.role}, ${response.detail.contributionRate}%`,
-        },
+        { label: '내 역할', value: response.detail.role },
+        { label: '기여도', value: `${response.detail.contributionRate}%` },
       ];
     case 'CAREER':
       return [
@@ -103,19 +133,4 @@ function getDetailInfo(response: ExperienceDetailResponse): ExperienceItem['deta
 
 function getTagsByCategory(tags: TagResponse[], category: TagResponse['category']) {
   return tags.filter((tag) => tag.category === category).map((tag) => tag.field);
-}
-
-function formatPeriod(startDate: string, endDate: string) {
-  const start = formatDate(startDate);
-  const end = formatDate(endDate);
-
-  if (startDate.slice(0, 4) === endDate.slice(0, 4)) {
-    return `${start}~${end.slice(5)}`;
-  }
-
-  return `${start}~${end}`;
-}
-
-function formatDate(date: string) {
-  return date.replaceAll('-', '.');
 }

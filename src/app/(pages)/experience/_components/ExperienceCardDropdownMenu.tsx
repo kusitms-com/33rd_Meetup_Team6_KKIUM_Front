@@ -26,6 +26,18 @@ export function ExperienceCardDropdownMenu({
   triggerClassName,
   ...props
 }: ExperienceCardDropdownMenuProps) {
+  const handleEditTitleSelect: React.ComponentProps<typeof DropdownMenuItem>['onSelect'] = (
+    event,
+  ) => {
+    event.stopPropagation();
+    onEditTitle?.(event);
+  };
+
+  const handleDeleteSelect: React.ComponentProps<typeof DropdownMenuItem>['onSelect'] = (event) => {
+    event.stopPropagation();
+    onDelete?.(event);
+  };
+
   return (
     <DropdownMenu modal={modal} {...props}>
       <DropdownMenuTrigger asChild>
@@ -43,14 +55,20 @@ export function ExperienceCardDropdownMenu({
           <MoreVerticalIcon className="size-6" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={8}>
-        <DropdownMenuItem className="active:bg-gray-300" onSelect={onEditTitle}>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <DropdownMenuItem className="active:bg-gray-300" onSelect={handleEditTitleSelect}>
           <span>제목 수정하기</span>
           <span className="flex size-8 items-center justify-center">
             <EditIcon className="size-6 text-tertiary" />
           </span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="active:bg-gray-300" onSelect={onDelete}>
+        <DropdownMenuItem className="active:bg-gray-300" onSelect={handleDeleteSelect}>
           <span>삭제</span>
           <span className="flex size-8 items-center justify-center">
             <TrashIcon className="size-6 text-tertiary" />
