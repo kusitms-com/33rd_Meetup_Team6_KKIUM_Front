@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import * as React from 'react';
 
@@ -39,10 +39,14 @@ function ExperiencePageRouteContent({
   const selectedExperienceId = searchParams.get('selected');
   const isDetailView = searchParams.get('view') === 'detail';
   const numericExperienceId = selectedExperienceId ? Number(selectedExperienceId) : null;
-  const shouldShowDetailPage =
-    isDetailView && Number.isInteger(numericExperienceId) && Number(numericExperienceId) > 0;
+  const isValidExperienceId =
+    Number.isInteger(numericExperienceId) && Number(numericExperienceId) > 0;
 
-  if (shouldShowDetailPage) {
+  if (isDetailView && !isValidExperienceId) {
+    notFound();
+  }
+
+  if (isDetailView) {
     return <ExperienceDetailPageContent experienceId={Number(numericExperienceId)} />;
   }
 
