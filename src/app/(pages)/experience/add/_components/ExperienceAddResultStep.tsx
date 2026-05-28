@@ -185,10 +185,11 @@ function ResultTextareaField({
   onChange,
 }: {
   label: string;
-  value: string;
+  value?: string | null;
   onChange: (value: string) => void;
 }) {
-  const characterCount = value.length;
+  const fieldValue = value ?? '';
+  const characterCount = fieldValue.length;
   const isMaxLength = characterCount >= CORE_RESULT_FIELD_MAX_LENGTH;
 
   return (
@@ -201,7 +202,7 @@ function ResultTextareaField({
       </span>
       <TextField
         variant="textarea"
-        value={value}
+        value={fieldValue}
         maxLength={CORE_RESULT_FIELD_MAX_LENGTH}
         description={false}
         onChange={(event) => onChange(event.currentTarget.value)}

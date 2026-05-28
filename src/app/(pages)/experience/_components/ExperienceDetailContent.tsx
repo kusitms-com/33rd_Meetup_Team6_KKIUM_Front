@@ -431,7 +431,8 @@ export function ExperienceDetailContent({
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden py-6">
         {detailFields.map(([label, key]) => {
-          const characterCount = detail[key].length;
+          const fieldValue = detail[key] ?? '';
+          const characterCount = fieldValue.length;
           const isMaxLength = characterCount >= DETAIL_FIELD_MAX_LENGTH;
 
           return (
@@ -445,7 +446,7 @@ export function ExperienceDetailContent({
                 </p>
               </div>
               <DetailInput
-                value={detail[key]}
+                value={fieldValue}
                 maxLength={DETAIL_FIELD_MAX_LENGTH}
                 readOnly={!isEditing}
                 onChange={handleDetailChange(key)}
