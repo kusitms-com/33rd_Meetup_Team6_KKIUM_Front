@@ -126,13 +126,6 @@ export function ExperienceMatchCard({
       return;
     }
 
-    console.log('[ExperienceMatchCard] apply highlight keywords', {
-      jdId,
-      experienceId,
-      keywordCount: experienceAnalysisQuery.data.analysis.highlightKeywords.length,
-      highlightKeywords: experienceAnalysisQuery.data.analysis.highlightKeywords,
-    });
-
     setHighlightKeywords(
       experienceId,
       experienceAnalysisQuery.data.analysis.highlightKeywords.map((item) => ({
@@ -144,10 +137,6 @@ export function ExperienceMatchCard({
 
   const handleToggle = () => {
     if (expanded && activeHighlightExperienceId === experienceId) {
-      console.log('[ExperienceMatchCard] clear highlight keywords by collapse', {
-        jdId,
-        experienceId,
-      });
       clearHighlightKeywords();
     }
     onToggle?.();

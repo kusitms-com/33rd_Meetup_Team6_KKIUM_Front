@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import {
   useInfiniteQuery,
   useMutation,
@@ -85,49 +84,11 @@ export function useApplyJobPostingResume(jdId: JdId | null | undefined, enabled 
   const hasApiAccess = useHasApplyApiAccess();
   const shouldQuery = enabled && jdId != null && hasApiAccess;
 
-  const query = useQuery({
+  return useQuery({
     queryKey: [...applyJobPostingQueryKeys.detail(jdId), 'resume'],
-    queryFn: async () => {
-      const data = await getJdResume(jdId!);
-      console.log('[ApplyJobPostingResume] API', {
-        jdId,
-        endpoint: 'GET /api/v1/jd/{jdId}/resume',
-        response: data,
-      });
-      return data;
-    },
+    queryFn: () => getJdResume(jdId!),
     enabled: shouldQuery,
   });
-
-  useEffect(() => {
-    console.log('[ApplyJobPostingResume] state', {
-      jdId,
-      enabled,
-      hasApiAccess,
-      shouldQuery,
-      queryStatus: query.status,
-      fetchStatus: query.fetchStatus,
-      isPending: query.isPending,
-      isFetching: query.isFetching,
-      isError: query.isError,
-      error: query.error,
-      hasData: query.data != null,
-    });
-  }, [
-    jdId,
-    enabled,
-    hasApiAccess,
-    shouldQuery,
-    query.status,
-    query.fetchStatus,
-    query.isPending,
-    query.isFetching,
-    query.isError,
-    query.error,
-    query.data,
-  ]);
-
-  return query;
 }
 
 export function useUpdateApplyJobPostingTitle() {
