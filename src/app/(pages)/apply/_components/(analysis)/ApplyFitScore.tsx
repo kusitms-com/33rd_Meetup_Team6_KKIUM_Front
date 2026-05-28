@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils';
 
+import { ApplyFitPercent } from './ApplyFitPercent';
+
 export interface ApplyFitScoreProps {
   value: number;
   label?: string;
@@ -12,7 +14,7 @@ export function ApplyFitScore({ value, label = '지원 적합도', className }: 
   return (
     <div className={cn('flex w-full items-center gap-3', className)}>
       <div className="inline-flex shrink-0 flex-col items-start justify-end">
-        <span className="text-3xl font-bold leading-[47.36px] text-strong">{clampedValue}%</span>
+        <ApplyFitPercent value={clampedValue} size="lg" />
         <span className="w-20 body-1-regular text-gray-600">{label}</span>
       </div>
 
