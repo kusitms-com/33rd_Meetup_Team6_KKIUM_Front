@@ -31,9 +31,10 @@ const homeExperienceDistributionItemSchema = z.object({
 });
 
 export const homeDashboardResponseSchema = z.object({
-  targetJd: homeTargetJdSchema.nullable().optional(),
+  targetJds: z.array(homeTargetJdSchema).default([]),
   totalExperienceCount: z.coerce.number(),
   thisMonthExperienceCount: z.coerce.number(),
+  lastMonthDiff: z.coerce.number().default(0),
   jobType: homeJobTypeSchema.nullable().optional(),
   experienceDistribution: z.array(homeExperienceDistributionItemSchema).default([]),
 });

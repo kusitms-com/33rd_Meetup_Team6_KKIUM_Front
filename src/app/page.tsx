@@ -20,15 +20,19 @@ function formatTodayLabelKo(date: Date) {
 export default function Home() {
   const router = useRouter();
   const { data: homeData } = useHomeDashboard();
-  const hasMatchData = homeData?.targetJd != null;
-  const targetPostingCount = hasMatchData ? 1 : 0;
   const [currentPostingIndex, setCurrentPostingIndex] = useState(0);
   const todayLabel = formatTodayLabelKo(new Date());
   const mappedJobType = mapJobTypeNameToProfile(homeData?.jobType?.typeName);
+  const targetJds = homeData?.targetJds ?? [];
+  const hasMatchData = targetJds.length > 0;
+  const targetPostingCount = targetJds.length;
+  const currentTargetJd = hasMatchData ? targetJds[currentPostingIndex] : null;
 
   const canGoPrev = hasMatchData && currentPostingIndex > 0;
   const canGoNext = hasMatchData && currentPostingIndex < targetPostingCount - 1;
-  const targetApplyHref = '/apply/list';
+  const targetJdId = currentTargetJd?.jdId ?? currentTargetJd?.id;
+  const targetApplyHref =
+    targetJdId == null ? '/apply/list' : `/apply?jdid=${encodeURIComponent(String(targetJdId))}`;
 
   const handlePrevPosting = () => {
     if (!canGoPrev) return;
@@ -66,7 +70,7 @@ export default function Home() {
         canGoNext={canGoNext}
         onPrevPosting={handlePrevPosting}
         onNextPosting={handleNextPosting}
-        targetJd={homeData?.targetJd}
+        targetJd={currentTargetJd}
         applyHref={targetApplyHref}
       />
 
@@ -75,6 +79,7 @@ export default function Home() {
           className="w-full xl:w-60 xl:shrink-0"
           totalCount={homeData?.totalExperienceCount}
           monthlyNewCount={homeData?.thisMonthExperienceCount}
+          monthlyDiff={homeData?.lastMonthDiff}
           onTotalNavigate={handleMoveToExperience}
         />
         <JobTypeCard
