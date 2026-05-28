@@ -102,7 +102,12 @@ export function isPublicAuthPath(pathname: string) {
 // 토큰 없이 UI 확인용 
 export function isAuthExemptPath(pathname: string) {
   const path = pathname.replace(/\/$/, '') || '/';
-  return isPublicAuthPath(pathname) || path === '/apply' || path.startsWith('/apply/');
+  return (
+    isPublicAuthPath(pathname) ||
+    path === '/' ||
+    path === '/apply' ||
+    path.startsWith('/apply/')
+  );
 }
 
 export function resolveOAuthRedirectUri(provider: 'google' | 'kakao'): string {

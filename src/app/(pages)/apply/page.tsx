@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 export default function ApplyPage() {
   const searchParams = useSearchParams();
-  const jdId = searchParams.get('jdId');
+  const jdId = searchParams.get('jdid') ?? searchParams.get('jdId');
   const { jobPosting } = useApplyJobPostingSnapshot(jdId);
   const [activeTab, setActiveTab] = useState<ApplyJobTab>('analysis');
   const isCoverLetterTab = activeTab === 'cover-letter';
