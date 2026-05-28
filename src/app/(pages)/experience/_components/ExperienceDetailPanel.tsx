@@ -141,7 +141,7 @@ export function ExperienceDetailPanel({
       aria-labelledby={titleId}
       tabIndex={-1}
       className={cn(
-        'fixed top-0 right-0 z-40 flex h-dvh w-full max-w-[500px] flex-col bg-background-default px-6 pt-8 shadow-2xl',
+        'fixed top-0 right-0 z-40 flex h-dvh w-full max-w-[500px] flex-col overflow-x-hidden overflow-y-auto overscroll-contain bg-background-default px-6 pt-8 pb-8 shadow-2xl',
         'transition-transform duration-300 ease-out will-change-transform',
         open && entered ? 'translate-x-0' : 'translate-x-full',
         className,
@@ -191,6 +191,7 @@ export function ExperienceDetailPanel({
         <ExperienceDetailContent
           experience={experience}
           variant="panel"
+          className="flex-none"
           onEdit={onEdit}
           onSave={onSave}
         />
