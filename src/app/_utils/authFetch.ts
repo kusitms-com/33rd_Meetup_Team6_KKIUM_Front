@@ -66,6 +66,45 @@ export function saveAuthTokensToSession(accessToken: string) {
   storage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken);
 }
 
+export function getAccessTokenFromSession(): string | null {
+  const storage = getStorage();
+  if (!storage) return null;
+
+  const token = storage.getItem(ACCESS_TOKEN_STORAGE_KEY)?.trim();
+  return token || null;
+}
+
+export function clearAccessTokenFromSession() {
+  getStorage()?.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+}
+
+// 인증 만료 시 로그인 화면으로 이동 
+export function redirectToLoginOnUnauthorized() {
+  if (typeof window === 'undefined') return;
+
+  clearAccessTokenFromSession();
+
+  if (isAuthExemptPath(window.location.pathname)) {
+    return;
+  }
+
+  window.location.replace('/login');
+}
+
+// 로그인·OAuth 화면 (사이드바 없음)
+export function isPublicAuthPath(pathname: string) {
+  const path = pathname.replace(/\/$/, '') || '/';
+  return (
+    path === '/login' || path.startsWith('/oauth') || path.startsWith('/auth/callback')
+  );
+}
+
+// 토큰 없이 UI 확인용 
+export function isAuthExemptPath(pathname: string) {
+  const path = pathname.replace(/\/$/, '') || '/';
+  return isPublicAuthPath(pathname) || path === '/apply' || path.startsWith('/apply/');
+}
+
 export function resolveOAuthRedirectUri(provider: 'google' | 'kakao'): string {
   const fromEnv =
     provider === 'google'
@@ -82,10 +121,6 @@ export function resolveOAuthRedirectUri(provider: 'google' | 'kakao'): string {
 
 const inflightSocialLogins = new Map<string, Promise<SocialLoginResult>>();
 
-/**
- * Deduplicates in-flight social login for the same provider/code (e.g. React Strict Mode
- * double mount) so every subscriber receives the same result and terms UI can open.
- */
 export function requestSocialLoginOnce(provider: 'google' | 'kakao', code: string) {
   const normalizedCode = code.trim();
   const key = `${provider}:${normalizedCode}`;
@@ -123,6 +158,12 @@ export async function requestSocialLogin(provider: 'google' | 'kakao', code: str
 
   if (contentType.includes('application/json')) {
     payload = (await response.json()) as SocialLoginResponse;
+  }
+
+  if (response.status === 401) {
+    redirectToLoginOnUnauthorized();
+    const message = payload?.message ?? 'Social login failed (401)';
+    throw new Error(message);
   }
 
   if (!response.ok) {
@@ -204,8 +245,7 @@ export function consumeOAuthState(provider: 'google' | 'kakao') {
 }
 
 export async function authFetch(path: string, init: AuthFetchInit = {}) {
-  const storage = getStorage();
-  const accessToken = storage?.getItem(ACCESS_TOKEN_STORAGE_KEY) ?? null;
+  const accessToken = getAccessTokenFromSession();
 
   if (!accessToken) {
     throw new Error('Access token session is missing.');
@@ -220,9 +260,15 @@ export async function authFetch(path: string, init: AuthFetchInit = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
-  return fetch(url.toString(), {
+  const response = await fetch(url.toString(), {
     ...init,
     headers,
     cache: init.cache ?? 'no-store',
   });
+
+  if (response.status === 401) {
+    redirectToLoginOnUnauthorized();
+  }
+
+  return response;
 }
