@@ -7,10 +7,11 @@ import type { ExperienceItem } from '@/app/(pages)/experience/_components/Experi
 import { EditableTagGroup } from '@/app/(pages)/experience/_components/EditableTagGroup';
 import { getExperienceCategoryMeta } from '@/app/(pages)/experience/_utils/ExperienceCategory';
 import { formatExperiencePeriod } from '@/app/(pages)/experience/_utils/formatExperiencePeriod';
+import { sanitizeNumberText } from '@/app/(pages)/experience/_utils/sanitizeNumberText';
+import { DetailInput } from '@/components/common/DetailInput';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
 import { CalendarIcon } from '@/components/common/icons/CalendarIcon';
 import { Tag } from '@/components/common/Tag';
-import { DetailInput } from '@/components/common/DetailInput';
 import {
   type SingleMonthCalendarDateRange,
   SingleMonthRangeCalendar,
@@ -26,6 +27,7 @@ const detailFields = [
   ['Result', 'result'],
   ['Taken', 'taken'],
 ] as const;
+const DETAIL_FIELD_MAX_LENGTH = 1000;
 
 type EditableTagGroupKey = 'skill' | 'competency';
 type BasicDetailKey = keyof ExperienceItem['basicDetail'];
@@ -45,7 +47,6 @@ export interface ExperienceDetailContentProps extends React.ComponentProps<'div'
   experience: ExperienceItem;
   variant?: 'panel' | 'page';
   defaultEditing?: boolean;
-  scrollable?: boolean;
   onEdit?: () => void;
   onSave?: (experience: ExperienceDetailSaveValue) => Promise<void> | void;
 }
@@ -54,7 +55,6 @@ export function ExperienceDetailContent({
   experience,
   variant = 'panel',
   defaultEditing = false,
-  scrollable = true,
   onEdit,
   onSave,
   className,
@@ -170,9 +170,11 @@ export function ExperienceDetailContent({
     };
 
   const updateBasicDetail = (key: BasicDetailKey, value: string) => {
+    const nextValue = getSanitizedBasicDetailValue(key, value);
+
     setBasicDetail((currentBasicDetail) => ({
       ...currentBasicDetail,
-      [key]: value,
+      [key]: nextValue,
     }));
   };
 
@@ -311,10 +313,11 @@ export function ExperienceDetailContent({
                         type="button"
                         aria-label="기간 선택"
                         aria-expanded={datePickerOpen}
-                        className="flex size-[21px] shrink-0 cursor-pointer items-center justify-center rounded-sm text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
+                        className="flex min-w-0 cursor-pointer items-center gap-1 rounded-sm text-secondary focus-visible:shadow-focus-ring focus-visible:outline-none"
                         onClick={toggleDatePicker}
                       >
-                        <CalendarIcon className="size-[21px]" />
+                        <CalendarIcon className="size-[21px] shrink-0 text-tertiary" />
+                        <span>{item.value}</span>
                       </button>
                       {datePickerOpen && (
                         <div
@@ -365,7 +368,7 @@ export function ExperienceDetailContent({
                       onChange={(value) => updateBasicDetail(item.name, value)}
                     />
                   ) : (
-                    <span>{item.type === 'field' ? item.displayValue : item.value}</span>
+                    !isEditing && <span>{item.type === 'field' ? item.displayValue : item.value}</span>
                   )}
                 </dd>
               </div>
@@ -426,27 +429,31 @@ export function ExperienceDetailContent({
 
       {!isEditing ? <div className="mt-4 h-px w-full shrink-0 bg-gray-300" /> : null}
 
-      <div
-        className={cn(
-          'flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden py-6',
-          scrollable && 'overflow-y-auto',
-        )}
-      >
-        {detailFields.map(([label, key]) => (
-          <div key={key} className="flex w-full flex-col gap-1.5">
-            <div className="flex items-center justify-between px-2">
-              <h3 className={cn('font-bold text-primary', isPage ? 'title-2-bold' : 'body-2-bold')}>
-                {label}
-              </h3>
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden py-6">
+        {detailFields.map(([label, key]) => {
+          const fieldValue = detail[key] ?? '';
+          const characterCount = fieldValue.length;
+          const isMaxLength = characterCount >= DETAIL_FIELD_MAX_LENGTH;
+
+          return (
+            <div key={key} className="flex w-full flex-col gap-1.5">
+              <div className="flex items-end gap-3 px-2">
+                <h3 className={cn('font-bold text-primary', isPage ? 'title-2-bold' : 'body-2-bold')}>
+                  {label}
+                </h3>
+                <p className={cn('caption-bold', isMaxLength ? 'text-danger' : 'text-quaternary')}>
+                  {characterCount}자 / {DETAIL_FIELD_MAX_LENGTH}자
+                </p>
+              </div>
+              <DetailInput
+                value={fieldValue}
+                maxLength={DETAIL_FIELD_MAX_LENGTH}
+                readOnly={!isEditing}
+                onChange={handleDetailChange(key)}
+              />
             </div>
-            <DetailInput
-              value={detail[key]}
-              maxLength={1000}
-              readOnly={!isEditing}
-              onChange={handleDetailChange(key)}
-            />
-          </div>
-        ))}
+          );
+        })}
       </div>
       <ErrorDialog
         open={errorMessage.length > 0}
@@ -459,6 +466,14 @@ export function ExperienceDetailContent({
       />
     </div>
   );
+}
+
+function getSanitizedBasicDetailValue(key: BasicDetailKey, value: string) {
+  if (key === 'teamNum' || key === 'contributionRate') {
+    return sanitizeNumberText(value, 100);
+  }
+
+  return value;
 }
 
 type EditableDetailInfoItem =

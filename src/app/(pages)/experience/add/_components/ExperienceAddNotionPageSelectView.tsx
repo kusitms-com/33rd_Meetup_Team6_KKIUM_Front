@@ -7,6 +7,7 @@ import {
   getNotionTypeLabel,
   NotionPageIcon,
 } from '@/app/(pages)/experience/add/_utils/notionPageDisplay';
+import { LoadingState } from '@/components/common/LoadingState';
 import { ModalClose, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { Tag } from '@/components/common/Tag';
 import { Button } from '@/components/ui/button';
@@ -77,9 +78,12 @@ export function ExperienceAddNotionPageSelectView({
 
       <div className="flex max-h-[calc(100dvh-260px)] min-h-[360px] w-full flex-col gap-2 overflow-y-auto">
         {isLoading && (
-          <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-gray-50">
-            <p className="body-2-regular text-gray-700">노션 페이지를 불러오는 중이에요</p>
-          </div>
+          <LoadingState
+            message="노션 페이지를 불러오는 중이에요"
+            ariaLabel="노션 페이지를 불러오는 중"
+            className="h-auto min-h-[360px] rounded-lg border-0 bg-gray-50"
+            lottieClassName="size-20"
+          />
         )}
 
         {!isLoading && errorMessage && (
@@ -105,29 +109,31 @@ export function ExperienceAddNotionPageSelectView({
                 type="button"
                 aria-pressed={isSelected}
                 className={cn(
-                  'flex w-full cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-left',
+                  'flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left',
                   'focus-visible:shadow-focus-ring focus-visible:outline-none',
                   isSelected ? 'bg-[#eefffd]' : 'bg-gray-50 hover:bg-gray-100',
                 )}
                 onClick={() => onPageToggle(page.pageId)}
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    'flex size-10 shrink-0 items-center justify-center text-tertiary',
-                    isSelected && 'text-mint-500',
-                  )}
-                >
-                  {isSelected ? (
-                    <CheckedBoxIcon className="size-6" />
-                  ) : (
-                    <EmptyBoxIcon className="size-6" />
-                  )}
+                <span className="flex shrink-0 items-center">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'flex size-10 shrink-0 items-center justify-center text-tertiary',
+                      isSelected && 'text-mint-500',
+                    )}
+                  >
+                    {isSelected ? (
+                      <CheckedBoxIcon className="size-6" />
+                    ) : (
+                      <EmptyBoxIcon className="size-6" />
+                    )}
+                  </span>
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-background-w">
+                    <NotionPageIcon icon={page.icon} />
+                  </span>
                 </span>
-                <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-background-w">
-                  <NotionPageIcon icon={page.icon} />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="ml-3 flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate body-1-bold text-strong">{page.title}</span>
                   <span className="flex items-center gap-2.5">
                     <Tag tone={getNotionTagTone(page.type)}>{getNotionTypeLabel(page.type)}</Tag>

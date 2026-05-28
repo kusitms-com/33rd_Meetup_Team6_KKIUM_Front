@@ -16,6 +16,7 @@ import {
   EXPERIENCE_TYPE_OPTIONS,
 } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
 import type { ExperienceAddBasicInfoForm } from '@/app/(pages)/experience/add/_types/experienceAddForm';
+import { sanitizeNumberText } from '@/app/(pages)/experience/_utils/sanitizeNumberText';
 import { type CalendarDateRange, RangeCalendar } from '@/components/common/RangeCalendar';
 import { TextField } from '@/components/common/TextField';
 import { cn } from '@/lib/utils';
@@ -33,9 +34,11 @@ export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBas
     fieldName: keyof Omit<ExperienceAddBasicInfoForm, 'type'>,
     fieldValue: string,
   ) => {
+    const nextValue = getSanitizedBasicInfoValue(fieldName, fieldValue);
+
     onChange({
       ...value,
-      [fieldName]: fieldValue,
+      [fieldName]: nextValue,
     });
   };
   const handleInputChange =
@@ -140,6 +143,17 @@ export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBas
       )}
     </section>
   );
+}
+
+function getSanitizedBasicInfoValue(
+  fieldName: keyof Omit<ExperienceAddBasicInfoForm, 'type'>,
+  value: string,
+) {
+  if (fieldName === 'teamNum' || fieldName === 'contributionRate') {
+    return sanitizeNumberText(value, 100);
+  }
+
+  return value;
 }
 
 const DATE_RANGE_PLACEHOLDER = '0000년 00월 00일 ~ 0000년 00월 00일';

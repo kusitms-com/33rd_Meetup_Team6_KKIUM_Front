@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     >
       {!hideSidebar && <Sidebar collapsed={collapsed} />}
       <main className={`ml-(--app-sidebar-width) min-h-dvh min-w-0 ${hideSidebar ? 'pt-0' : 'pt-[30px]'}`}>
-        {children}
+        <div className={hideSidebar ? undefined : 'mx-20'}>{children}</div>
       </main>
     </div>
   );
