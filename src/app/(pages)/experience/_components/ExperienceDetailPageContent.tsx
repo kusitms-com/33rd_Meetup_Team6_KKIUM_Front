@@ -96,7 +96,6 @@ export function ExperienceDetailPageContent({ experienceId }: ExperienceDetailPa
           <ExperienceDetailContent
             experience={experience}
             variant="page"
-            scrollable={false}
             onSave={handleExperienceSave}
           />
         )}

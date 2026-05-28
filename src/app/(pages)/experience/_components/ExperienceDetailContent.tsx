@@ -46,7 +46,6 @@ export interface ExperienceDetailContentProps extends React.ComponentProps<'div'
   experience: ExperienceItem;
   variant?: 'panel' | 'page';
   defaultEditing?: boolean;
-  scrollable?: boolean;
   onEdit?: () => void;
   onSave?: (experience: ExperienceDetailSaveValue) => Promise<void> | void;
 }
@@ -55,7 +54,6 @@ export function ExperienceDetailContent({
   experience,
   variant = 'panel',
   defaultEditing = false,
-  scrollable = true,
   onEdit,
   onSave,
   className,
@@ -427,12 +425,7 @@ export function ExperienceDetailContent({
 
       {!isEditing ? <div className="mt-4 h-px w-full shrink-0 bg-gray-300" /> : null}
 
-      <div
-        className={cn(
-          'flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden py-6',
-          scrollable && 'overflow-y-auto',
-        )}
-      >
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden py-6">
         {detailFields.map(([label, key]) => {
           const characterCount = detail[key].length;
           const isMaxLength = characterCount >= DETAIL_FIELD_MAX_LENGTH;
