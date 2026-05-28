@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { ResizableSplit } from '../ResizableSplit';
+import { APPLY_PAGE_HORIZONTAL_PADDING } from '../../_constants/applyConstants';
 import {
   applyCoverLetterQuestionsMock,
   getCoverLetterQuestionDisplayText,
@@ -16,6 +17,7 @@ import { ApplyCoverLetterExperienceSelectModal } from './ApplyCoverLetterExperie
 import { ApplyCoverLetterPanel } from './ApplyCoverLetterPanel';
 import { ApplyCoverLetterRightPanel } from './ApplyCoverLetterRightPanel';
 import { useApplyJobPostingResume } from '@/hooks/apply/useApplyJobPostings';
+import { cn } from '@/lib/utils';
 
 export interface ApplyCoverLetterSectionProps {
   jdId: string | null;
@@ -121,7 +123,7 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
 
   return (
     <>
-      <div className="flex min-h-0 flex-1 flex-col pl-10">
+      <div className={cn('flex min-h-0 flex-1 flex-col', APPLY_PAGE_HORIZONTAL_PADDING)}>
         <ResizableSplit
           className="min-h-0 flex-1"
           separatorAriaLabel="자기소개서 작성 패널 너비 조절"
@@ -144,6 +146,7 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
               onActiveIndexChange={setActiveQuestionIndex}
               onQuestionsChange={setQuestions}
               selectedExperienceIdsByQuestion={selectedExperienceIdsByQuestion}
+              hasDisplayedSelectedExperiences={activeQuestionSelectedExperiences.length > 0}
             />
           }
         />

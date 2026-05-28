@@ -38,7 +38,7 @@ export function RecruitmentDeadlineFields({
   };
 
   return (
-    <div className={cn('flex w-full min-w-0 items-start gap-3', className)}>
+    <div className={cn('flex w-full min-w-0 items-stretch gap-4', className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         <p className="title-2-bold text-strong">모집 기간</p>
         <div className="flex flex-col gap-1">

@@ -6,7 +6,6 @@ import {
 import type { ApiErrorPayload, ApiResponse } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const TEMP_ACCESS_TOKEN = process.env.NEXT_PUBLIC_TEMP_ACCESS_TOKEN?.trim();
 
 type QueryParamValue = string | number | boolean | null | undefined;
 type QueryParams = Record<string, QueryParamValue | QueryParamValue[]>;
@@ -32,19 +31,8 @@ export class ApiError extends Error {
   }
 }
 
-// sessionStorage mg_access_token 우선, 없을 때만 dev 임시 토큰 사용
 function getAccessToken() {
-  const sessionToken = getAccessTokenFromSession();
-
-  if (sessionToken) {
-    return sessionToken;
-  }
-
-  if (typeof window === 'undefined') {
-    return TEMP_ACCESS_TOKEN || null;
-  }
-
-  return TEMP_ACCESS_TOKEN || null;
+  return getAccessTokenFromSession();
 }
 
 // API 요청 보낼 최종 URL을 만들어주는 함수

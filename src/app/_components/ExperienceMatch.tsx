@@ -51,6 +51,10 @@ function getKnobPoint(percent: number) {
   return toPoint(ARC_CX, ARC_CY, ARC_RADIUS, angle);
 }
 
+function distanceBetween(a: { x: number; y: number }, b: { x: number; y: number }) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 export function ExperienceMatch({
   percent = EXPERIENCE_MATCH_MOCK.percent,
   title = '내 경험과 적합도',
@@ -67,6 +71,11 @@ export function ExperienceMatch({
   const safePercent = clampPercent(percent);
   const arcPath = React.useMemo(() => describeArcPath(), []);
   const knob = getKnobPoint(safePercent);
+  const progressGradientCenter = getKnobPoint(50);
+  const progressGradientRadius = Math.max(
+    distanceBetween(progressGradientCenter, getKnobPoint(0)),
+    distanceBetween(progressGradientCenter, getKnobPoint(100)),
+  );
 
   return (
     <section
@@ -83,6 +92,8 @@ export function ExperienceMatch({
         arcPath={arcPath}
         arcFlipTranslateY={ARC_CY * 2}
         knob={knob}
+        progressGradientCenter={progressGradientCenter}
+        progressGradientRadius={progressGradientRadius}
         ctaHref={ctaHref}
         onCtaClick={onCtaClick}
       />

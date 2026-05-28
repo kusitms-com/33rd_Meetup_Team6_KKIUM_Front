@@ -26,7 +26,7 @@ function AnalysisPoint({
         {icon}
         <span className="body-1-bold text-strong">{label}</span>
       </div>
-      <p className="body-3-regular text-gray-700">{description}</p>
+      <p className="body-3-regular text-secondary">{description}</p>
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function ExperienceAnalysisPanel({
       )}
       {...sectionProps}
     >
-      <h4 className="title-2-bold text-gray-900">경험 분석</h4>
+      <h4 className="title-2-bold text-strong">경험 분석</h4>
 
       <div className="flex w-full flex-col items-center gap-5">
         <div className="flex w-full flex-col gap-2">
@@ -64,7 +64,7 @@ export function ExperienceAnalysisPanel({
 
         <div className="flex w-full flex-col gap-2">
           <span className="body-1-bold text-strong">활용 가이드</span>
-          <p className="body-3-regular text-gray-700">{analysis.usageGuide}</p>
+          <p className="body-3-regular text-secondary">{analysis.usageGuide}</p>
         </div>
       </div>
     </section>
