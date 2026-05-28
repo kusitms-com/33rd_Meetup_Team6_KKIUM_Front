@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 import type { ExperienceAnalysisData } from '../../_constants/applyMockData';
 import { mapJdExperienceAnalysisToView } from '../../_utils/mapJdExperienceAnalysisToView';
+import { ApplyFitPercent } from './ApplyFitPercent';
 import { ExperienceAnalysisPanel } from './ExperienceAnalysisPanel';
 
 export interface ExperienceMatchCardProps extends Omit<React.ComponentProps<'article'>, 'title'> {
@@ -76,7 +77,7 @@ function CardBodyContent({
       <footer className="flex w-full flex-col gap-1">
         <div className="inline-flex items-center gap-2">
           <span className="body-3-bold text-tertiary">현재 공고에 활용 적합도</span>
-          <span className="text-xl font-bold leading-8 text-mint-400">{score}%</span>
+          <ApplyFitPercent value={score} size="sm" />
         </div>
 
         <div

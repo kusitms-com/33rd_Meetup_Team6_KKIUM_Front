@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 
+import { APPLY_PAGE_HORIZONTAL_PADDING } from './_constants/applyConstants';
 import { ApplyAnalysis } from './_components/(analysis)/ApplyAnalysis';
 import { ApplyJobHeader, type ApplyJobTab } from './_components/(analysis)/ApplyJobHeader';
 import { ApplyMyExperience } from './_components/(analysis)/ApplyMyExperience';
@@ -79,7 +80,7 @@ export default function ApplyPage() {
           isCoverLetterTab && 'min-h-0 flex-1',
         )}
       >
-        <div className="shrink-0 px-10">
+        <div className={cn('shrink-0', APPLY_PAGE_HORIZONTAL_PADDING)}>
           <ApplyJobHeader
             title={jobPosting?.title ?? ''}
             companyName={jobPosting?.companyName ?? ''}
@@ -92,7 +93,7 @@ export default function ApplyPage() {
         </div>
 
         {activeTab === 'analysis' ? (
-          <div className="px-10">
+          <div className={APPLY_PAGE_HORIZONTAL_PADDING}>
             <ResizableSplit
               separatorAriaLabel="공고 분석과 내 경험 패널 너비 조절"
               left={<ApplyAnalysis jdId={jdId} />}
