@@ -33,9 +33,11 @@ export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBas
     fieldName: keyof Omit<ExperienceAddBasicInfoForm, 'type'>,
     fieldValue: string,
   ) => {
+    const nextValue = getSanitizedBasicInfoValue(fieldName, fieldValue);
+
     onChange({
       ...value,
-      [fieldName]: fieldValue,
+      [fieldName]: nextValue,
     });
   };
   const handleInputChange =
@@ -140,6 +142,27 @@ export function ExperienceAddBasicInfoStep({ value, onChange }: ExperienceAddBas
       )}
     </section>
   );
+}
+
+function getSanitizedBasicInfoValue(
+  fieldName: keyof Omit<ExperienceAddBasicInfoForm, 'type'>,
+  value: string,
+) {
+  if (fieldName === 'teamNum' || fieldName === 'contributionRate') {
+    return sanitizeNumberText(value, 100);
+  }
+
+  return value;
+}
+
+function sanitizeNumberText(value: string, maxValue: number) {
+  const numberText = value.replace(/\D/g, '');
+
+  if (!numberText) {
+    return '';
+  }
+
+  return String(Math.min(Number(numberText), maxValue));
 }
 
 const DATE_RANGE_PLACEHOLDER = '0000년 00월 00일 ~ 0000년 00월 00일';

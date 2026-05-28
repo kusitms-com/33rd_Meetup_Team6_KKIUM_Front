@@ -169,9 +169,11 @@ export function ExperienceDetailContent({
     };
 
   const updateBasicDetail = (key: BasicDetailKey, value: string) => {
+    const nextValue = getSanitizedBasicDetailValue(key, value);
+
     setBasicDetail((currentBasicDetail) => ({
       ...currentBasicDetail,
-      [key]: value,
+      [key]: nextValue,
     }));
   };
 
@@ -461,6 +463,24 @@ export function ExperienceDetailContent({
       />
     </div>
   );
+}
+
+function getSanitizedBasicDetailValue(key: BasicDetailKey, value: string) {
+  if (key === 'teamNum' || key === 'contributionRate') {
+    return sanitizeNumberText(value, 100);
+  }
+
+  return value;
+}
+
+function sanitizeNumberText(value: string, maxValue: number) {
+  const numberText = value.replace(/\D/g, '');
+
+  if (!numberText) {
+    return '';
+  }
+
+  return String(Math.min(Number(numberText), maxValue));
 }
 
 type EditableDetailInfoItem =
