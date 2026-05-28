@@ -186,7 +186,7 @@ export function ExperienceAddPageContent() {
   };
 
   return (
-    <div className="mx-20 flex min-h-dvh flex-col py-5">
+    <div className="flex min-h-dvh flex-col py-5">
       <header className="flex items-center gap-2">
         <button
           type="button"

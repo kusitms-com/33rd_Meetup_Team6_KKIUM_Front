@@ -55,7 +55,7 @@ export function ExperienceDetailPageContent({ experienceId }: ExperienceDetailPa
   };
 
   return (
-    <div className="mx-16 flex min-h-[calc(100vh-32px)] flex-col bg-background-default">
+    <div className="flex min-h-[calc(100vh-32px)] flex-col">
       <div className="flex w-full flex-1 flex-col gap-[22px]">
         <header className="grid h-8 grid-cols-[32px_1fr_32px] items-center">
           <button
