@@ -4,6 +4,7 @@ import Image from 'next/image';
 
 import type { ExperienceCategory } from '@/app/(pages)/experience/_components/ExperienceCategoryTab';
 import { getExperienceCategoryIconSrc } from '@/app/(pages)/experience/_utils/ExperienceCategory';
+import { ApplyFitPercent } from '@/app/(pages)/apply/_components/(analysis)/ApplyFitPercent';
 import { CheckButton } from '@/components/common/CheckButton';
 import { cn } from '@/lib/utils';
 
@@ -84,7 +85,7 @@ export function ExperienceSelect({
           <span className="mt-0.5 flex h-12 w-full flex-col gap-1">
             <span className="inline-flex items-center gap-2">
               <span className="body-3-bold text-tertiary">문항 적합도</span>
-              <span className="text-xl font-bold leading-8 text-mint-400">{score}%</span>
+              <ApplyFitPercent value={score} size="sm" />
             </span>
 
             <span

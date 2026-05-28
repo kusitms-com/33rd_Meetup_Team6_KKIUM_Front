@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
+import { APPLY_COVER_LETTER_MAX_QUESTIONS } from '../../_constants/applyConstants';
 import {
-  APPLY_COVER_LETTER_MAX_QUESTIONS,
   applyCoverLetterQuestionsMock,
   type ApplyCoverLetterQuestion,
 } from '../../_constants/applyMockData';
@@ -22,6 +22,7 @@ export interface ApplyCoverLetterRightPanelProps {
   onActiveIndexChange?: (index: number) => void;
   onQuestionsChange?: (questions: ApplyCoverLetterQuestion[]) => void;
   selectedExperienceIdsByQuestion?: Record<string, string[]>;
+  hasDisplayedSelectedExperiences?: boolean;
   initialQuestions?: ApplyCoverLetterQuestion[];
 }
 
@@ -45,6 +46,7 @@ export function ApplyCoverLetterRightPanel({
   onActiveIndexChange,
   onQuestionsChange,
   selectedExperienceIdsByQuestion = {},
+  hasDisplayedSelectedExperiences = false,
   initialQuestions = applyCoverLetterQuestionsMock,
 }: ApplyCoverLetterRightPanelProps) {
   const [uncontrolledQuestions, setUncontrolledQuestions] = React.useState(initialQuestions);
@@ -132,9 +134,7 @@ export function ApplyCoverLetterRightPanel({
         jdId={jdId}
         jdQuestionId={getJdQuestionIdFromCoverLetterQuestion(activeQuestion)}
         selectedExperienceIds={selectedExperienceIdsByQuestion[activeQuestion.id] ?? []}
-        hasSelectedExperiences={
-          (selectedExperienceIdsByQuestion[activeQuestion.id] ?? []).length > 0
-        }
+        hasSelectedExperiences={hasDisplayedSelectedExperiences}
       />
     </section>
   );

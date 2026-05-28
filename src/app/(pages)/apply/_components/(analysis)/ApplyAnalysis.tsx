@@ -170,33 +170,46 @@ export function ApplyAnalysis({ jdId }: ApplyAnalysisProps) {
 
       <ApplyFitScore value={fitScore} />
 
-      {jobInfo ? <ApplyJobInfo {...jobInfo} /> : null}
-
-      {analysis.tags.skills.length > 0 || analysis.tags.competencies.length > 0 ? (
-        <ApplyJobTags skills={skills} competencies={competencies} />
+      {jobInfo ? (
+        <>
+          <hr className="border-0 border-t border-gray-300" />
+          <ApplyJobInfo {...jobInfo} />
+        </>
       ) : null}
 
-      <div className="mb-9 flex w-full flex-col gap-6">
-        {analysis.sections.map((section) => {
-          const highlightSectionKeywords =
-            section.title === '주요 업무'
-              ? sectionKeywordMap.mainResponsibilities
-              : section.title === '자격 요건'
-                ? sectionKeywordMap.requiredQualifications
-                : section.title === '우대 사항'
-                  ? sectionKeywordMap.preferredQualifications
-                  : [];
+      {analysis.tags.skills.length > 0 || analysis.tags.competencies.length > 0 ? (
+        <>
+          <hr className="border-0 border-t border-gray-300" />
+          <ApplyJobTags skills={skills} competencies={competencies} />
+        </>
+      ) : null}
 
-          return (
-            <ApplyText
-              key={section.title}
-              title={section.title}
-              items={section.items}
-              highlightKeywords={highlightSectionKeywords}
-            />
-          );
-        })}
-      </div>
+      {analysis.sections.length > 0 ? (
+        <div className="mb-9 flex w-full flex-col gap-6">
+          <hr className="border-0 border-t border-gray-300" />
+          {analysis.sections.map((section, index) => {
+            const highlightSectionKeywords =
+              section.title === '주요 업무'
+                ? sectionKeywordMap.mainResponsibilities
+                : section.title === '자격 요건'
+                  ? sectionKeywordMap.requiredQualifications
+                  : section.title === '우대 사항'
+                    ? sectionKeywordMap.preferredQualifications
+                    : [];
+
+            return (
+              <div key={section.title} className="flex w-full flex-col gap-6">
+                {index > 0 ? <hr className="border-0 border-t border-gray-300" /> : null}
+                <ApplyText
+                  title={section.title}
+                  items={section.items}
+                  highlightKeywords={highlightSectionKeywords}
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </section>
   );
 }

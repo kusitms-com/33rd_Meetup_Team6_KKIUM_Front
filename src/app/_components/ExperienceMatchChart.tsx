@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Info } from 'lucide-react';
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 type Point = { x: number; y: number };
@@ -13,6 +14,8 @@ export interface ExperienceMatchGaugeProps {
   arcPath: string;
   arcFlipTranslateY: number;
   knob: Point;
+  progressGradientCenter: Point;
+  progressGradientRadius: number;
   ctaHref: string;
   onCtaClick?: () => void;
 }
@@ -23,9 +26,13 @@ export function ExperienceMatchGauge({
   arcPath,
   arcFlipTranslateY,
   knob,
+  progressGradientCenter,
+  progressGradientRadius,
   ctaHref,
   onCtaClick,
 }: ExperienceMatchGaugeProps) {
+  const progressGradientId = React.useId().replace(/:/g, '');
+
   return (
     <div className="inline-flex w-96 shrink-0 self-stretch flex-col items-center gap-0 overflow-hidden rounded-base bg-mint-50 p-5">
       <div className="relative h-[360px] w-80 overflow-hidden">
@@ -40,10 +47,18 @@ export function ExperienceMatchGauge({
           aria-hidden
         >
           <defs>
-            <linearGradient id="experience-match-progress" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-mint-300)" />
-              <stop offset="100%" stopColor="var(--color-mint-100)" />
-            </linearGradient>
+            <radialGradient
+              id={progressGradientId}
+              cx={progressGradientCenter.x}
+              cy={progressGradientCenter.y}
+              r={progressGradientRadius}
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor="#00b998" />
+              <stop offset="40%" stopColor="#00c6a9" />
+              <stop offset="72%" stopColor="#00d2ba" />
+              <stop offset="100%" stopColor="#72e0ce" />
+            </radialGradient>
           </defs>
           <g transform={`translate(0 ${arcFlipTranslateY}) scale(1 -1)`}>
             <path
@@ -57,13 +72,13 @@ export function ExperienceMatchGauge({
             <path
               d={arcPath}
               pathLength={100}
-              stroke="url(#experience-match-progress)"
+              stroke={`url(#${progressGradientId})`}
               strokeWidth={14}
               strokeLinecap="round"
               fill="none"
               strokeDasharray={`${percent} 100`}
             />
-            <circle cx={knob.x} cy={knob.y} r={16} fill="var(--color-mint-300)" />
+            <circle cx={knob.x} cy={knob.y} r={16} fill="var(--color-mint-400)" />
             <circle cx={knob.x} cy={knob.y} r={10} fill="var(--color-white)" />
           </g>
         </svg>
@@ -78,7 +93,7 @@ export function ExperienceMatchGauge({
           alt=""
           width={160}
           height={160}
-          className="pointer-events-none absolute bottom-20 left-1/2 h-auto w-[152px] -translate-x-1/2 object-contain"
+          className="pointer-events-none absolute bottom-18 left-1/2 h-auto w-[168px] -translate-x-1/2 object-contain"
           unoptimized
         />
       </div>

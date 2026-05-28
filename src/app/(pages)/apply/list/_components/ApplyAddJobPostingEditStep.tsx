@@ -4,9 +4,11 @@ import { ChevronDownIcon } from 'lucide-react';
 
 import {
   JOB_EDIT_STEP_HEADER,
+  JOB_POSTING_PRIMARY_BUTTON_CLASS,
   RESULT_RECRUITMENT_FIELD_OPTIONS,
-} from '@/app/(pages)/apply/_constants/applyMockData';
+} from '@/app/(pages)/apply/_constants/applyConstants';
 import { ModalDescription, ModalTitle } from '@/components/common/Modal';
+import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { XIcon } from '@/components/common/icons/XIcon';
 import { RecruitmentDeadlineFields } from '@/components/common/RecruitmentDeadlineFields';
@@ -46,6 +48,7 @@ export interface ApplyAddJobPostingEditStepProps {
   onRemoveCoverQuestion: (id: string) => void;
   onAddCoverQuestion: () => void;
   onSave: () => void;
+  onBack: () => void;
   isSaving?: boolean;
   saveError?: string | null;
 }
@@ -81,6 +84,7 @@ export function ApplyAddJobPostingEditStep({
   onRemoveCoverQuestion,
   onAddCoverQuestion,
   onSave,
+  onBack,
   isSaving = false,
   saveError,
 }: ApplyAddJobPostingEditStepProps) {
@@ -95,15 +99,23 @@ export function ApplyAddJobPostingEditStep({
   const canSave = hasRequiredTextFields && hasAllCoverQuestions;
 
   return (
-    <>
-      <div className="flex w-full min-w-0 items-start justify-between pr-10">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden">
+      <div className="flex w-full min-w-0 shrink-0 items-start gap-2 pr-10">
+        <button
+          type="button"
+          aria-label="뒤로 가기"
+          className="flex size-8 shrink-0 items-center justify-center rounded-full text-strong outline-none transition-colors hover:bg-gray-100 focus-visible:shadow-focus-ring"
+          onClick={onBack}
+        >
+          <ChevronLeftIcon className="size-6" />
+        </button>
         <div className="flex min-w-0 flex-col gap-0.5">
           <ModalTitle className="text-strong">{JOB_EDIT_STEP_HEADER[step].title}</ModalTitle>
           <ModalDescription>{JOB_EDIT_STEP_HEADER[step].description}</ModalDescription>
         </div>
       </div>
 
-      <div className="flex w-full flex-col gap-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto pr-1">
         <LabeledField label="공고 제목">
           <Input
             value={postingTitle}
@@ -153,7 +165,7 @@ export function ApplyAddJobPostingEditStep({
                   <DropdownMenuItem
                     key={option}
                     className={cn(
-                      'min-h-10 border-b border-border-bold last:border-b-0',
+                      'flex min-h-10 items-center border-b border-border-bold last:border-b-0',
                       recruitmentField === option && 'bg-gray-100',
                     )}
                     onSelect={() => onRecruitmentFieldChange(option)}
@@ -216,7 +228,7 @@ export function ApplyAddJobPostingEditStep({
           </div>
           <button
             type="button"
-            className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1 overflow-hidden rounded-lg bg-gray-200 px-3 py-1 body-1-bold text-tertiary outline-none transition-colors hover:bg-gray-300 focus-visible:shadow-focus-ring"
+            className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-1 overflow-hidden rounded-lg bg-gray-200 px-3 body-1-bold text-tertiary outline-none transition-colors hover:bg-gray-300 focus-visible:shadow-focus-ring"
             onClick={onAddCoverQuestion}
           >
             <span className="flex size-8 shrink-0 items-center justify-center">
@@ -227,22 +239,24 @@ export function ApplyAddJobPostingEditStep({
         </div>
       </div>
 
-      {saveError ? (
-        <p className="body-3-regular text-red-700" role="alert">
-          {saveError}
-        </p>
-      ) : null}
+      <div className="flex shrink-0 flex-col gap-3">
+        {saveError ? (
+          <p className="body-3-regular text-red-700" role="alert">
+            {saveError}
+          </p>
+        ) : null}
 
-      <Button
-        type="button"
-        variant="default"
-        size="default"
-        disabled={isSaving || !canSave}
-        className="w-full text-base font-bold leading-6"
-        onClick={onSave}
-      >
-        {isSaving ? '저장 중...' : '저장하기'}
-      </Button>
-    </>
+        <Button
+          type="button"
+          variant="default"
+          size="default"
+          disabled={isSaving || !canSave}
+          className={JOB_POSTING_PRIMARY_BUTTON_CLASS}
+          onClick={onSave}
+        >
+          {isSaving ? '저장 중...' : '저장하기'}
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -7,9 +7,9 @@ import { InformationIcon } from '@/components/common/icons/InformationIcon';
 import { cn } from '@/lib/utils';
 
 import {
-  APPLY_SECTION_INFO_CARD_WIDTH,
   APPLY_SECTION_INFO_HORIZONTAL_MARGIN,
   ApplySectionInfoCard,
+  getInfoCardWidth,
   type ApplySectionInfoVariant,
 } from './ApplySectionInfoCard';
 
@@ -24,10 +24,10 @@ type PopoverPosition = {
   left: number;
 };
 
-function getPopoverPosition(trigger: HTMLButtonElement): PopoverPosition {
+function getPopoverPosition(trigger: HTMLButtonElement, infoVariant: ApplySectionInfoVariant): PopoverPosition {
   const rect = trigger.getBoundingClientRect();
   const margin = APPLY_SECTION_INFO_HORIZONTAL_MARGIN;
-  const cardWidth = APPLY_SECTION_INFO_CARD_WIDTH;
+  const cardWidth = getInfoCardWidth(infoVariant);
 
   let left = rect.right - cardWidth;
   left = Math.max(margin, Math.min(left, window.innerWidth - margin - cardWidth));
@@ -51,12 +51,12 @@ export function ApplySectionHeader({ title, infoVariant, className }: ApplySecti
   }, []);
 
   const updatePosition = React.useCallback(() => {
-    if (!triggerRef.current) {
+    if (!triggerRef.current || !infoVariant) {
       return;
     }
 
-    setPosition(getPopoverPosition(triggerRef.current));
-  }, []);
+    setPosition(getPopoverPosition(triggerRef.current, infoVariant));
+  }, [infoVariant]);
 
   React.useEffect(() => {
     if (!open) {

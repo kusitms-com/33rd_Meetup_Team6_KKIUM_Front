@@ -50,13 +50,22 @@ export function ApplyCoverLetterQuestionEditor({
 
   React.useEffect(() => {
     setAiDraftOpen(false);
+
+    if (!hasSelectedExperiences) {
+      setDraftContent('');
+      return;
+    }
+
     setDraftContent(cachedDraft);
-  }, [order, cachedDraft]);
+  }, [order, cachedDraft, hasSelectedExperiences]);
 
   const canUseAiDraft = hasSelectedExperiences;
-  const hasDraft = draftContent.length > 0;
+  const hasDraft = canUseAiDraft && draftContent.length > 0;
   const canGenerateAiDraft =
-    jdId != null && jdQuestionId != null && selectedExperienceIds.length > 0;
+    canUseAiDraft &&
+    jdId != null &&
+    jdQuestionId != null &&
+    selectedExperienceIds.length > 0;
 
   const handleDraftGenerated = (draft: string) => {
     setDraftContent(draft);

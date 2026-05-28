@@ -14,6 +14,8 @@ import {
 } from '@/hooks/apply/useApplyJobPostings';
 import { useJobPostingUrlField } from '@/hooks/apply/useJobPostingUrlField';
 
+import { JOB_POSTING_MODAL_CONTENT_CLASS } from '@/app/(pages)/apply/_constants/applyConstants';
+
 import {
   ApplyAddJobPostingEditStep,
   type CoverQuestionRow,
@@ -176,6 +178,7 @@ export function ApplyAddJobPostingModal() {
     <Modal
       open={open}
       showCloseButton
+      contentClassName={JOB_POSTING_MODAL_CONTENT_CLASS}
       onOpenChange={(open) => {
         setOpen(open);
 
@@ -189,6 +192,7 @@ export function ApplyAddJobPostingModal() {
         </Button>
       }
     >
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {step === 'url' ? (
         <ApplyAddJobPostingUrlStep
           url={url}
@@ -227,6 +231,7 @@ export function ApplyAddJobPostingModal() {
       ) : (
         <ApplyAddJobPostingEditStep
           step={step}
+          onBack={() => setStep('url')}
           postingTitle={postingTitle}
           onPostingTitleChange={setPostingTitle}
           companyName={companyName}
@@ -279,6 +284,7 @@ export function ApplyAddJobPostingModal() {
           }}
         />
       )}
+      </div>
     </Modal>
   );
 }
