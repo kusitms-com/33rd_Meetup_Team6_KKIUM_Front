@@ -70,20 +70,24 @@ export function ApplyCoverLetterQuestionEditor({
         className,
       )}
     >
-      <div className="flex w-full min-w-0 items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-0.5">
-          <span className="shrink-0 text-xl font-bold leading-7 text-mint-300">
+      <div className="flex w-full min-w-0 items-start gap-2">
+        <div className="flex min-w-0 flex-1 items-start gap-0.5">
+          <span className="shrink-0 pt-px text-xl font-bold leading-7 text-mint-300">
             {formatQuestionOrder(order)}.
           </span>
-          <input
-            type="text"
+          <textarea
             value={title}
+            rows={2}
             onChange={(event) => onTitleChange(event.target.value)}
             aria-label={`${formatQuestionOrder(order)} 문항 제목`}
-            className="h-7 min-w-0 flex-1 border-none bg-transparent p-0 text-xl font-bold leading-7 text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
+            className="min-h-14 max-h-14 min-w-0 flex-1 resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-0 text-xl font-bold leading-7 break-words text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
           />
         </div>
-        <AiDraftButton disabled={!canUseAiDraft || hasDraft} onClick={handleAiDraftClick} />
+        <AiDraftButton
+          className="mt-px"
+          disabled={!canUseAiDraft || hasDraft}
+          onClick={handleAiDraftClick}
+        />
       </div>
 
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-visible">
