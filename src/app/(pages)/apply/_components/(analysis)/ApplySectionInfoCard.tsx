@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-export const APPLY_SECTION_INFO_CARD_WIDTH = 296;
+export const APPLY_SECTION_INFO_CARD_WIDTH = 328;
 export const APPLY_QUESTION_FIT_INFO_CARD_WIDTH = 340;
 export const APPLY_SECTION_INFO_HORIZONTAL_MARGIN = 20;
 
@@ -68,7 +68,7 @@ const INFO_CONTENT: Record<
   },
 };
 
-function getInfoCardWidth(variant: ApplySectionInfoVariant) {
+export function getInfoCardWidth(variant: ApplySectionInfoVariant) {
   return variant === 'question-fit' ? APPLY_QUESTION_FIT_INFO_CARD_WIDTH : APPLY_SECTION_INFO_CARD_WIDTH;
 }
 
