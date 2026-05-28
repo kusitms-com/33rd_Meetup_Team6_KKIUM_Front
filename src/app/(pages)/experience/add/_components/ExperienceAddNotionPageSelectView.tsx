@@ -7,6 +7,7 @@ import {
   getNotionTypeLabel,
   NotionPageIcon,
 } from '@/app/(pages)/experience/add/_utils/notionPageDisplay';
+import { LoadingState } from '@/components/common/LoadingState';
 import { ModalClose, ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { Tag } from '@/components/common/Tag';
 import { Button } from '@/components/ui/button';
@@ -77,9 +78,12 @@ export function ExperienceAddNotionPageSelectView({
 
       <div className="flex max-h-[calc(100dvh-260px)] min-h-[360px] w-full flex-col gap-2 overflow-y-auto">
         {isLoading && (
-          <div className="flex min-h-[360px] w-full items-center justify-center rounded-lg bg-gray-50">
-            <p className="body-2-regular text-gray-700">노션 페이지를 불러오는 중이에요</p>
-          </div>
+          <LoadingState
+            message="노션 페이지를 불러오는 중이에요"
+            ariaLabel="노션 페이지를 불러오는 중"
+            className="h-auto min-h-[360px] rounded-lg border-0 bg-gray-50"
+            lottieClassName="size-20"
+          />
         )}
 
         {!isLoading && errorMessage && (

@@ -24,8 +24,8 @@ export function LoadingState({
       )}
       {...props}
     >
-      <div className="flex w-[211px] flex-col items-center gap-3">
-        <div className="flex h-[155px] w-[199px] items-center justify-center">
+      <div className="flex w-full flex-col items-center gap-3">
+        <div className="flex h-[155px] w-[211px] items-center justify-center">
           <LoadingLottie className={lottieClassName} />
         </div>
         <p className="body-1-bold text-strong">{message}</p>
