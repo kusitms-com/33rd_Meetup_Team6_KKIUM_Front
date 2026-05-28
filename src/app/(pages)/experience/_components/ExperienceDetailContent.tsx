@@ -312,10 +312,11 @@ export function ExperienceDetailContent({
                         type="button"
                         aria-label="기간 선택"
                         aria-expanded={datePickerOpen}
-                        className="flex size-[21px] shrink-0 cursor-pointer items-center justify-center rounded-sm text-tertiary focus-visible:shadow-focus-ring focus-visible:outline-none"
+                        className="flex min-w-0 cursor-pointer items-center gap-1 rounded-sm text-secondary focus-visible:shadow-focus-ring focus-visible:outline-none"
                         onClick={toggleDatePicker}
                       >
-                        <CalendarIcon className="size-[21px]" />
+                        <CalendarIcon className="size-[21px] shrink-0 text-tertiary" />
+                        <span>{item.value}</span>
                       </button>
                       {datePickerOpen && (
                         <div
@@ -366,7 +367,7 @@ export function ExperienceDetailContent({
                       onChange={(value) => updateBasicDetail(item.name, value)}
                     />
                   ) : (
-                    <span>{item.type === 'field' ? item.displayValue : item.value}</span>
+                    !isEditing && <span>{item.type === 'field' ? item.displayValue : item.value}</span>
                   )}
                 </dd>
               </div>
