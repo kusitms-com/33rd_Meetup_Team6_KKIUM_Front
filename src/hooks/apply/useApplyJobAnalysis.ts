@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { skipToken, useQuery } from '@tanstack/react-query';
 
 import { getJdAnalysisWithMatch, getJdExperienceAnalysis } from '@/app/api/apply';
@@ -24,18 +23,7 @@ export function useApplyJobAnalysis(jdId: JdId | null | undefined) {
     queryKey: [...applyJobPostingQueryKeys.detail(jdId), 'analysis'],
     queryFn:
       jdId != null
-        ? async (): Promise<ApplyJobAnalysisQueryData> => {
-            const data = await getJdAnalysisWithMatch(jdId);
-
-            console.log('[ApplyJobAnalysis] API', {
-              jdId,
-              endpoint: 'GET /api/v1/jd/{jdId}/analysis',
-              analysisStatus: resolveJdAnalysisStatus(data),
-              response: data,
-            });
-
-            return data;
-          }
+        ? () => getJdAnalysisWithMatch(jdId)
         : skipToken,
     enabled: jdId != null && hasApiAccess,
     refetchInterval: (query) => {
@@ -53,35 +41,6 @@ export function useApplyJobAnalysis(jdId: JdId | null | undefined) {
       analysisQuery.isFetching ||
       !analysisQuery.data ||
       !isJdAnalysisTerminal(analysisStatus));
-
-  useEffect(() => {
-    console.log('[ApplyJobAnalysis] state', {
-      jdId,
-      hasApiAccess,
-      analysis: {
-        analysisStatus: analysisStatus ?? null,
-        isTerminal: isJdAnalysisTerminal(analysisStatus),
-        isAnalysisLoading,
-        queryStatus: analysisQuery.status,
-        fetchStatus: analysisQuery.fetchStatus,
-        isPending: analysisQuery.isPending,
-        isFetching: analysisQuery.isFetching,
-        isError: analysisQuery.isError,
-        error: analysisQuery.error,
-      },
-    });
-  }, [
-    jdId,
-    hasApiAccess,
-    analysisStatus,
-    isAnalysisLoading,
-    analysisQuery.status,
-    analysisQuery.fetchStatus,
-    analysisQuery.isPending,
-    analysisQuery.isFetching,
-    analysisQuery.isError,
-    analysisQuery.error,
-  ]);
 
   return {
     ...analysisQuery,

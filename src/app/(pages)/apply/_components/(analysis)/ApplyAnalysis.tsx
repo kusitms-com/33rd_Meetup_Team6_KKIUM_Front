@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-
 import { EmptyState } from '@/components/common/EmptyState';
 import { LoadingLottie } from '@/components/common/LoadingLottie';
 import { useApplyJobAnalysis } from '@/hooks/apply/useApplyJobAnalysis';
@@ -41,16 +39,6 @@ export function ApplyAnalysis({ jdId }: ApplyAnalysisProps) {
   } = useApplyJobAnalysis(jdId);
   const { jobPosting } = useApplyJobPostingSnapshot(jdId);
   const highlightKeywords = useApplyHighlightKeywordStore((state) => state.keywords);
-  const highlightExperienceId = useApplyHighlightKeywordStore((state) => state.experienceId);
-
-  useEffect(() => {
-    console.log('[ApplyAnalysis] highlight keywords updated', {
-      jdId,
-      experienceId: highlightExperienceId,
-      keywordCount: highlightKeywords.length,
-      highlightKeywords,
-    });
-  }, [highlightExperienceId, highlightKeywords, jdId]);
 
   if (!jdId) {
     return (

@@ -12,27 +12,6 @@ export const homeQueryKeys = {
 export function useHomeDashboard() {
   return useQuery({
     queryKey: homeQueryKeys.dashboard(),
-    queryFn: async () => {
-      console.log('[HomeDashboard] API request start', {
-        endpoint: 'GET /api/v1/home',
-      });
-
-      try {
-        const data = await getHomeDashboard();
-
-        console.log('[HomeDashboard] API success', {
-          endpoint: 'GET /api/v1/home',
-          response: data,
-        });
-
-        return data;
-      } catch (error) {
-        console.error('[HomeDashboard] API error', {
-          endpoint: 'GET /api/v1/home',
-          error,
-        });
-        throw error;
-      }
-    },
+    queryFn: () => getHomeDashboard(),
   });
 }

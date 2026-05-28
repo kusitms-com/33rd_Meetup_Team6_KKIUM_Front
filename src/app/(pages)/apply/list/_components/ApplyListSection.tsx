@@ -22,21 +22,6 @@ export interface ApplyListSectionProps {
   keyword?: string;
 }
 
-function serializeQueryError(error: unknown) {
-  if (error instanceof Error) {
-    return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      ...('status' in error ? { status: error.status } : {}),
-      ...('code' in error ? { code: error.code } : {}),
-      ...('cause' in error ? { cause: error.cause } : {}),
-    };
-  }
-
-  return error;
-}
-
 export function ApplyListSection({ keyword }: ApplyListSectionProps) {
   const isDragDisabled = Boolean(keyword?.trim());
   const listParams = React.useMemo(
@@ -48,7 +33,6 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
   );
   const {
     data,
-    error: listError,
     fetchNextPage,
     hasNextPage,
     isError,
@@ -96,17 +80,6 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
     setActiveId(null);
     setTitleOverrides({});
   }, [keyword]);
-
-  React.useEffect(() => {
-    if (!isError) {
-      return;
-    }
-
-    console.error('[ApplyListSection] 공고 목록 조회 실패', {
-      keyword: keyword ?? '',
-      error: serializeQueryError(listError),
-    });
-  }, [isError, keyword, listError]);
 
   React.useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
@@ -177,13 +150,7 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
     updateTitleMutation.mutate(
       { jdId: cardId, request: { title: nextTitle } },
       {
-        onError: (error) => {
-          console.error('[ApplyListSection] 공고 제목 수정 실패', {
-            cardId,
-            nextTitle,
-            error: serializeQueryError(error),
-          });
-
+        onError: () => {
           setTitleOverrides((prev) => {
             const next = { ...prev };
             delete next[cardId];
@@ -252,10 +219,7 @@ export function ApplyListSection({ keyword }: ApplyListSectionProps) {
       updateOrderMutation.mutate(
         { jdIds: nextOrder.map((card) => Number(card.id)).filter(Number.isFinite) },
         {
-          onError: (error) => {
-            console.error('[ApplyListSection] 공고 순서 저장 실패', {
-              error: serializeQueryError(error),
-            });
+          onError: () => {
             setOrderedCards(previousOrder);
           },
         },
