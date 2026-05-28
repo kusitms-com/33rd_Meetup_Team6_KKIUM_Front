@@ -11,12 +11,15 @@ import type {
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
+import { CORE_EXPERIENCE_FIELDS } from '@/app/(pages)/experience/add/_constants/experienceCoreQuestions';
 import { EXPERIENCE_TYPE_FIELD_GROUPS } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
 import {
   createEmptyBasicInfoForm,
   createEmptyCoreInfoForm,
   createEmptyResultInfoForm,
   type ExperienceAddBasicInfoForm,
+  type ExperienceAddCoreInfoForm,
+  type ExperienceAddResultInfoForm,
 } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 import {
   mapAnalyzeResponseToBasicInfoForm,
@@ -65,8 +68,14 @@ export function ExperienceAddPageContent() {
   const isFirstStep = currentStepIndex === 0;
   const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
   const isBasicInfoStep = currentStepIndex === 1;
+  const isCoreInfoStep = currentStepIndex === 2;
+  const isResultStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1;
   const isNextStepDisabled =
-    isAnalyzing || isSaving || (isBasicInfoStep && !isBasicInfoComplete(basicInfo));
+    isAnalyzing ||
+    isSaving ||
+    (isBasicInfoStep && !isBasicInfoComplete(basicInfo)) ||
+    (isCoreInfoStep && !isCoreInfoComplete(coreInfo)) ||
+    (isResultStep && !isResultStepComplete({ basicInfo, coreInfo, resultInfo }));
 
   useEffect(() => {
     if (!isNotionConnected) return;
@@ -246,6 +255,35 @@ function isBasicInfoComplete(basicInfo: ExperienceAddBasicInfoForm) {
   if (!basicInfo.type) return false;
 
   return EXPERIENCE_TYPE_FIELD_GROUPS[basicInfo.type].every((fieldGroup) =>
-    fieldGroup.fields.every((field) => (basicInfo[field.name] ?? '').trim().length > 0),
+    fieldGroup.fields.every((field) => hasText(basicInfo[field.name])),
   );
+}
+
+function isCoreInfoComplete(coreInfo: ExperienceAddCoreInfoForm) {
+  return CORE_EXPERIENCE_FIELDS.every((field) => hasText(coreInfo[field.name]));
+}
+
+function isResultStepComplete({
+  basicInfo,
+  coreInfo,
+  resultInfo,
+}: {
+  basicInfo: ExperienceAddBasicInfoForm;
+  coreInfo: ExperienceAddCoreInfoForm;
+  resultInfo: ExperienceAddResultInfoForm;
+}) {
+  return (
+    isBasicInfoComplete(basicInfo) &&
+    isCoreInfoComplete(coreInfo) &&
+    hasTag(resultInfo.skillTags) &&
+    hasTag(resultInfo.competencyTags)
+  );
+}
+
+function hasText(value: string | null | undefined) {
+  return (value ?? '').trim().length > 0;
+}
+
+function hasTag(tags: string[]) {
+  return tags.some(hasText);
 }
