@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 export interface ExperienceUpdateCardProps extends Omit<React.ComponentProps<'aside'>, 'children'> {
   totalCount?: number;
   monthlyNewCount?: number;
+  monthlyDiff?: number;
   onTotalNavigate?: () => void;
 }
 
@@ -20,6 +21,7 @@ function StatPanel({
   title,
   count,
   unit = '개',
+  diff,
   showNavigate,
   onNavigate,
   navigateIcon = 'chevron',
@@ -27,10 +29,15 @@ function StatPanel({
   title: string;
   count: number;
   unit?: string;
+  diff?: number;
   showNavigate?: boolean;
   onNavigate?: () => void;
   navigateIcon?: 'chevron' | 'externalLink';
 }) {
+  const signedDiff = typeof diff === 'number' && Number.isFinite(diff) ? Math.trunc(diff) : null;
+  const diffText = signedDiff == null ? null : signedDiff > 0 ? `+${signedDiff}` : String(signedDiff);
+  const diffToneClass = signedDiff == null || signedDiff >= 0 ? 'text-success' : 'text-red-500';
+
   return (
     <div className="flex h-40 flex-col justify-between self-stretch overflow-hidden rounded-xl border border-border-bold bg-background-w px-4 py-5">
       <div className="inline-flex w-full items-center justify-between gap-2">
@@ -57,6 +64,13 @@ function StatPanel({
           <span className="text-xl font-bold leading-7 text-strong">{unit}</span>
         </div>
       </div>
+
+      {diffText ? (
+        <div className="inline-flex items-center gap-1">
+          <div className={`text-sm font-bold leading-5 ${diffToneClass}`}>지난 달 대비</div>
+          <div className={`text-sm font-bold leading-5 ${diffToneClass}`}>{diffText}</div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -64,6 +78,7 @@ function StatPanel({
 export function ExperienceUpdateCard({
   totalCount = 0,
   monthlyNewCount = 0,
+  monthlyDiff = 0,
   onTotalNavigate,
   className,
   ...props
@@ -81,7 +96,7 @@ export function ExperienceUpdateCard({
         onNavigate={onTotalNavigate}
         navigateIcon="externalLink"
       />
-      <StatPanel title="이번 달 새로운 경험" count={monthlyNewCount} />
+      <StatPanel title="이번 달 새로운 경험" count={monthlyNewCount} diff={monthlyDiff} />
     </aside>
   );
 }
