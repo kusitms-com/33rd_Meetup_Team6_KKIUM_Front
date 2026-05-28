@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useApplyResumeQuestionExperiences } from '@/hooks/apply/useApplyResumeQuestionExperiences';
 import { cn } from '@/lib/utils';
 
-import { APPLY_COVER_LETTER_MAX_SELECTED_EXPERIENCES } from '../../_constants/applyMockData';
+import { APPLY_COVER_LETTER_MAX_SELECTED_EXPERIENCES } from '../../_constants/applyConstants';
 
 import { ApplyCoverLetterExperienceSelectEmptyState } from './ApplyCoverLetterExperienceSelectEmptyState';
 import { CoverLetterQuestionFitInfoLink } from './CoverLetterQuestionFitInfoLink';

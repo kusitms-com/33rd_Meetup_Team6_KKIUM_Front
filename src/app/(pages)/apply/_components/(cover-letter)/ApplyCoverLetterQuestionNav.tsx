@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { APPLY_COVER_LETTER_MAX_QUESTIONS } from '../../_constants/applyMockData';
+import { APPLY_COVER_LETTER_MAX_QUESTIONS } from '../../_constants/applyConstants';
 import { ArrowRightIcon } from '@/components/common/icons/ArrowRightIcon';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
 import { cn } from '@/lib/utils';
