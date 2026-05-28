@@ -8,6 +8,8 @@ interface SidebarProfileProps {
   active?: boolean;
   name?: string;
   email?: string;
+  ariaControls?: string;
+  ariaExpanded?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -16,6 +18,8 @@ export function SidebarProfile({
   active = false,
   name = 'KKIUM',
   email = 'KKIUM.Kusism@naver.com',
+  ariaControls,
+  ariaExpanded,
   onClick,
 }: SidebarProfileProps) {
   return (
@@ -23,6 +27,9 @@ export function SidebarProfile({
       type="button"
       data-slot="sidebar-profile"
       data-active={active || undefined}
+      aria-controls={ariaControls}
+      aria-expanded={ariaExpanded}
+      aria-haspopup="menu"
       className={cn(
         'flex h-12 cursor-pointer items-center rounded-md px-2.5 py-2 text-left outline-none focus-visible:shadow-focus-ring',
         active ? 'bg-gray-100' : 'hover:bg-gray-200',
