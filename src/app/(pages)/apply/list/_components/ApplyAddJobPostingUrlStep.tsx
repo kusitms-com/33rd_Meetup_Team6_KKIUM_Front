@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import * as React from 'react';
 
-import { JOB_POSTING_PRIMARY_BUTTON_CLASS } from '@/app/(pages)/apply/_constants/applyMockData';
+import { JOB_POSTING_PRIMARY_BUTTON_CLASS } from '@/app/(pages)/apply/_constants/applyConstants';
 import { ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

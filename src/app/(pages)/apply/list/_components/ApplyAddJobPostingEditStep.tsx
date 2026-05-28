@@ -6,7 +6,7 @@ import {
   JOB_EDIT_STEP_HEADER,
   JOB_POSTING_PRIMARY_BUTTON_CLASS,
   RESULT_RECRUITMENT_FIELD_OPTIONS,
-} from '@/app/(pages)/apply/_constants/applyMockData';
+} from '@/app/(pages)/apply/_constants/applyConstants';
 import { ModalDescription, ModalTitle } from '@/components/common/Modal';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { PlusIcon } from '@/components/common/icons/PlusIcon';
