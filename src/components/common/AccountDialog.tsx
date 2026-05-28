@@ -15,7 +15,10 @@ interface AccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   name?: string;
+  onDelete?: () => Promise<void> | void;
 }
+
+const DELETE_CONFIRM_TEXT = '계정을 삭제합니다';
 
 const defaultProfileOptions = [
   { src: '/profile-default-1.svg', label: '기본 프로필 이미지 1' },
@@ -25,16 +28,24 @@ const defaultProfileOptions = [
   { src: '/profile-default-5.svg', label: '기본 프로필 이미지 5' },
 ] as const;
 
-export function AccountDialog({ open, onOpenChange, name = 'KKIUM' }: AccountDialogProps) {
-  const [view, setView] = React.useState<'account' | 'profile'>('account');
+export function AccountDialog({
+  open,
+  onOpenChange,
+  name = 'KKIUM',
+  onDelete,
+}: AccountDialogProps) {
+  const [view, setView] = React.useState<'account' | 'profile' | 'delete'>('account');
   const [profileSrc, setProfileSrc] = React.useState<string>(defaultProfileOptions[0].src);
   const [selectedProfileSrc, setSelectedProfileSrc] = React.useState<string>(profileSrc);
+  const [deleteConfirmText, setDeleteConfirmText] = React.useState('');
   const hasProfileChange = selectedProfileSrc !== profileSrc;
+  const canDeleteAccount = deleteConfirmText === DELETE_CONFIRM_TEXT;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setView('account');
       setSelectedProfileSrc(profileSrc);
+      setDeleteConfirmText('');
     }
 
     onOpenChange(nextOpen);
@@ -55,6 +66,23 @@ export function AccountDialog({ open, onOpenChange, name = 'KKIUM' }: AccountDia
     setView('account');
   };
 
+  const openDeleteView = () => {
+    setDeleteConfirmText('');
+    setView('delete');
+  };
+
+  const closeDeleteView = () => {
+    setDeleteConfirmText('');
+    setView('account');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!canDeleteAccount) return;
+
+    await onDelete?.();
+    handleOpenChange(false);
+  };
+
   return (
     <Modal
       open={open}
@@ -64,44 +92,34 @@ export function AccountDialog({ open, onOpenChange, name = 'KKIUM' }: AccountDia
         view === 'profile' ? 'gap-8' : 'gap-[100px]',
       )}
     >
-      {view === 'account' ? (
+      {view === 'account' || view === 'delete' ? (
         <>
-          <div className="flex flex-col gap-8">
-            <header className="flex items-center justify-between">
-              <ModalTitle className="title-1-bold text-black">계정</ModalTitle>
-              <CloseButton ariaLabel="계정 모달 닫기" />
-            </header>
+          <AccountSummary
+            name={name}
+            profileSrc={profileSrc}
+            onProfileChangeClick={openProfileView}
+          />
 
-            <div className="flex items-center justify-between">
-              <div className="relative size-[116px] shrink-0">
-                <ProfileImage src={profileSrc} size={114} priority />
-                <button
-                  type="button"
-                  aria-label="프로필 이미지 변경"
-                  className="absolute right-0 bottom-0 flex size-8 cursor-pointer items-center justify-center rounded-full border border-border-bold bg-background-default text-primary focus-visible:shadow-focus-ring focus-visible:outline-none"
-                  onClick={openProfileView}
-                >
-                  <CameraIcon className="size-6" />
-                </button>
-              </div>
-
-              <label className="flex w-[410px] flex-col gap-1.5">
-                <span className="body-2-bold text-black">이름</span>
-                <TextField
-                  value={name}
-                  readOnly
-                  description={false}
-                  className="focus-visible:border-border-bold focus-visible:bg-background-w"
-                />
-              </label>
+          {view === 'account' ? (
+            <div className="flex flex-col gap-7 border-t border-border-default pt-7">
+              <Button
+                type="button"
+                variant="danger"
+                className="w-fit body-1-bold"
+                onClick={openDeleteView}
+              >
+                계정 삭제
+              </Button>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-7 border-t border-border-default pt-7">
-            <Button type="button" variant="danger" className="w-fit body-1-bold">
-              계정 삭제
-            </Button>
-          </div>
+          ) : (
+            <DeleteAccountPanel
+              value={deleteConfirmText}
+              canDelete={canDeleteAccount}
+              onChange={setDeleteConfirmText}
+              onCancel={closeDeleteView}
+              onDelete={handleDeleteAccount}
+            />
+          )}
         </>
       ) : (
         <>
@@ -170,6 +188,96 @@ export function AccountDialog({ open, onOpenChange, name = 'KKIUM' }: AccountDia
         </>
       )}
     </Modal>
+  );
+}
+
+function AccountSummary({
+  name,
+  profileSrc,
+  onProfileChangeClick,
+}: {
+  name: string;
+  profileSrc: string;
+  onProfileChangeClick: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-8">
+      <header className="flex items-center justify-between">
+        <ModalTitle className="title-1-bold text-black">계정</ModalTitle>
+        <CloseButton ariaLabel="계정 모달 닫기" />
+      </header>
+
+      <div className="flex items-center justify-between">
+        <div className="relative size-[116px] shrink-0">
+          <ProfileImage src={profileSrc} size={114} priority />
+          <button
+            type="button"
+            aria-label="프로필 이미지 변경"
+            className="absolute right-0 bottom-0 flex size-8 cursor-pointer items-center justify-center rounded-full border border-border-bold bg-background-default text-primary focus-visible:shadow-focus-ring focus-visible:outline-none"
+            onClick={onProfileChangeClick}
+          >
+            <CameraIcon className="size-6" />
+          </button>
+        </div>
+
+        <label className="flex w-[410px] flex-col gap-1.5">
+          <span className="body-2-bold text-black">이름</span>
+          <TextField
+            value={name}
+            readOnly
+            description={false}
+            className="focus-visible:border-border-bold focus-visible:bg-background-w"
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function DeleteAccountPanel({
+  value,
+  canDelete,
+  onChange,
+  onCancel,
+  onDelete,
+}: {
+  value: string;
+  canDelete: boolean;
+  onChange: (value: string) => void;
+  onCancel: () => void;
+  onDelete: () => Promise<void> | void;
+}) {
+  return (
+    <div className="flex flex-col gap-7 border-t border-border-default pt-7">
+      <div className="flex flex-col gap-[13px] rounded-lg border border-red-200 bg-[#EF222F0D] px-5 py-6">
+        <p className="body-2-bold text-danger">
+          계정 삭제 후 30일 동안은 복구가 가능하며, 이후 모든 데이터가 영구적으로
+          삭제됩니다. 계속하려면 “계정을 삭제합니다”를 입력하세요.
+        </p>
+        <TextField
+          value={value}
+          placeholder={DELETE_CONFIRM_TEXT}
+          error
+          description={false}
+          className="border-danger bg-background-w focus-visible:border-danger focus-visible:bg-background-w aria-invalid:border-danger aria-invalid:bg-background-w"
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="danger"
+            disabled={!canDelete}
+            className="w-[87px]"
+            onClick={() => void onDelete()}
+          >
+            계정 삭제
+          </Button>
+          <Button type="button" variant="line" className="w-[83px]" onClick={onCancel}>
+            취소하기
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
