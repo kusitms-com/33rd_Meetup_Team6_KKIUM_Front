@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +13,7 @@ export interface ExperienceMatchGaugeProps {
   arcPath: string;
   arcFlipTranslateY: number;
   knob: Point;
+  ctaHref: string;
   onCtaClick?: () => void;
 }
 
@@ -21,6 +23,7 @@ export function ExperienceMatchGauge({
   arcPath,
   arcFlipTranslateY,
   knob,
+  ctaHref,
   onCtaClick,
 }: ExperienceMatchGaugeProps) {
   return (
@@ -33,7 +36,7 @@ export function ExperienceMatchGauge({
 
         <svg
           viewBox="0 0 320 300"
-          className="absolute left-0 top-[6px] h-[300px] w-80"
+          className="pointer-events-none absolute left-0 top-[6px] h-[300px] w-80"
           aria-hidden
         >
           <defs>
@@ -75,22 +78,22 @@ export function ExperienceMatchGauge({
           alt=""
           width={160}
           height={160}
-          className="absolute bottom-20 left-1/2 h-auto w-[152px] -translate-x-1/2 object-contain"
+          className="pointer-events-none absolute bottom-20 left-1/2 h-auto w-[152px] -translate-x-1/2 object-contain"
           unoptimized
         />
       </div>
 
-      <button
-        type="button"
+      <Link
+        href={ctaHref}
         onClick={onCtaClick}
         className={cn(
-          '-mt-15 inline-flex h-10 w-full items-center justify-center gap-1 overflow-hidden rounded-lg border border-border-default bg-background-w px-3 py-1',
+          'relative z-20 -mt-15 inline-flex h-10 w-full items-center justify-center gap-1 overflow-hidden rounded-lg border border-border-default bg-background-w px-3 py-1',
           'body-1-bold text-tertiary outline-none transition-colors',
           'hover:bg-gray-50 focus-visible:shadow-focus-ring',
         )}
       >
         공고 확인하러 가기
-      </button>
+      </Link>
     </div>
   );
 }
