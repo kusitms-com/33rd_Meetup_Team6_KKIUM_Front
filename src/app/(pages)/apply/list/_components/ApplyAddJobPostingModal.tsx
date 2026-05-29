@@ -25,6 +25,7 @@ import {
   useParseApplyJobPostingUrl,
 } from '@/hooks/apply/useApplyJobPostings';
 import { useJobPostingUrlField } from '@/hooks/apply/useJobPostingUrlField';
+import { trackEvent } from '@/lib/analytics';
 
 import {
   ApplyAddJobPostingEditStep,
