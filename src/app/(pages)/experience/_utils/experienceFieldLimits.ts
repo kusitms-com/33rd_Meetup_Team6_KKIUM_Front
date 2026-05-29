@@ -1,7 +1,7 @@
 export const EXPERIENCE_FIELD_MAX_LENGTHS = {
   title: 80,
   description: 100,
-  oneLineIntro: 200,
+  oneLineIntro: 100,
   company: 50,
   employmentStatus: 50,
   organizationName: 50,
