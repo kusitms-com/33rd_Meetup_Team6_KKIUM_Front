@@ -95,7 +95,7 @@ export default function ApplyPage() {
         </div>
 
         {activeTab === 'analysis' ? (
-          <div className={cn('flex min-h-0 flex-1 flex-col', APPLY_PAGE_HORIZONTAL_PADDING)}>
+          <div className={cn('flex min-h-0 min-w-0 flex-1 flex-col', APPLY_PAGE_HORIZONTAL_PADDING)}>
             <ResizableSplit
               className="min-h-0 flex-1"
               separatorAriaLabel="공고 분석과 내 경험 패널 너비 조절"

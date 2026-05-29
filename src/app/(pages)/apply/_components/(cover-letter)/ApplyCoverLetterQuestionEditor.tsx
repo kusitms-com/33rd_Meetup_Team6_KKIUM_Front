@@ -110,7 +110,7 @@ export function ApplyCoverLetterQuestionEditor({
     <article
       data-slot="cover-letter-question-editor"
       className={cn(
-        'flex min-h-0 w-full flex-1 flex-col gap-3 overflow-visible pr-10',
+        'flex min-h-0 w-full flex-1 flex-col gap-3 overflow-visible',
         className,
       )}
     >
@@ -128,7 +128,7 @@ export function ApplyCoverLetterQuestionEditor({
           />
         </div>
         <AiDraftButton
-          className="mt-px"
+          className="mt-px mr-4 shrink-0"
           hasDraft={hasDraft || hasStoredAiDraft}
           canGenerate={canGenerateAiDraft}
           isGenerating={isAiDraftGenerating}
@@ -146,7 +146,7 @@ export function ApplyCoverLetterQuestionEditor({
           aria-label={`${formatQuestionOrder(order)} ${title} 답변`}
           className={cn(
             'h-full min-h-0 flex-1 resize-none border-none bg-transparent p-0 body-1-regular leading-6 text-strong shadow-none placeholder:text-tertiary focus-visible:border-none focus-visible:bg-transparent focus-visible:ring-0',
-            showAiDraftPanel && 'pb-11',
+            showAiDraftPanel && !aiDraftOpen && 'pb-[47px]',
             showAiDraftPanel && aiDraftOpen && hasDraft && 'pb-56',
           )}
         />
@@ -157,7 +157,7 @@ export function ApplyCoverLetterQuestionEditor({
             onExpandedChange={handleExpandedChange}
             draft={draftContent}
             hasDraft={hasDraft}
-            className="-left-9 -right-10"
+            className="-left-9 right-0"
           />
         )}
       </div>

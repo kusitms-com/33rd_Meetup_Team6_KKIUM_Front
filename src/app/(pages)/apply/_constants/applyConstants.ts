@@ -2,6 +2,10 @@
 
 export const APPLY_PAGE_HORIZONTAL_PADDING = 'px-20';
 
+/** pl-20 유지 + AppShell mx-20(5rem) 우측까지 확장 */
+export const APPLY_COVER_LETTER_SECTION_EXTEND =
+  'box-border pl-20 pr-0 -mr-20 w-[calc(100%+5rem)] max-w-none';
+
 // --- 자기소개서 제한 ---
 
 export const APPLY_COVER_LETTER_MAX_QUESTIONS = 5;
