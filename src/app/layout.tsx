@@ -12,16 +12,12 @@ export const metadata: Metadata = {
   },
   description: "당신의 경험이 제자리를 찾는 방식",
   openGraph: {
-    title: 'KKIUM',
-    description: "당신의 경험이 제자리를 찾는 방식",
     siteName: 'KKIUM',
     locale: 'ko_KR',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'KKIUM',
-    description: "당신의 경험이 제자리를 찾는 방식",
   },
 };
 
