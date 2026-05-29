@@ -9,6 +9,10 @@ import type {
   ExperienceAddResultInfoForm,
 } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 import { EditableTagGroup } from '@/app/(pages)/experience/_components/EditableTagGroup';
+import {
+  getExperienceFieldMaxLength,
+  limitExperienceFieldText,
+} from '@/app/(pages)/experience/_utils/experienceFieldLimits';
 import { TextField } from '@/components/common/TextField';
 import { cn } from '@/lib/utils';
 
@@ -69,12 +73,13 @@ export function ExperienceAddResultStep({
         {BASIC_RESULT_FIELDS.map((field) => (
           <ResultField
             key={field.name}
+            fieldName={field.name}
             label={field.label}
             value={basicInfo[field.name]}
             onChange={(fieldValue) =>
               onBasicInfoChange({
                 ...basicInfo,
-                [field.name]: fieldValue,
+                [field.name]: limitExperienceFieldText(field.name, fieldValue),
               })
             }
           />
@@ -159,10 +164,12 @@ function ResultSection({
 }
 
 function ResultField({
+  fieldName,
   label,
   value,
   onChange,
 }: {
+  fieldName: (typeof BASIC_RESULT_FIELDS)[number]['name'];
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -172,6 +179,7 @@ function ResultField({
       <span className="body-2-regular text-strong">{label}</span>
       <TextField
         value={value}
+        maxLength={getExperienceFieldMaxLength(fieldName)}
         description={false}
         onChange={(event) => onChange(event.currentTarget.value)}
       />
