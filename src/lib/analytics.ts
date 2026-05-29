@@ -26,11 +26,13 @@ function canUseGtag() {
 export function trackPageView(pathname: string) {
   if (!canUseGtag()) return;
 
-  window.gtag?.('event', 'page_view', {
-    page_path: pathname,
-    page_location: `${window.location.origin}${pathname}`,
-    page_title: document.title,
-  });
+  setTimeout(() => {
+    window.gtag?.('event', 'page_view', {
+      page_path: pathname,
+      page_location: `${window.location.origin}${pathname}`,
+      page_title: document.title,
+    });
+  }, 0);
 }
 
 function removeEmptyParams(params: AnalyticsEventParams) {
