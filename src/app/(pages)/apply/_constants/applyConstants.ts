@@ -1,10 +1,31 @@
 // --- 페이지 레이아웃 ---
 
 export const APPLY_PAGE_HORIZONTAL_PADDING = 'px-20';
-
-/** pl-20 유지 + AppShell mx-20(5rem) 우측까지 확장 */
 export const APPLY_COVER_LETTER_SECTION_EXTEND =
-  'box-border pl-20 pr-0 -mr-20 w-[calc(100%+5rem)] max-w-none';
+  'box-border -ml-20 pl-20 pr-0 -mr-20 w-[calc(100%+10rem)] max-w-none';
+
+/** 탭 하단 전체 너비 스트로크  */
+export const APPLY_TAB_STROKE_COVER_LETTER =
+  'box-border -ml-20 -mr-20 w-[calc(100%+10rem)] max-w-none';
+
+/** section pl-20을 상쇄해 split·세로 스트로크를 가로 스트로크와 맞춤 */
+export const APPLY_COVER_LETTER_SPLIT_BLEED = '-ml-20 w-[calc(100%+5rem)] max-w-none';
+
+/** 탭 하단 전체 너비 스트로크  */
+export const APPLY_TAB_STROKE_ANALYSIS = APPLY_PAGE_HORIZONTAL_PADDING;
+
+/** 자소서 작성 패널 왼쪽 inset */
+export const APPLY_COVER_LETTER_LEFT_PANEL_INSET = 160;
+
+/** 자소서 작성 패널만 우측 여백 */
+export const APPLY_COVER_LETTER_RIGHT_PANEL_PADDING = 'pr-20';
+
+/** 자소서 작성 패널 배경  */
+export const APPLY_COVER_LETTER_RIGHT_PANEL_BG =
+  'overflow-x-visible bg-background-w pt-3 min-h-[calc(100dvh-160px)]';
+
+/** AI 초안 패널만 좌측,우측 패널 밖으로 확장 */
+export const APPLY_COVER_LETTER_AI_DRAFT_PANEL_BLEED = '-left-9 -right-20';
 
 // --- 자기소개서 제한 ---
 

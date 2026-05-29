@@ -6,6 +6,7 @@ import type { JdId } from '@/app/api/apply/types';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
+import { APPLY_COVER_LETTER_AI_DRAFT_PANEL_BLEED } from '../../_constants/applyConstants';
 import { useApplyResumeAiDraft } from '@/hooks/apply/useApplyResumeAiDraft';
 
 import { AiDraftButton } from './AiDraftButton';
@@ -128,7 +129,7 @@ export function ApplyCoverLetterQuestionEditor({
           />
         </div>
         <AiDraftButton
-          className="mt-px mr-4 shrink-0"
+          className="mt-px shrink-0"
           hasDraft={hasDraft || hasStoredAiDraft}
           canGenerate={canGenerateAiDraft}
           isGenerating={isAiDraftGenerating}
@@ -157,7 +158,7 @@ export function ApplyCoverLetterQuestionEditor({
             onExpandedChange={handleExpandedChange}
             draft={draftContent}
             hasDraft={hasDraft}
-            className="-left-9 right-0"
+            className={APPLY_COVER_LETTER_AI_DRAFT_PANEL_BLEED}
           />
         )}
       </div>
