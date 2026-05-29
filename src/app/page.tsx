@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { BubbleChart } from '@/app/_components/BubbleChart';
@@ -8,7 +8,40 @@ import { ExperienceUpdateCard } from '@/app/_components/ExperienceUpdateCard';
 import { JobTypeCard } from '@/app/_components/JobTypeCard';
 import { mapJobTypeNameToProfile } from '@/app/_constants/jobTypeCardMappingData';
 import { TargetPostingSection } from '@/app/_components/ExperienceMatchSection';
+import { getAccessTokenFromSession } from '@/app/_utils/authFetch';
 import { useHomeDashboard } from '@/hooks/home/useHomeDashboard';
+
+const MOBILE_LANDING_MEDIA_QUERY = '(max-width: 767px)';
+
+type HomeEntryMode = 'checking' | 'dashboard' | 'mobile-landing';
+
+function getHomeEntryModeSnapshot(): HomeEntryMode {
+  if (typeof window === 'undefined') {
+    return 'checking';
+  }
+
+  if (getAccessTokenFromSession()) {
+    return 'dashboard';
+  }
+
+  return window.matchMedia(MOBILE_LANDING_MEDIA_QUERY).matches ? 'mobile-landing' : 'dashboard';
+}
+
+function subscribeToHomeEntryModeChange(onStoreChange: () => void) {
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
+
+  const mediaQueryList = window.matchMedia(MOBILE_LANDING_MEDIA_QUERY);
+
+  mediaQueryList.addEventListener('change', onStoreChange);
+  window.addEventListener('storage', onStoreChange);
+
+  return () => {
+    mediaQueryList.removeEventListener('change', onStoreChange);
+    window.removeEventListener('storage', onStoreChange);
+  };
+}
 
 function formatTodayLabelKo(date: Date) {
   const month = date.getMonth() + 1;
@@ -19,7 +52,13 @@ function formatTodayLabelKo(date: Date) {
 
 export default function Home() {
   const router = useRouter();
-  const { data: homeData } = useHomeDashboard();
+  const entryMode = useSyncExternalStore(
+    subscribeToHomeEntryModeChange,
+    getHomeEntryModeSnapshot,
+    () => 'checking',
+  );
+  const isDashboard = entryMode === 'dashboard';
+  const { data: homeData } = useHomeDashboard(isDashboard);
   const [currentPostingIndex, setCurrentPostingIndex] = useState(0);
   const todayLabel = formatTodayLabelKo(new Date());
   const mappedJobType = mapJobTypeNameToProfile(homeData?.jobType?.typeName);
@@ -47,6 +86,21 @@ export default function Home() {
   const handleMoveToExperience = () => {
     router.push('/experience');
   };
+
+  if (entryMode === 'checking') {
+    return null;
+  }
+
+  if (entryMode === 'mobile-landing') {
+    return (
+      <section className="flex min-h-dvh items-center justify-center bg-white px-5 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <h1 className="heading-2-bold text-strong">모바일 랜딩 준비 중</h1>
+          <p className="body-2-bold text-tertiary">다음 단계에서 피그마 디자인을 연결할게요.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="flex w-full min-w-0 flex-col items-stretch gap-6 px-4 pb-12 sm:px-6 lg:px-10">
