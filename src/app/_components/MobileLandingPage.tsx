@@ -1,21 +1,44 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { TextField } from '@/components/common/TextField';
 import { Button } from '@/components/ui/button';
+import {
+  buildNameCompatibilitySearchParams,
+  getNameCompatibilityResultFromSearchParams,
+  type NameCompatibilityResult,
+} from '@/app/_utils/calculateNameCompatibility';
+import { MobileLandingResult } from '@/app/_components/MobileLandingResult';
 
 interface MobileLandingPageProps {
   onSubmit?: (value: { name: string; company: string }) => void;
 }
 
 export function MobileLandingPage({ onSubmit }: MobileLandingPageProps) {
+  const router = useRouter();
   const [name, setName] = React.useState('');
   const [company, setCompany] = React.useState('');
+  const [result, setResult] = React.useState<NameCompatibilityResult | null>(() => {
+    return getNameCompatibilityResultFromCurrentUrl();
+  });
   const trimmedName = name.trim();
   const trimmedCompany = company.trim();
   const canSubmit = trimmedName.length > 0 && trimmedCompany.length > 0;
+
+  React.useEffect(() => {
+    const syncResultFromUrl = () => {
+      setResult(getNameCompatibilityResultFromCurrentUrl());
+    };
+
+    window.addEventListener('popstate', syncResultFromUrl);
+
+    return () => {
+      window.removeEventListener('popstate', syncResultFromUrl);
+    };
+  }, []);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,7 +51,23 @@ export function MobileLandingPage({ onSubmit }: MobileLandingPageProps) {
       name: trimmedName,
       company: trimmedCompany,
     });
+
+    const params = buildNameCompatibilitySearchParams(trimmedName, trimmedCompany);
+    const nextResult = getNameCompatibilityResultFromSearchParams(params);
+
+    if (!nextResult) {
+      return;
+    }
+
+    setResult(nextResult);
+    router.push(`/?${params.toString()}`, { scroll: false });
   };
+
+  if (result) {
+    return (
+      <MobileLandingResult name={result.name} company={result.company} score={result.score} />
+    );
+  }
 
   return (
     <section className="relative flex h-dvh w-full overflow-hidden bg-[linear-gradient(180deg,var(--color-mint-300)_0%,var(--color-mint-50)_100%)]">
@@ -39,14 +78,9 @@ export function MobileLandingPage({ onSubmit }: MobileLandingPageProps) {
 
       <div className="relative mx-auto flex h-full w-full max-w-[480px] flex-col items-center">
         <div className="flex flex-col items-center gap-[clamp(6px,1.1dvh,8px)] pt-[clamp(40px,8.9dvh,76px)]">
-          <Image
-            src="/logo-big.svg"
-            alt="KKIUM"
-            width={244}
-            height={53}
-            priority
-            className="h-auto w-[clamp(210px,62vw,244px)]"
-          />
+          <div className="relative aspect-244/53 w-[clamp(210px,62vw,244px)]">
+            <Image src="/logo-big.svg" alt="KKIUM" fill priority sizes="244px" />
+          </div>
           <p className="body-1-bold text-center text-on-fill">당신의 경험이 제자리를 찾는 방식</p>
         </div>
 
@@ -114,4 +148,12 @@ export function MobileLandingPage({ onSubmit }: MobileLandingPageProps) {
       </div>
     </section>
   );
+}
+
+function getNameCompatibilityResultFromCurrentUrl() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return getNameCompatibilityResultFromSearchParams(new URLSearchParams(window.location.search));
 }
