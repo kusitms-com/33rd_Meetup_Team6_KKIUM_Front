@@ -23,7 +23,6 @@ export interface ApplyAnalysisProps {
 
 const HARD_SKILL_SOURCES = new Set(['hardSkill', 'hardSkills']);
 const SOFT_SKILL_SOURCES = new Set(['softSkill', 'softSkills']);
-const trackedJobAnalysisIds = new Set<string>();
 
 function normalizeKeyword(value: string) {
   return value.trim().toLowerCase();
@@ -43,17 +42,18 @@ export function ApplyAnalysis({ jdId }: ApplyAnalysisProps) {
   } = useApplyJobAnalysis(jdId);
   const { jobPosting } = useApplyJobPostingSnapshot(jdId);
   const highlightKeywords = useApplyHighlightKeywordStore((state) => state.keywords);
+  const trackedJobAnalysisIdRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (!jdId || !result || isAnalysisLoading || isJdAnalysisFailed(analysisStatus)) {
       return;
     }
 
-    if (trackedJobAnalysisIds.has(jdId)) {
+    if (trackedJobAnalysisIdRef.current === jdId) {
       return;
     }
 
-    trackedJobAnalysisIds.add(jdId);
+    trackedJobAnalysisIdRef.current = jdId;
     trackEvent('job_analysis_complete', {
       source: 'apply_analysis',
     });
