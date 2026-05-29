@@ -71,7 +71,7 @@ export function ApplyCoverLetterRightPanel({
   };
 
   const activeQuestion = questions[activeIndex];
-  const canAddQuestion = jdId == null && questions.length < APPLY_COVER_LETTER_MAX_QUESTIONS;
+  const canAddQuestion = questions.length < APPLY_COVER_LETTER_MAX_QUESTIONS;
 
   const handleAddQuestion = () => {
     if (!canAddQuestion) {

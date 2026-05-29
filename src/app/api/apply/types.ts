@@ -150,6 +150,10 @@ export const saveResumeRequestSchema = z.object({
   answers: z.array(saveResumeAnswerSchema),
 });
 
+export const createJdResumeQuestionRequestSchema = z.object({
+  content: z.string().trim().min(1),
+});
+
 export const createResumeAiDraftRequestSchema = z.object({
   experienceIds: z.array(z.coerce.number().int().positive()).min(1).max(3),
 });
@@ -371,6 +375,7 @@ export type JdResumeResponse = z.infer<typeof jdResumeResponseSchema>;
 export type ParsedJdUrlResponse = z.infer<typeof parsedJdUrlResponseSchema>;
 export type UpdateJdResumeRequest = z.infer<typeof updateJdResumeRequestSchema>;
 export type SaveResumeRequest = z.infer<typeof saveResumeRequestSchema>;
+export type CreateJdResumeQuestionRequest = z.infer<typeof createJdResumeQuestionRequestSchema>;
 export type CreateResumeAiDraftRequest = z.infer<typeof createResumeAiDraftRequestSchema>;
 export type CreateResumeAiDraftResponse = z.infer<typeof createResumeAiDraftResponseSchema>;
 export type ResumeWritingGuideResponse = z.infer<typeof resumeWritingGuideResponseSchema>;
