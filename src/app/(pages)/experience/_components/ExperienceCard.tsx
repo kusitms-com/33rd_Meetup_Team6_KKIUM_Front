@@ -5,10 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
 import { Tag } from '@/components/common/Tag';
 import { getExperienceCategoryIconSrc } from '@/app/(pages)/experience/_utils/ExperienceCategory';
-import {
-  EXPERIENCE_FIELD_MAX_LENGTHS,
-  limitExperienceFieldText,
-} from '@/app/(pages)/experience/_utils/experienceFieldLimits';
+import { EXPERIENCE_FIELD_MAX_LENGTHS } from '@/app/(pages)/experience/_utils/experienceFieldLimits';
 import { cn } from '@/lib/utils';
 import { ExperienceCardDropdownMenu } from './ExperienceCardDropdownMenu';
 import type { ExperienceCategory } from './ExperienceCategoryTab';
@@ -208,9 +205,7 @@ export const ExperienceCard = React.forwardRef<HTMLElement, ExperienceCardProps>
                   maxLength={EXPERIENCE_FIELD_MAX_LENGTHS.title}
                   className="w-full truncate bg-transparent p-0 title-1-bold text-gray-main outline-none disabled:text-tertiary"
                   onBlur={() => void commitTitleEdit()}
-                  onChange={(event) =>
-                    setTitleDraft(limitExperienceFieldText('title', event.currentTarget.value))
-                  }
+                  onChange={(event) => setTitleDraft(event.currentTarget.value)}
                   onClick={(event) => event.stopPropagation()}
                   onKeyDown={handleTitleInputKeyDown}
                   onPointerDown={(event) => event.stopPropagation()}
