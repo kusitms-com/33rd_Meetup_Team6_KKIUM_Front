@@ -6,7 +6,7 @@ import { nanumSquare } from './fonts';
 import { Providers } from './providers';
 import './globals.css';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://www.kkium.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kkium.com').replace(/\/$/, '');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
