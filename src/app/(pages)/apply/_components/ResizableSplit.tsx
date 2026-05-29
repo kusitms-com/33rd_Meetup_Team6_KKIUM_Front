@@ -16,6 +16,8 @@ export interface ResizableSplitLayout {
   minRightWidth?: number;
   handleWidth?: number;
   panelInset?: number;
+  leftPanelInset?: number;
+  rightPanelInset?: number;
   minHeight?: number;
 }
 
@@ -23,7 +25,9 @@ export interface ResizableSplitProps {
   left: React.ReactNode;
   right: React.ReactNode;
   className?: string;
+  leftClassName?: string;
   rightClassName?: string;
+  separatorClassName?: string;
   separatorAriaLabel: string;
   layout?: ResizableSplitLayout;
 }
@@ -109,7 +113,9 @@ export function ResizableSplit({
   left,
   right,
   className,
+  leftClassName,
   rightClassName,
+  separatorClassName,
   separatorAriaLabel,
   layout,
 }: ResizableSplitProps) {
@@ -117,6 +123,8 @@ export function ResizableSplit({
   const minRightWidth = layout?.minRightWidth ?? RESIZABLE_SPLIT_MIN_RIGHT_WIDTH;
   const handleWidth = layout?.handleWidth ?? RESIZABLE_SPLIT_HANDLE_WIDTH;
   const panelInset = layout?.panelInset ?? RESIZABLE_SPLIT_PANEL_INSET;
+  const leftPanelInset = layout?.leftPanelInset ?? 0;
+  const rightPanelInset = layout?.rightPanelInset ?? panelInset;
   const minHeight = layout?.minHeight ?? RESIZABLE_SPLIT_MIN_HEIGHT;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -239,10 +247,14 @@ export function ResizableSplit({
       }
     >
       <div
-        className="flex min-h-full min-w-0 shrink-0 flex-col overflow-y-auto overflow-x-hidden"
+        className={cn(
+          'flex min-h-full min-w-0 shrink-0 flex-col overflow-y-auto overflow-x-hidden',
+          leftClassName,
+        )}
         style={{
           width: leftWidth,
           minWidth: constraints.effectiveMinLeft,
+          paddingLeft: leftPanelInset,
           paddingRight: panelInset,
         }}
       >
@@ -257,7 +269,10 @@ export function ResizableSplit({
         aria-valuenow={leftWidth}
         aria-valuemin={constraints.effectiveMinLeft}
         aria-valuemax={constraints.maxLeft}
-        className="relative z-20 flex w-2.5 shrink-0 cursor-col-resize touch-none items-stretch justify-center border-x border-border-default bg-background-w"
+        className={cn(
+          'relative z-20 flex w-2.5 shrink-0 cursor-col-resize touch-none items-stretch justify-center border-x border-border-default bg-background-w',
+          separatorClassName,
+        )}
         onPointerDown={handlePointerDown}
       >
         <span className="pointer-events-none my-auto h-10 w-0.5 rounded-full bg-gray-300" />
@@ -270,7 +285,7 @@ export function ResizableSplit({
         )}
         style={{
           minWidth: constraints.effectiveMinRight,
-          paddingLeft: panelInset,
+          paddingLeft: rightPanelInset,
         }}
       >
         {right}
