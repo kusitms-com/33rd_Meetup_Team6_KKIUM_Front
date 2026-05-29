@@ -49,7 +49,7 @@ export function useDeleteUserAccount() {
   return useMutation({
     mutationFn: deleteUserAccount,
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: userProfileQueryKeys.all });
+      queryClient.clear();
     },
   });
 }
