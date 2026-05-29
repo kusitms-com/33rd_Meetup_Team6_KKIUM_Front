@@ -20,13 +20,20 @@ interface AccountDialogProps {
 
 const DELETE_CONFIRM_TEXT = '계정을 삭제합니다';
 
-const defaultProfileOptions = [
-  { src: '/profile-default-1.svg', label: '기본 프로필 이미지 1' },
-  { src: '/profile-default-2.svg', label: '기본 프로필 이미지 2' },
-  { src: '/profile-default-3.svg', label: '기본 프로필 이미지 3' },
-  { src: '/profile-default-4.svg', label: '기본 프로필 이미지 4' },
-  { src: '/profile-default-5.svg', label: '기본 프로필 이미지 5' },
+export const defaultProfileOptions = [
+  { illustrateId: 0, src: '/profile-default-1.svg', label: '기본 프로필 이미지 1' },
+  { illustrateId: 1, src: '/profile-default-2.svg', label: '기본 프로필 이미지 2' },
+  { illustrateId: 2, src: '/profile-default-3.svg', label: '기본 프로필 이미지 3' },
+  { illustrateId: 3, src: '/profile-default-4.svg', label: '기본 프로필 이미지 4' },
+  { illustrateId: 4, src: '/profile-default-5.svg', label: '기본 프로필 이미지 5' },
 ] as const;
+
+export function getProfileOptionByIllustrateId(illustrateId: number | null | undefined) {
+  return (
+    defaultProfileOptions.find((option) => option.illustrateId === illustrateId) ??
+    defaultProfileOptions[0]
+  );
+}
 
 export function AccountDialog({
   open,
