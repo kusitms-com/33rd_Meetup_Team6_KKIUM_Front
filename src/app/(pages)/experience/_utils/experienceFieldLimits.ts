@@ -11,7 +11,7 @@ export const EXPERIENCE_FIELD_MAX_LENGTHS = {
 
 type ExperienceFieldLimitKey = keyof typeof EXPERIENCE_FIELD_MAX_LENGTHS;
 
-export function getExperienceFieldMaxLength(fieldName: string) {
+export function getExperienceFieldMaxLength(fieldName: string): number | undefined {
   return EXPERIENCE_FIELD_MAX_LENGTHS[fieldName as ExperienceFieldLimitKey];
 }
 
