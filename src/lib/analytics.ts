@@ -42,7 +42,7 @@ function removeEmptyParams(params: AnalyticsEventParams) {
 function getEventParams(params: AnalyticsEventParams) {
   return removeEmptyParams({
     ...params,
-    debug_mode: IS_GA_DEBUG_MODE,
+    ...(IS_GA_DEBUG_MODE ? { debug_mode: true } : {}),
   });
 }
 
