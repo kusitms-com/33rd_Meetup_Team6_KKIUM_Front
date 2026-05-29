@@ -6,7 +6,10 @@ import { nanumSquare } from './fonts';
 import { Providers } from './providers';
 import './globals.css';
 
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kkium.com').replace(/\/$/, '');
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'KKIUM',
     template: '%s | KKIUM',
