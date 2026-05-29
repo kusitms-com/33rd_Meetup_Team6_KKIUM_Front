@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { BubbleChart } from '@/app/_components/BubbleChart';
 import { ExperienceUpdateCard } from '@/app/_components/ExperienceUpdateCard';
 import { JobTypeCard } from '@/app/_components/JobTypeCard';
+import { MobileLandingPage } from '@/app/_components/MobileLandingPage';
 import { mapJobTypeNameToProfile } from '@/app/_constants/jobTypeCardMappingData';
 import { TargetPostingSection } from '@/app/_components/ExperienceMatchSection';
 import { getAccessTokenFromSession } from '@/app/_utils/authFetch';
@@ -92,14 +93,7 @@ export default function Home() {
   }
 
   if (entryMode === 'mobile-landing') {
-    return (
-      <section className="flex min-h-dvh items-center justify-center bg-white px-5 text-center">
-        <div className="flex flex-col items-center gap-3">
-          <h1 className="heading-2-bold text-strong">모바일 랜딩 준비 중</h1>
-          <p className="body-2-bold text-tertiary">다음 단계에서 피그마 디자인을 연결할게요.</p>
-        </div>
-      </section>
-    );
+    return <MobileLandingPage />;
   }
 
   return (
