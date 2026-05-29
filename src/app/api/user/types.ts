@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const userProfileResponseSchema = z.object({
   name: z.string(),
   email: z.string(),
-  illustrateId: z.number().int().min(0).max(4),
+  illustrateId: z.number().int().min(0).max(4).nullable(),
 });
 
 export const updateProfileColorRequestSchema = z.object({
