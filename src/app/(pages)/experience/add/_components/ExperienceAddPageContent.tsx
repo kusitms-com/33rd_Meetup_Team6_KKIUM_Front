@@ -3,19 +3,14 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import type {
-  ExperienceAddMaterialModalView,
-  ExperienceMaterial,
-} from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
+import type { ExperienceAddMaterialModalView } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
 import { useExperienceAddForm } from '@/app/(pages)/experience/add/_hooks/useExperienceAddForm';
+import { useExperienceAddMaterials } from '@/app/(pages)/experience/add/_hooks/useExperienceAddMaterials';
 import { mapExperienceAddFormToCreateRequest } from '@/app/(pages)/experience/add/_utils/mapExperienceAddFormToCreateRequest';
-import {
-  clearExperienceAddPdfDraft,
-  getExperienceAddPdfDraft,
-} from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
+import { clearExperienceAddPdfDraft } from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
 import {
   isBasicInfoComplete,
   isCoreInfoComplete,
@@ -38,7 +33,7 @@ export function ExperienceAddPageContent() {
   const isNotionConnected =
     searchParams.get('notion') === 'connected' || searchParams.get('success') === 'true';
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
+  const { materials, setMaterials } = useExperienceAddMaterials();
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(isNotionConnected);
   const [materialModalInitialView, setMaterialModalInitialView] =
     useState<ExperienceAddMaterialModalView>(isNotionConnected ? 'notion-pages' : 'material');
@@ -84,28 +79,6 @@ export function ExperienceAddPageContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [currentStepIndex]);
-
-  useEffect(() => {
-    const restorePdfDraft = async () => {
-      try {
-        const pdfMaterial = await getExperienceAddPdfDraft();
-
-        if (!pdfMaterial) return;
-
-        setMaterials((currentMaterials) => {
-          const hasPdf = currentMaterials.some((material) => material.type === 'pdf');
-
-          if (hasPdf) return currentMaterials;
-
-          return [pdfMaterial, ...currentMaterials];
-        });
-      } catch (error) {
-        console.warn('PDF 임시 저장 데이터를 복구하지 못했습니다.', error);
-      }
-    };
-
-    void restorePdfDraft();
-  }, []);
 
   const goPreviousStep = () => {
     setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
