@@ -8,8 +8,8 @@ import {
 } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import type { ExperienceCategory } from '@/app/(pages)/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/(pages)/experience/_components/ExperienceCategoryTabs';
-import type { ExperienceDetailSaveValue } from '@/app/(pages)/experience/_components/ExperienceDetailContent';
 import { ExperienceDetailPanel } from '@/app/(pages)/experience/_components/ExperienceDetailPanel';
+import { useExperienceBoardActions } from '@/app/(pages)/experience/_hooks/useExperienceBoardActions';
 import { useExperienceBoardInfiniteScroll } from '@/app/(pages)/experience/_hooks/useExperienceBoardInfiniteScroll';
 import { useExperienceBoardListState } from '@/app/(pages)/experience/_hooks/useExperienceBoardListState';
 import { useExperienceBoardSelection } from '@/app/(pages)/experience/_hooks/useExperienceBoardSelection';
@@ -21,21 +21,16 @@ import {
   areExperienceOrderMapsEqual,
   createExperienceOrderMap,
   parseOrderedExperienceIds,
-  removeExperienceFromOrderMap,
   syncExperienceOrderMap,
 } from '@/app/(pages)/experience/_utils/experienceOrder';
-import { mapExperienceItemToUpdateRequest } from '@/app/(pages)/experience/_utils/mapExperienceItemToUpdateRequest';
 import type { PieceType } from '@/app/api/experience/types';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
 import {
-  useDeleteExperience,
   useExperienceDetail,
   useInfiniteExperiences,
-  useUpdateExperience,
   useUpdateExperienceOrder,
-  useUpdateExperienceTitle,
 } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
@@ -92,10 +87,7 @@ export function ExperienceBoard({
   );
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
     useInfiniteExperiences(experienceParams);
-  const deleteExperienceMutation = useDeleteExperience();
-  const updateExperienceMutation = useUpdateExperience();
   const updateExperienceOrderMutation = useUpdateExperienceOrder();
-  const updateExperienceTitleMutation = useUpdateExperienceTitle();
   const experiences = React.useMemo(
     () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
     [data],
@@ -103,10 +95,6 @@ export function ExperienceBoard({
   const [experienceOrderMap, setExperienceOrderMap] = React.useState(() =>
     createExperienceOrderMap(experiences),
   );
-  const [deleteTargetExperience, setDeleteTargetExperience] = React.useState<ExperienceItem | null>(
-    null,
-  );
-  const [errorMessage, setErrorMessage] = React.useState('');
   const selectedExperienceNumericId = selectedExperienceId ? Number(selectedExperienceId) : null;
   const {
     data: selectedExperienceDetail,
@@ -180,6 +168,22 @@ export function ExperienceBoard({
     panelOpen &&
     Boolean(selectedExperienceId) &&
     (isDetailPending || (isDetailFetching && !selectedExperienceDetailMatches));
+  const {
+    deleteTargetExperience,
+    errorMessage,
+    isDeletingExperience,
+    handleExperienceTitleSave,
+    handleExperienceDeleteRequest,
+    handleDeleteDialogOpenChange,
+    handleExperienceDeleteConfirm,
+    handleExperienceDetailSave,
+    handleErrorDialogOpenChange,
+  } = useExperienceBoardActions({
+    panelExperience,
+    selectedExperienceId,
+    closeSelectedExperience,
+    setExperienceOrderMap,
+  });
 
   const handleExperienceReorder = React.useCallback(
     (orderedExperienceIds: string[]) => {
@@ -211,91 +215,6 @@ export function ExperienceBoard({
       );
     },
     [experienceOrderMap, selectedCategory, updateExperienceOrderMutation],
-  );
-
-  const handleExperienceTitleSave = React.useCallback(
-    async (experience: ExperienceItem, nextTitle: string) => {
-      const experienceId = Number(experience.id);
-
-      if (!Number.isInteger(experienceId) || experienceId <= 0) {
-        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
-      }
-
-      await updateExperienceTitleMutation.mutateAsync({
-        experienceId,
-        request: { title: nextTitle },
-      });
-    },
-    [updateExperienceTitleMutation],
-  );
-
-  const handleExperienceDeleteRequest = React.useCallback((experience: ExperienceItem) => {
-    setDeleteTargetExperience(experience);
-  }, []);
-
-  const handleDeleteDialogOpenChange = React.useCallback(
-    (open: boolean) => {
-      if (!open && !deleteExperienceMutation.isPending) {
-        setDeleteTargetExperience(null);
-      }
-    },
-    [deleteExperienceMutation.isPending],
-  );
-
-  const handleExperienceDeleteConfirm = React.useCallback(
-    async (experience: ExperienceItem) => {
-      const experienceId = Number(experience.id);
-
-      if (!Number.isInteger(experienceId) || experienceId <= 0) {
-        setErrorMessage('삭제할 경험 정보를 확인하지 못했습니다.');
-        setDeleteTargetExperience(null);
-        return;
-      }
-
-      try {
-        await deleteExperienceMutation.mutateAsync(experienceId);
-
-        setExperienceOrderMap((currentOrderMap) =>
-          removeExperienceFromOrderMap(currentOrderMap, experience.id),
-        );
-
-        if (selectedExperienceId === experience.id) {
-          closeSelectedExperience();
-        }
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : '경험 삭제 중 오류가 발생했습니다.',
-        );
-      } finally {
-        setDeleteTargetExperience(null);
-      }
-    },
-    [closeSelectedExperience, deleteExperienceMutation, selectedExperienceId],
-  );
-
-  const handleExperienceDetailSave = React.useCallback(
-    async (nextExperience: ExperienceDetailSaveValue) => {
-      if (!panelExperience) {
-        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
-      }
-
-      const experienceId = Number(panelExperience.id);
-
-      if (!Number.isInteger(experienceId) || experienceId <= 0) {
-        throw new Error('수정할 경험 정보를 확인하지 못했습니다.');
-      }
-
-      const updatedExperience = {
-        ...panelExperience,
-        ...nextExperience,
-      };
-
-      await updateExperienceMutation.mutateAsync({
-        experienceId,
-        request: mapExperienceItemToUpdateRequest(updatedExperience),
-      });
-    },
-    [panelExperience, updateExperienceMutation],
   );
 
   return (
@@ -363,7 +282,7 @@ export function ExperienceBoard({
         title="정말로 삭제하시겠습니까?"
         description="삭제시 모든 기록과 분석 내용이 소멸됩니다."
         confirmLabel="삭제하기"
-        confirming={deleteExperienceMutation.isPending}
+        confirming={isDeletingExperience}
         destructive
         onOpenChange={handleDeleteDialogOpenChange}
         onConfirm={() => {
@@ -375,11 +294,7 @@ export function ExperienceBoard({
       <ErrorDialog
         open={errorMessage.length > 0}
         message={errorMessage}
-        onOpenChange={(open) => {
-          if (!open) {
-            setErrorMessage('');
-          }
-        }}
+        onOpenChange={handleErrorDialogOpenChange}
       />
     </section>
   );
