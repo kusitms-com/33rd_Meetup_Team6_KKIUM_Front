@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import type { ExperienceAnalyzeResponse } from '@/app/api/experience/add/types';
 import type {
   ExperienceAddMaterialModalView,
   ExperienceMaterial,
@@ -11,16 +10,7 @@ import type {
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
 import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
-import {
-  createEmptyBasicInfoForm,
-  createEmptyCoreInfoForm,
-  createEmptyResultInfoForm,
-} from '@/app/(pages)/experience/add/_types/experienceAddForm';
-import {
-  mapAnalyzeResponseToBasicInfoForm,
-  mapAnalyzeResponseToCoreInfoForm,
-  mapAnalyzeResponseToResultInfoForm,
-} from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
+import { useExperienceAddForm } from '@/app/(pages)/experience/add/_hooks/useExperienceAddForm';
 import { mapExperienceAddFormToCreateRequest } from '@/app/(pages)/experience/add/_utils/mapExperienceAddFormToCreateRequest';
 import {
   clearExperienceAddPdfDraft,
@@ -52,9 +42,16 @@ export function ExperienceAddPageContent() {
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(isNotionConnected);
   const [materialModalInitialView, setMaterialModalInitialView] =
     useState<ExperienceAddMaterialModalView>(isNotionConnected ? 'notion-pages' : 'material');
-  const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
-  const [coreInfo, setCoreInfo] = useState(createEmptyCoreInfoForm);
-  const [resultInfo, setResultInfo] = useState(createEmptyResultInfoForm);
+  const {
+    basicInfo,
+    coreInfo,
+    resultInfo,
+    setBasicInfo,
+    setCoreInfo,
+    setResultInfo,
+    applyAnalyzeResponse,
+    resetForm,
+  } = useExperienceAddForm();
   const [errorMessage, setErrorMessage] = useState('');
   const isProcessingRef = useRef(false);
   const analyzePdfMutation = useAnalyzeExperiencePdf();
@@ -114,12 +111,6 @@ export function ExperienceAddPageContent() {
     setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
   };
 
-  const applyAnalyzeResponse = (analyzeResponse: ExperienceAnalyzeResponse) => {
-    setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
-    setCoreInfo(mapAnalyzeResponseToCoreInfoForm(analyzeResponse));
-    setResultInfo(mapAnalyzeResponseToResultInfoForm(analyzeResponse));
-  };
-
   const goNextStep = async () => {
     if (isProcessingRef.current) return;
 
@@ -151,9 +142,7 @@ export function ExperienceAddPageContent() {
             const analyzeResponse = await analyzeNotionMutation.mutateAsync(notionMaterial.pageId);
             applyAnalyzeResponse(analyzeResponse);
           } else {
-            setBasicInfo(createEmptyBasicInfoForm());
-            setCoreInfo(createEmptyCoreInfoForm());
-            setResultInfo(createEmptyResultInfoForm());
+            resetForm();
           }
         } catch (error) {
           setErrorMessage(
