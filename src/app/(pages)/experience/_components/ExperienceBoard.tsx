@@ -12,6 +12,7 @@ import { ExperienceDetailPanel } from '@/app/(pages)/experience/_components/Expe
 import { useExperienceBoardActions } from '@/app/(pages)/experience/_hooks/useExperienceBoardActions';
 import { useExperienceBoardInfiniteScroll } from '@/app/(pages)/experience/_hooks/useExperienceBoardInfiniteScroll';
 import { useExperienceBoardListState } from '@/app/(pages)/experience/_hooks/useExperienceBoardListState';
+import { useExperienceBoardReorder } from '@/app/(pages)/experience/_hooks/useExperienceBoardReorder';
 import { useExperienceBoardSelection } from '@/app/(pages)/experience/_hooks/useExperienceBoardSelection';
 import {
   mapExperienceCardToItem,
@@ -20,18 +21,13 @@ import {
 import {
   areExperienceOrderMapsEqual,
   createExperienceOrderMap,
-  parseOrderedExperienceIds,
   syncExperienceOrderMap,
 } from '@/app/(pages)/experience/_utils/experienceOrder';
 import type { PieceType } from '@/app/api/experience/types';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
-import {
-  useExperienceDetail,
-  useInfiniteExperiences,
-  useUpdateExperienceOrder,
-} from '@/hooks/experience/useExperiences';
+import { useExperienceDetail, useInfiniteExperiences } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
@@ -39,13 +35,6 @@ export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
   keyword?: string;
 }
 
-const orderPieceTypeByCategory: Record<ExperienceCategory, PieceType> = {
-  all: 'ALL',
-  activity: 'ACTIVITY',
-  career: 'CAREER',
-  education: 'EDUCATION',
-  etc: 'ETC',
-};
 const filterPieceTypeByCategory: Record<
   Exclude<ExperienceCategory, 'all'>,
   Exclude<PieceType, 'ALL'>
@@ -87,7 +76,6 @@ export function ExperienceBoard({
   );
   const { data, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isPending } =
     useInfiniteExperiences(experienceParams);
-  const updateExperienceOrderMutation = useUpdateExperienceOrder();
   const experiences = React.useMemo(
     () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
     [data],
@@ -184,38 +172,11 @@ export function ExperienceBoard({
     closeSelectedExperience,
     setExperienceOrderMap,
   });
-
-  const handleExperienceReorder = React.useCallback(
-    (orderedExperienceIds: string[]) => {
-      const previousOrderIds = experienceOrderMap[selectedCategory];
-      const parsedExperienceIds = parseOrderedExperienceIds(orderedExperienceIds);
-
-      if (!parsedExperienceIds) {
-        return;
-      }
-
-      setExperienceOrderMap((currentOrderMap) => ({
-        ...currentOrderMap,
-        [selectedCategory]: orderedExperienceIds,
-      }));
-
-      updateExperienceOrderMutation.mutate(
-        {
-          type: orderPieceTypeByCategory[selectedCategory],
-          experienceIds: parsedExperienceIds,
-        },
-        {
-          onError: () => {
-            setExperienceOrderMap((currentOrderMap) => ({
-              ...currentOrderMap,
-              [selectedCategory]: previousOrderIds,
-            }));
-          },
-        },
-      );
-    },
-    [experienceOrderMap, selectedCategory, updateExperienceOrderMutation],
-  );
+  const { handleExperienceReorder } = useExperienceBoardReorder({
+    selectedCategory,
+    experienceOrderMap,
+    setExperienceOrderMap,
+  });
 
   return (
     <section
