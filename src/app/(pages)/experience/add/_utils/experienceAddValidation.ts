@@ -6,6 +6,36 @@ import type {
   ExperienceAddResultInfoForm,
 } from '@/app/(pages)/experience/add/_types/experienceAddForm';
 
+interface GetExperienceAddNextStepDisabledParams {
+  isAnalyzing: boolean;
+  isSaving: boolean;
+  isBasicInfoStep: boolean;
+  isCoreInfoStep: boolean;
+  isResultStep: boolean;
+  basicInfo: ExperienceAddBasicInfoForm;
+  coreInfo: ExperienceAddCoreInfoForm;
+  resultInfo: ExperienceAddResultInfoForm;
+}
+
+export function getExperienceAddNextStepDisabled({
+  isAnalyzing,
+  isSaving,
+  isBasicInfoStep,
+  isCoreInfoStep,
+  isResultStep,
+  basicInfo,
+  coreInfo,
+  resultInfo,
+}: GetExperienceAddNextStepDisabledParams) {
+  return (
+    isAnalyzing ||
+    isSaving ||
+    (isBasicInfoStep && !isBasicInfoComplete(basicInfo)) ||
+    (isCoreInfoStep && !isCoreInfoComplete(coreInfo)) ||
+    (isResultStep && !isResultStepComplete({ basicInfo, coreInfo, resultInfo }))
+  );
+}
+
 export function isBasicInfoComplete(basicInfo: ExperienceAddBasicInfoForm) {
   if (!basicInfo.type) return false;
 

@@ -10,11 +10,7 @@ import { useExperienceAddActions } from '@/app/(pages)/experience/add/_hooks/use
 import { useExperienceAddForm } from '@/app/(pages)/experience/add/_hooks/useExperienceAddForm';
 import { useExperienceAddMaterials } from '@/app/(pages)/experience/add/_hooks/useExperienceAddMaterials';
 import { useExperienceAddStep } from '@/app/(pages)/experience/add/_hooks/useExperienceAddStep';
-import {
-  isBasicInfoComplete,
-  isCoreInfoComplete,
-  isResultStepComplete,
-} from '@/app/(pages)/experience/add/_utils/experienceAddValidation';
+import { getExperienceAddNextStepDisabled } from '@/app/(pages)/experience/add/_utils/experienceAddValidation';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
@@ -60,12 +56,16 @@ export function ExperienceAddPageContent() {
       resetForm,
       goToNextStep,
     });
-  const isNextStepDisabled =
-    isAnalyzing ||
-    isSaving ||
-    (isBasicInfoStep && !isBasicInfoComplete(basicInfo)) ||
-    (isCoreInfoStep && !isCoreInfoComplete(coreInfo)) ||
-    (isResultStep && !isResultStepComplete({ basicInfo, coreInfo, resultInfo }));
+  const isNextStepDisabled = getExperienceAddNextStepDisabled({
+    isAnalyzing,
+    isSaving,
+    isBasicInfoStep,
+    isCoreInfoStep,
+    isResultStep,
+    basicInfo,
+    coreInfo,
+    resultInfo,
+  });
 
   useEffect(() => {
     if (!isNotionConnected) return;
