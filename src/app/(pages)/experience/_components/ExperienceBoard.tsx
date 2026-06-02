@@ -2,27 +2,20 @@
 
 import * as React from 'react';
 
-import {
-  ExperienceCardGrid,
-  type ExperienceItem,
-} from '@/app/(pages)/experience/_components/ExperienceCardGrid';
+import { ExperienceCardGrid } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import type { ExperienceCategory } from '@/app/(pages)/experience/_components/ExperienceCategoryTab';
 import { ExperienceCategoryTabs } from '@/app/(pages)/experience/_components/ExperienceCategoryTabs';
 import { ExperienceDetailPanel } from '@/app/(pages)/experience/_components/ExperienceDetailPanel';
 import { useExperienceBoardActions } from '@/app/(pages)/experience/_hooks/useExperienceBoardActions';
 import { useExperienceBoardInfiniteScroll } from '@/app/(pages)/experience/_hooks/useExperienceBoardInfiniteScroll';
 import { useExperienceBoardListState } from '@/app/(pages)/experience/_hooks/useExperienceBoardListState';
+import { useExperienceBoardOrder } from '@/app/(pages)/experience/_hooks/useExperienceBoardOrder';
 import { useExperienceBoardReorder } from '@/app/(pages)/experience/_hooks/useExperienceBoardReorder';
 import { useExperienceBoardSelection } from '@/app/(pages)/experience/_hooks/useExperienceBoardSelection';
 import {
   mapExperienceCardToItem,
   mapExperienceDetailToItem,
 } from '@/app/(pages)/experience/_utils/mapExperienceResponse';
-import {
-  areExperienceOrderMapsEqual,
-  createExperienceOrderMap,
-  syncExperienceOrderMap,
-} from '@/app/(pages)/experience/_utils/experienceOrder';
 import type { PieceType } from '@/app/api/experience/types';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -80,9 +73,11 @@ export function ExperienceBoard({
     () => data?.pages.flatMap((page) => page.experiences.map(mapExperienceCardToItem)) ?? [],
     [data],
   );
-  const [experienceOrderMap, setExperienceOrderMap] = React.useState(() =>
-    createExperienceOrderMap(experiences),
-  );
+  const { experienceOrderMap, setExperienceOrderMap, filteredExperiences } =
+    useExperienceBoardOrder({
+      experiences,
+      selectedCategory,
+    });
   const selectedExperienceNumericId = selectedExperienceId ? Number(selectedExperienceId) : null;
   const {
     data: selectedExperienceDetail,
@@ -106,30 +101,6 @@ export function ExperienceBoard({
     applyInitialSelectedExperience(experiences);
   }, [applyInitialSelectedExperience, experiences]);
 
-  React.useEffect(() => {
-    setExperienceOrderMap((currentOrderMap) => {
-      const nextOrderMap = syncExperienceOrderMap(currentOrderMap, experiences, selectedCategory);
-
-      if (areExperienceOrderMapsEqual(currentOrderMap, nextOrderMap)) {
-        return currentOrderMap;
-      }
-
-      return nextOrderMap;
-    });
-  }, [experiences, selectedCategory]);
-
-  const experienceMap = React.useMemo(
-    () => new Map(experiences.map((experience) => [experience.id, experience])),
-    [experiences],
-  );
-
-  const filteredExperiences = React.useMemo(
-    () =>
-      experienceOrderMap[selectedCategory]
-        .map((id) => experienceMap.get(id))
-        .filter((experience): experience is ExperienceItem => Boolean(experience)),
-    [experienceMap, experienceOrderMap, selectedCategory],
-  );
   const { loadMoreRef } = useExperienceBoardInfiniteScroll({
     fetchNextPage,
     hasNextPage,
