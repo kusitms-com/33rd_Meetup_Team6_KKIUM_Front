@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
 import {
@@ -11,6 +10,7 @@ import type { ExperienceCategory } from '@/app/(pages)/experience/_components/Ex
 import { ExperienceCategoryTabs } from '@/app/(pages)/experience/_components/ExperienceCategoryTabs';
 import type { ExperienceDetailSaveValue } from '@/app/(pages)/experience/_components/ExperienceDetailContent';
 import { ExperienceDetailPanel } from '@/app/(pages)/experience/_components/ExperienceDetailPanel';
+import { useExperienceBoardSelection } from '@/app/(pages)/experience/_hooks/useExperienceBoardSelection';
 import {
   mapExperienceCardToItem,
   mapExperienceDetailToItem,
@@ -18,7 +18,6 @@ import {
 import {
   areExperienceOrderMapsEqual,
   createExperienceOrderMap,
-  EXPERIENCE_ORDER_CATEGORIES,
   parseOrderedExperienceIds,
   removeExperienceFromOrderMap,
   syncExperienceOrderMap,
@@ -60,28 +59,26 @@ const filterPieceTypeByCategory: Record<
   etc: 'ETC',
 };
 
-function isExperienceCategory(category: string | null): category is ExperienceCategory {
-  return EXPERIENCE_ORDER_CATEGORIES.includes(category as ExperienceCategory);
-}
-
 export function ExperienceBoard({
   initialSelectedExperienceId,
   keyword,
   className,
   ...props
 }: ExperienceBoardProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const selectedExperienceIdFromQuery = searchParams.get('selected') ?? initialSelectedExperienceId;
-  const selectedCategoryFromQuery = searchParams.get('category');
-  const initialSelectedCategory = isExperienceCategory(selectedCategoryFromQuery)
-    ? selectedCategoryFromQuery
-    : 'all';
-  const [selectedCategory, setSelectedCategory] =
-    React.useState<ExperienceCategory>(initialSelectedCategory);
-  const [selectedExperienceId, setSelectedExperienceId] = React.useState<string | undefined>(
-    selectedExperienceIdFromQuery,
-  );
+  const {
+    selectedCategory,
+    selectedExperienceId,
+    panelOpen,
+    applyInitialSelectedExperience,
+    handleCategoryChange,
+    handleExperienceSelect,
+    closeSelectedExperience,
+    handlePanelClose,
+    handlePanelExpand,
+  } = useExperienceBoardSelection({
+    initialSelectedExperienceId,
+    keyword,
+  });
   const selectedPieceType =
     selectedCategory === 'all' ? undefined : filterPieceTypeByCategory[selectedCategory];
   const experienceParams = React.useMemo(
@@ -106,15 +103,11 @@ export function ExperienceBoard({
   const [experienceOrderMap, setExperienceOrderMap] = React.useState(() =>
     createExperienceOrderMap(experiences),
   );
-  const [panelOpen, setPanelOpen] = React.useState(Boolean(selectedExperienceIdFromQuery));
   const [deleteTargetExperience, setDeleteTargetExperience] = React.useState<ExperienceItem | null>(
     null,
   );
   const [errorMessage, setErrorMessage] = React.useState('');
-  const closeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadMoreRef = React.useRef<HTMLDivElement>(null);
-  const hasAppliedInitialSelectionRef = React.useRef(false);
-  const previousKeywordRef = React.useRef(keyword);
   const selectedExperienceNumericId = selectedExperienceId ? Number(selectedExperienceId) : null;
   const {
     data: selectedExperienceDetail,
@@ -133,6 +126,10 @@ export function ExperienceBoard({
         : null,
     [selectedExperienceDetail, selectedExperienceDetailMatches],
   );
+
+  React.useEffect(() => {
+    applyInitialSelectedExperience(experiences);
+  }, [applyInitialSelectedExperience, experiences]);
 
   React.useEffect(() => {
     setExperienceOrderMap((currentOrderMap) => {
@@ -162,68 +159,6 @@ export function ExperienceBoard({
       return currentKeywordKey === keywordKey ? null : currentKeywordKey;
     });
   }, [data, hasNextPage, isError, isPending, keywordKey, selectedCategory]);
-
-  React.useEffect(() => {
-    if (previousKeywordRef.current === keyword) {
-      return;
-    }
-
-    previousKeywordRef.current = keyword;
-
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-
-    setSelectedExperienceId(undefined);
-    setPanelOpen(false);
-
-    const params = new URLSearchParams(searchParams.toString());
-
-    params.delete('selected');
-
-    if (selectedCategory !== 'all') {
-      params.set('category', selectedCategory);
-    } else {
-      params.delete('category');
-    }
-
-    router.replace(params.size > 0 ? `/experience?${params.toString()}` : '/experience', {
-      scroll: false,
-    });
-  }, [keyword, router, searchParams, selectedCategory]);
-
-  React.useEffect(() => {
-    if (hasAppliedInitialSelectionRef.current || !selectedExperienceIdFromQuery) {
-      return;
-    }
-
-    const initialSelectedExperience = experiences.find(
-      (experience) => experience.id === selectedExperienceIdFromQuery,
-    );
-
-    if (!initialSelectedExperience) {
-      return;
-    }
-
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-
-    setSelectedCategory(initialSelectedCategory);
-    setSelectedExperienceId(initialSelectedExperience.id);
-    setPanelOpen(true);
-    hasAppliedInitialSelectionRef.current = true;
-  }, [experiences, initialSelectedCategory, selectedExperienceIdFromQuery]);
-
-  React.useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-      }
-    };
-  }, []);
 
   const experienceMap = React.useMemo(
     () => new Map(experiences.map((experience) => [experience.id, experience])),
@@ -276,31 +211,6 @@ export function ExperienceBoard({
   const showListLoading =
     !showKnownAllEmpty &&
     (isPending || (isFetching && !isFetchingNextPage && filteredExperiences.length === 0));
-
-  const handleCategoryChange = (category: ExperienceCategory) => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-
-    router.replace('/experience', { scroll: false });
-    setSelectedCategory(category);
-    setSelectedExperienceId(undefined);
-    setPanelOpen(false);
-  };
-
-  const handleExperienceSelect = (experience: ExperienceItem) => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-
-    setSelectedExperienceId(experience.id);
-    setPanelOpen(true);
-    router.replace(`/experience?selected=${experience.id}&category=${selectedCategory}`, {
-      scroll: false,
-    });
-  };
 
   const handleExperienceReorder = React.useCallback(
     (orderedExperienceIds: string[]) => {
@@ -381,14 +291,7 @@ export function ExperienceBoard({
         );
 
         if (selectedExperienceId === experience.id) {
-          if (closeTimerRef.current) {
-            clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-          }
-
-          setPanelOpen(false);
-          setSelectedExperienceId(undefined);
-          router.replace('/experience', { scroll: false });
+          closeSelectedExperience();
         }
       } catch (error) {
         setErrorMessage(
@@ -398,7 +301,7 @@ export function ExperienceBoard({
         setDeleteTargetExperience(null);
       }
     },
-    [deleteExperienceMutation, router, selectedExperienceId],
+    [closeSelectedExperience, deleteExperienceMutation, selectedExperienceId],
   );
 
   const handleExperienceDetailSave = React.useCallback(
@@ -425,33 +328,6 @@ export function ExperienceBoard({
     },
     [panelExperience, updateExperienceMutation],
   );
-
-  const handlePanelClose = () => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-    }
-
-    setPanelOpen(false);
-    closeTimerRef.current = setTimeout(() => {
-      setSelectedExperienceId(undefined);
-      closeTimerRef.current = null;
-    }, 300);
-    router.replace('/experience', { scroll: false });
-  };
-
-  const handlePanelExpand = () => {
-    if (!panelExperience) {
-      return;
-    }
-
-    const params = new URLSearchParams(searchParams.toString());
-
-    params.set('selected', panelExperience.id);
-    params.set('category', selectedCategory);
-    params.set('view', 'detail');
-
-    router.push(`/experience?${params.toString()}`);
-  };
 
   return (
     <section
@@ -508,7 +384,7 @@ export function ExperienceBoard({
           open={panelOpen}
           detailError={isDetailError}
           detailLoading={showDetailLoading}
-          onExpand={handlePanelExpand}
+          onExpand={() => handlePanelExpand(panelExperience.id)}
           onSave={handleExperienceDetailSave}
           onClose={handlePanelClose}
         />
