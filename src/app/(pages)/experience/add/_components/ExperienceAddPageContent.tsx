@@ -6,9 +6,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { ExperienceAddMaterialModalView } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
-import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
 import { useExperienceAddForm } from '@/app/(pages)/experience/add/_hooks/useExperienceAddForm';
 import { useExperienceAddMaterials } from '@/app/(pages)/experience/add/_hooks/useExperienceAddMaterials';
+import { useExperienceAddStep } from '@/app/(pages)/experience/add/_hooks/useExperienceAddStep';
 import { mapExperienceAddFormToCreateRequest } from '@/app/(pages)/experience/add/_utils/mapExperienceAddFormToCreateRequest';
 import { clearExperienceAddPdfDraft } from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
 import {
@@ -32,7 +32,16 @@ export function ExperienceAddPageContent() {
   const searchParams = useSearchParams();
   const isNotionConnected =
     searchParams.get('notion') === 'connected' || searchParams.get('success') === 'true';
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const {
+    currentStepIndex,
+    isFirstStep,
+    isCompleteStep,
+    isBasicInfoStep,
+    isCoreInfoStep,
+    isResultStep,
+    goPreviousStep,
+    goNextStep: goToNextStep,
+  } = useExperienceAddStep();
   const { materials, setMaterials } = useExperienceAddMaterials();
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(isNotionConnected);
   const [materialModalInitialView, setMaterialModalInitialView] =
@@ -58,11 +67,6 @@ export function ExperienceAddPageContent() {
     analyzeNotionMutation.isPending ||
     analyzeMaterialsMutation.isPending;
   const isSaving = createExperienceMutation.isPending;
-  const isFirstStep = currentStepIndex === 0;
-  const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
-  const isBasicInfoStep = currentStepIndex === 1;
-  const isCoreInfoStep = currentStepIndex === 2;
-  const isResultStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1;
   const isNextStepDisabled =
     isAnalyzing ||
     isSaving ||
@@ -75,14 +79,6 @@ export function ExperienceAddPageContent() {
 
     router.replace('/experience/add', { scroll: false });
   }, [isNotionConnected, router]);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [currentStepIndex]);
-
-  const goPreviousStep = () => {
-    setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
-  };
 
   const goNextStep = async () => {
     if (isProcessingRef.current) return;
@@ -125,7 +121,7 @@ export function ExperienceAddPageContent() {
         }
       }
 
-      if (currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1) {
+      if (isResultStep) {
         try {
           await createExperienceMutation.mutateAsync(
             mapExperienceAddFormToCreateRequest({
@@ -145,7 +141,7 @@ export function ExperienceAddPageContent() {
         }
       }
 
-      setCurrentStepIndex((stepIndex) => Math.min(stepIndex + 1, EXPERIENCE_ADD_STEPS.length));
+      goToNextStep();
     } finally {
       isProcessingRef.current = false;
     }
@@ -199,7 +195,7 @@ export function ExperienceAddPageContent() {
             </Button>
           )}
           <Button type="button" className="w-40" disabled={isNextStepDisabled} onClick={goNextStep}>
-            {currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1 ? '저장하기' : '다음'}
+            {isResultStep ? '저장하기' : '다음'}
           </Button>
         </footer>
       )}
