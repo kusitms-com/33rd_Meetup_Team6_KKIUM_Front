@@ -5,18 +5,17 @@ import * as React from 'react';
 
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import { ExperienceDetailInlineTextArea } from '@/app/(pages)/experience/_components/ExperienceDetailInlineTextArea';
+import {
+  type ExperienceDetailDateRange,
+  ExperienceDetailPeriodPicker,
+} from '@/app/(pages)/experience/_components/ExperienceDetailPeriodPicker';
 import { getExperienceCategoryMeta } from '@/app/(pages)/experience/_utils/ExperienceCategory';
 import {
   type BasicDetailKey,
   getExperienceDetailInfoItems,
 } from '@/app/(pages)/experience/_utils/experienceDetailInfoItems';
 import { getExperienceFieldMaxLength } from '@/app/(pages)/experience/_utils/experienceFieldLimits';
-import { CalendarIcon } from '@/components/common/icons/CalendarIcon';
-import { type CalendarDateRange, RangeCalendar } from '@/components/common/RangeCalendar';
-import {
-  type SingleMonthCalendarDateRange,
-  SingleMonthRangeCalendar,
-} from '@/components/common/SingleMonthRangeCalendar';
+import type { CalendarDateRange } from '@/components/common/RangeCalendar';
 import { cn } from '@/lib/utils';
 
 interface ExperienceDetailSummaryProps {
@@ -31,7 +30,7 @@ interface ExperienceDetailSummaryProps {
   datePickerButtonRef: React.RefObject<HTMLButtonElement | null>;
   selectedDateRange: CalendarDateRange | null;
   onDatePickerToggle: () => void;
-  onDateRangeChange: (nextRange: CalendarDateRange | SingleMonthCalendarDateRange | null) => void;
+  onDateRangeChange: (nextRange: ExperienceDetailDateRange | null) => void;
   onBasicDetailChange: (key: BasicDetailKey, value: string) => void;
 }
 
@@ -94,46 +93,17 @@ export function ExperienceDetailSummary({
               )}
             >
               {isEditing && item.type === 'period' ? (
-                <div ref={datePickerRootRef} className="relative flex items-center gap-1">
-                  <button
-                    ref={datePickerButtonRef}
-                    type="button"
-                    aria-label="기간 선택"
-                    aria-expanded={datePickerOpen}
-                    className="flex min-w-0 cursor-pointer items-center gap-1 rounded-sm text-secondary focus-visible:shadow-focus-ring focus-visible:outline-none"
-                    onClick={onDatePickerToggle}
-                  >
-                    <CalendarIcon className="size-[21px] shrink-0 text-tertiary" />
-                    <span>{item.value}</span>
-                  </button>
-                  {datePickerOpen && (
-                    <div
-                      role="dialog"
-                      aria-label="기간 선택"
-                      className={cn(
-                        'z-60',
-                        isPage
-                          ? 'absolute top-full left-0 mt-2'
-                          : 'fixed right-[max(1rem,calc((min(100vw,500px)-24rem)/2))]',
-                      )}
-                      style={isPage ? undefined : { top: datePickerTop ?? undefined }}
-                    >
-                      {isPage ? (
-                        <RangeCalendar
-                          value={selectedDateRange}
-                          defaultVisibleMonth={selectedDateRange?.start ?? new Date()}
-                          onChange={onDateRangeChange}
-                        />
-                      ) : (
-                        <SingleMonthRangeCalendar
-                          value={selectedDateRange}
-                          defaultVisibleMonth={selectedDateRange?.start ?? new Date()}
-                          onChange={onDateRangeChange}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
+                <ExperienceDetailPeriodPicker
+                  value={item.value}
+                  isPage={isPage}
+                  open={datePickerOpen}
+                  top={datePickerTop}
+                  rootRef={datePickerRootRef}
+                  buttonRef={datePickerButtonRef}
+                  selectedDateRange={selectedDateRange}
+                  onToggle={onDatePickerToggle}
+                  onChange={onDateRangeChange}
+                />
               ) : null}
               {isEditing && item.type === 'field' ? (
                 <ExperienceDetailInlineTextArea
