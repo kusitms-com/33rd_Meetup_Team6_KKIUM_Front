@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
+import type { BasicDetailKey } from '@/app/(pages)/experience/_utils/experienceDetailInfoItems';
 import { limitExperienceFieldText } from '@/app/(pages)/experience/_utils/experienceFieldLimits';
 import { formatExperiencePeriod } from '@/app/(pages)/experience/_utils/formatExperiencePeriod';
 import { sanitizeNumberText } from '@/app/(pages)/experience/_utils/sanitizeNumberText';
@@ -10,7 +11,7 @@ import type { CalendarDateRange } from '@/components/common/RangeCalendar';
 import type { SingleMonthCalendarDateRange } from '@/components/common/SingleMonthRangeCalendar';
 
 export type EditableTagGroupKey = 'skill' | 'competency';
-export type BasicDetailKey = keyof ExperienceItem['basicDetail'];
+export type { BasicDetailKey } from '@/app/(pages)/experience/_utils/experienceDetailInfoItems';
 export type ExperienceDetailSaveValue = Pick<
   ExperienceItem,
   | 'title'

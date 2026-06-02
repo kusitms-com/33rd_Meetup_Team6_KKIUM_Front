@@ -5,8 +5,11 @@ import * as React from 'react';
 
 import type { ExperienceItem } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import { ExperienceDetailInlineTextArea } from '@/app/(pages)/experience/_components/ExperienceDetailInlineTextArea';
-import type { BasicDetailKey } from '@/app/(pages)/experience/_hooks/useExperienceDetailForm';
 import { getExperienceCategoryMeta } from '@/app/(pages)/experience/_utils/ExperienceCategory';
+import {
+  type BasicDetailKey,
+  getExperienceDetailInfoItems,
+} from '@/app/(pages)/experience/_utils/experienceDetailInfoItems';
 import { getExperienceFieldMaxLength } from '@/app/(pages)/experience/_utils/experienceFieldLimits';
 import { CalendarIcon } from '@/components/common/icons/CalendarIcon';
 import { type CalendarDateRange, RangeCalendar } from '@/components/common/RangeCalendar';
@@ -49,7 +52,7 @@ export function ExperienceDetailSummary({
 }: ExperienceDetailSummaryProps) {
   const category = getExperienceCategoryMeta(type);
   const detailInfoItems = React.useMemo(
-    () => getDetailInfoItems(type, basicDetail, periodLabel),
+    () => getExperienceDetailInfoItems(type, basicDetail, periodLabel),
     [basicDetail, periodLabel, type],
   );
 
@@ -149,94 +152,4 @@ export function ExperienceDetailSummary({
       </dl>
     </div>
   );
-}
-
-type EditableDetailInfoItem =
-  | {
-      type: 'period';
-      label: string;
-      value: string;
-    }
-  | {
-      type: 'field';
-      label: string;
-      value: string;
-      displayValue: string;
-      name: BasicDetailKey;
-    };
-
-function getDetailInfoItems(
-  type: ExperienceItem['type'],
-  basicDetail: ExperienceItem['basicDetail'],
-  periodLabel: string,
-): EditableDetailInfoItem[] {
-  switch (type) {
-    case 'activity': {
-      const teamNum = basicDetail.teamNum ?? '';
-      const contributionRate = basicDetail.contributionRate ?? '';
-
-      return [
-        { type: 'period', label: '기간', value: periodLabel },
-        {
-          type: 'field',
-          label: '팀원 수',
-          value: teamNum,
-          displayValue: teamNum ? `${teamNum}명` : '',
-          name: 'teamNum',
-        },
-        {
-          type: 'field',
-          label: '내 역할',
-          value: basicDetail.role ?? '',
-          displayValue: basicDetail.role ?? '',
-          name: 'role',
-        },
-        {
-          type: 'field',
-          label: '기여도',
-          value: contributionRate,
-          displayValue: contributionRate ? `${contributionRate}%` : '',
-          name: 'contributionRate',
-        },
-      ];
-    }
-    case 'career':
-      return [
-        { type: 'period', label: '기간', value: periodLabel },
-        {
-          type: 'field',
-          label: '회사/기관/단체명',
-          value: basicDetail.company ?? '',
-          displayValue: basicDetail.company ?? '',
-          name: 'company',
-        },
-        {
-          type: 'field',
-          label: '고용 형태',
-          value: basicDetail.employmentStatus ?? '',
-          displayValue: basicDetail.employmentStatus ?? '',
-          name: 'employmentStatus',
-        },
-      ];
-    case 'education':
-      return [
-        { type: 'period', label: '기간', value: periodLabel },
-        {
-          type: 'field',
-          label: '기관명',
-          value: basicDetail.organizationName ?? '',
-          displayValue: basicDetail.organizationName ?? '',
-          name: 'organizationName',
-        },
-        {
-          type: 'field',
-          label: '수강명',
-          value: basicDetail.name ?? '',
-          displayValue: basicDetail.name ?? '',
-          name: 'name',
-        },
-      ];
-    case 'etc':
-      return [{ type: 'period', label: '기간', value: periodLabel }];
-  }
 }
