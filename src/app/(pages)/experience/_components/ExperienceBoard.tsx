@@ -7,20 +7,18 @@ import type { ExperienceCategory } from '@/app/(pages)/experience/_components/Ex
 import { ExperienceCategoryTabs } from '@/app/(pages)/experience/_components/ExperienceCategoryTabs';
 import { ExperienceDetailPanel } from '@/app/(pages)/experience/_components/ExperienceDetailPanel';
 import { useExperienceBoardActions } from '@/app/(pages)/experience/_hooks/useExperienceBoardActions';
+import { useExperienceBoardDetail } from '@/app/(pages)/experience/_hooks/useExperienceBoardDetail';
 import { useExperienceBoardInfiniteScroll } from '@/app/(pages)/experience/_hooks/useExperienceBoardInfiniteScroll';
 import { useExperienceBoardListState } from '@/app/(pages)/experience/_hooks/useExperienceBoardListState';
 import { useExperienceBoardOrder } from '@/app/(pages)/experience/_hooks/useExperienceBoardOrder';
 import { useExperienceBoardReorder } from '@/app/(pages)/experience/_hooks/useExperienceBoardReorder';
 import { useExperienceBoardSelection } from '@/app/(pages)/experience/_hooks/useExperienceBoardSelection';
-import {
-  mapExperienceCardToItem,
-  mapExperienceDetailToItem,
-} from '@/app/(pages)/experience/_utils/mapExperienceResponse';
+import { mapExperienceCardToItem } from '@/app/(pages)/experience/_utils/mapExperienceResponse';
 import type { PieceType } from '@/app/api/experience/types';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
-import { useExperienceDetail, useInfiniteExperiences } from '@/hooks/experience/useExperiences';
+import { useInfiniteExperiences } from '@/hooks/experience/useExperiences';
 import { cn } from '@/lib/utils';
 
 export interface ExperienceBoardProps extends React.ComponentProps<'section'> {
@@ -78,24 +76,6 @@ export function ExperienceBoard({
       experiences,
       selectedCategory,
     });
-  const selectedExperienceNumericId = selectedExperienceId ? Number(selectedExperienceId) : null;
-  const {
-    data: selectedExperienceDetail,
-    isError: isDetailError,
-    isFetching: isDetailFetching,
-    isPending: isDetailPending,
-  } = useExperienceDetail(
-    Number.isFinite(selectedExperienceNumericId) ? selectedExperienceNumericId : null,
-  );
-  const selectedExperienceDetailMatches =
-    selectedExperienceDetail?.experienceId === selectedExperienceNumericId;
-  const selectedExperienceDetailItem = React.useMemo(
-    () =>
-      selectedExperienceDetail && selectedExperienceDetailMatches
-        ? mapExperienceDetailToItem(selectedExperienceDetail)
-        : null,
-    [selectedExperienceDetail, selectedExperienceDetailMatches],
-  );
 
   React.useEffect(() => {
     applyInitialSelectedExperience(experiences);
@@ -122,11 +102,11 @@ export function ExperienceBoard({
   const selectedExperience = filteredExperiences.find(
     (experience) => experience.id === selectedExperienceId,
   );
-  const panelExperience = selectedExperienceDetailItem ?? selectedExperience;
-  const showDetailLoading =
-    panelOpen &&
-    Boolean(selectedExperienceId) &&
-    (isDetailPending || (isDetailFetching && !selectedExperienceDetailMatches));
+  const { panelExperience, isDetailError, showDetailLoading } = useExperienceBoardDetail({
+    selectedExperienceId,
+    selectedExperience,
+    panelOpen,
+  });
   const {
     deleteTargetExperience,
     errorMessage,
