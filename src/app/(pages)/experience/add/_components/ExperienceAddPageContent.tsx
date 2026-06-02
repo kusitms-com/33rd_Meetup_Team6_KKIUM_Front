@@ -1,193 +1,77 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import type { ExperienceAnalyzeResponse } from '@/app/api/experience/add/types';
-import type {
-  ExperienceAddMaterialModalView,
-  ExperienceMaterial,
-} from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
+import type { ExperienceAddMaterialModalView } from '@/app/(pages)/experience/add/_components/ExperienceAddMaterialModal';
 import { ExperienceAddProgress } from '@/app/(pages)/experience/add/_components/ExperienceAddProgress';
 import { ExperienceAddStepContent } from '@/app/(pages)/experience/add/_components/ExperienceAddStepContent';
-import { EXPERIENCE_ADD_STEPS } from '@/app/(pages)/experience/add/_constants/experienceAddSteps';
-import { CORE_EXPERIENCE_FIELDS } from '@/app/(pages)/experience/add/_constants/experienceCoreQuestions';
-import { EXPERIENCE_TYPE_FIELD_GROUPS } from '@/app/(pages)/experience/add/_constants/experienceTypeOptions';
-import {
-  createEmptyBasicInfoForm,
-  createEmptyCoreInfoForm,
-  createEmptyResultInfoForm,
-  type ExperienceAddBasicInfoForm,
-  type ExperienceAddCoreInfoForm,
-  type ExperienceAddResultInfoForm,
-} from '@/app/(pages)/experience/add/_types/experienceAddForm';
-import {
-  mapAnalyzeResponseToBasicInfoForm,
-  mapAnalyzeResponseToCoreInfoForm,
-  mapAnalyzeResponseToResultInfoForm,
-} from '@/app/(pages)/experience/add/_utils/mapAnalyzeResponseToBasicInfoForm';
-import { mapExperienceAddFormToCreateRequest } from '@/app/(pages)/experience/add/_utils/mapExperienceAddFormToCreateRequest';
-import {
-  clearExperienceAddPdfDraft,
-  getExperienceAddPdfDraft,
-} from '@/app/(pages)/experience/add/_utils/experienceAddPdfDraftStorage';
+import { useExperienceAddActions } from '@/app/(pages)/experience/add/_hooks/useExperienceAddActions';
+import { useExperienceAddForm } from '@/app/(pages)/experience/add/_hooks/useExperienceAddForm';
+import { useExperienceAddMaterials } from '@/app/(pages)/experience/add/_hooks/useExperienceAddMaterials';
+import { useExperienceAddStep } from '@/app/(pages)/experience/add/_hooks/useExperienceAddStep';
+import { getExperienceAddNextStepDisabled } from '@/app/(pages)/experience/add/_utils/experienceAddValidation';
 import { ErrorDialog } from '@/components/common/ErrorDialog';
 import { ChevronLeftIcon } from '@/components/common/icons/ChevronLeftIcon';
 import { Button } from '@/components/ui/button';
-import {
-  useAnalyzeExperienceMaterials,
-  useAnalyzeExperienceNotion,
-  useAnalyzeExperiencePdf,
-  useCreateExperience,
-} from '@/hooks/experience/useExperienceAdd';
-import { trackEvent } from '@/lib/analytics';
 
 export function ExperienceAddPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isNotionConnected =
     searchParams.get('notion') === 'connected' || searchParams.get('success') === 'true';
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [materials, setMaterials] = useState<ExperienceMaterial[]>([]);
+  const {
+    currentStepIndex,
+    isFirstStep,
+    isCompleteStep,
+    isBasicInfoStep,
+    isCoreInfoStep,
+    isResultStep,
+    goPreviousStep,
+    goNextStep: goToNextStep,
+  } = useExperienceAddStep();
+  const { materials, setMaterials } = useExperienceAddMaterials();
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(isNotionConnected);
   const [materialModalInitialView, setMaterialModalInitialView] =
     useState<ExperienceAddMaterialModalView>(isNotionConnected ? 'notion-pages' : 'material');
-  const [basicInfo, setBasicInfo] = useState(createEmptyBasicInfoForm);
-  const [coreInfo, setCoreInfo] = useState(createEmptyCoreInfoForm);
-  const [resultInfo, setResultInfo] = useState(createEmptyResultInfoForm);
-  const [errorMessage, setErrorMessage] = useState('');
-  const isProcessingRef = useRef(false);
-  const analyzePdfMutation = useAnalyzeExperiencePdf();
-  const analyzeNotionMutation = useAnalyzeExperienceNotion();
-  const analyzeMaterialsMutation = useAnalyzeExperienceMaterials();
-  const createExperienceMutation = useCreateExperience();
-  const isAnalyzing =
-    analyzePdfMutation.isPending ||
-    analyzeNotionMutation.isPending ||
-    analyzeMaterialsMutation.isPending;
-  const isSaving = createExperienceMutation.isPending;
-  const isFirstStep = currentStepIndex === 0;
-  const isCompleteStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length;
-  const isBasicInfoStep = currentStepIndex === 1;
-  const isCoreInfoStep = currentStepIndex === 2;
-  const isResultStep = currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1;
-  const isNextStepDisabled =
-    isAnalyzing ||
-    isSaving ||
-    (isBasicInfoStep && !isBasicInfoComplete(basicInfo)) ||
-    (isCoreInfoStep && !isCoreInfoComplete(coreInfo)) ||
-    (isResultStep && !isResultStepComplete({ basicInfo, coreInfo, resultInfo }));
+  const {
+    basicInfo,
+    coreInfo,
+    resultInfo,
+    setBasicInfo,
+    setCoreInfo,
+    setResultInfo,
+    applyAnalyzeResponse,
+    resetForm,
+  } = useExperienceAddForm();
+  const { isAnalyzing, isSaving, errorMessage, setErrorMessage, handleNextStep } =
+    useExperienceAddActions({
+      currentStepIndex,
+      isResultStep,
+      materials,
+      basicInfo,
+      coreInfo,
+      resultInfo,
+      applyAnalyzeResponse,
+      resetForm,
+      goToNextStep,
+    });
+  const isNextStepDisabled = getExperienceAddNextStepDisabled({
+    isAnalyzing,
+    isSaving,
+    isBasicInfoStep,
+    isCoreInfoStep,
+    isResultStep,
+    basicInfo,
+    coreInfo,
+    resultInfo,
+  });
 
   useEffect(() => {
     if (!isNotionConnected) return;
 
     router.replace('/experience/add', { scroll: false });
   }, [isNotionConnected, router]);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [currentStepIndex]);
-
-  useEffect(() => {
-    const restorePdfDraft = async () => {
-      try {
-        const pdfMaterial = await getExperienceAddPdfDraft();
-
-        if (!pdfMaterial) return;
-
-        setMaterials((currentMaterials) => {
-          const hasPdf = currentMaterials.some((material) => material.type === 'pdf');
-
-          if (hasPdf) return currentMaterials;
-
-          return [pdfMaterial, ...currentMaterials];
-        });
-      } catch (error) {
-        console.warn('PDF 임시 저장 데이터를 복구하지 못했습니다.', error);
-      }
-    };
-
-    void restorePdfDraft();
-  }, []);
-
-  const goPreviousStep = () => {
-    setCurrentStepIndex((stepIndex) => Math.max(stepIndex - 1, 0));
-  };
-
-  const applyAnalyzeResponse = (analyzeResponse: ExperienceAnalyzeResponse) => {
-    setBasicInfo(mapAnalyzeResponseToBasicInfoForm(analyzeResponse));
-    setCoreInfo(mapAnalyzeResponseToCoreInfoForm(analyzeResponse));
-    setResultInfo(mapAnalyzeResponseToResultInfoForm(analyzeResponse));
-  };
-
-  const goNextStep = async () => {
-    if (isProcessingRef.current) return;
-
-    isProcessingRef.current = true;
-
-    try {
-      if (currentStepIndex === 0) {
-        const pdfMaterial = materials.find((material) => material.type === 'pdf');
-        const notionMaterial = materials.find((material) => material.type === 'notion');
-
-        try {
-          if (pdfMaterial && notionMaterial) {
-            const analyzeResponse = await analyzeMaterialsMutation.mutateAsync({
-              file: pdfMaterial?.file,
-              pageId: notionMaterial?.pageId,
-            });
-
-            applyAnalyzeResponse(analyzeResponse);
-            void clearExperienceAddPdfDraft().catch((error: unknown) => {
-              console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
-            });
-          } else if (pdfMaterial) {
-            const analyzeResponse = await analyzePdfMutation.mutateAsync(pdfMaterial.file);
-            applyAnalyzeResponse(analyzeResponse);
-            void clearExperienceAddPdfDraft().catch((error: unknown) => {
-              console.warn('PDF 임시 저장 데이터를 삭제하지 못했습니다.', error);
-            });
-          } else if (notionMaterial) {
-            const analyzeResponse = await analyzeNotionMutation.mutateAsync(notionMaterial.pageId);
-            applyAnalyzeResponse(analyzeResponse);
-          } else {
-            setBasicInfo(createEmptyBasicInfoForm());
-            setCoreInfo(createEmptyCoreInfoForm());
-            setResultInfo(createEmptyResultInfoForm());
-          }
-        } catch (error) {
-          setErrorMessage(
-            error instanceof Error ? error.message : '자료 분석 중 오류가 발생했습니다.',
-          );
-          return;
-        }
-      }
-
-      if (currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1) {
-        try {
-          await createExperienceMutation.mutateAsync(
-            mapExperienceAddFormToCreateRequest({
-              basicInfo,
-              coreInfo,
-              resultInfo,
-            }),
-          );
-          trackEvent('experience_create', {
-            source: 'experience_add',
-          });
-        } catch (error) {
-          setErrorMessage(
-            error instanceof Error ? error.message : '경험 저장 중 오류가 발생했습니다.',
-          );
-          return;
-        }
-      }
-
-      setCurrentStepIndex((stepIndex) => Math.min(stepIndex + 1, EXPERIENCE_ADD_STEPS.length));
-    } finally {
-      isProcessingRef.current = false;
-    }
-  };
 
   return (
     <div className="flex min-h-dvh flex-col py-5">
@@ -240,9 +124,9 @@ export function ExperienceAddPageContent() {
             type="button"
             className="w-40"
             disabled={isNextStepDisabled}
-            onClick={goNextStep}
+            onClick={handleNextStep}
           >
-            {currentStepIndex === EXPERIENCE_ADD_STEPS.length - 1 ? '저장하기' : '다음'}
+            {isResultStep ? '저장하기' : '다음'}
           </Button>
         </footer>
       )}
@@ -257,41 +141,4 @@ export function ExperienceAddPageContent() {
       />
     </div>
   );
-}
-
-function isBasicInfoComplete(basicInfo: ExperienceAddBasicInfoForm) {
-  if (!basicInfo.type) return false;
-
-  return EXPERIENCE_TYPE_FIELD_GROUPS[basicInfo.type].every((fieldGroup) =>
-    fieldGroup.fields.every((field) => hasText(basicInfo[field.name])),
-  );
-}
-
-function isCoreInfoComplete(coreInfo: ExperienceAddCoreInfoForm) {
-  return CORE_EXPERIENCE_FIELDS.every((field) => hasText(coreInfo[field.name]));
-}
-
-function isResultStepComplete({
-  basicInfo,
-  coreInfo,
-  resultInfo,
-}: {
-  basicInfo: ExperienceAddBasicInfoForm;
-  coreInfo: ExperienceAddCoreInfoForm;
-  resultInfo: ExperienceAddResultInfoForm;
-}) {
-  return (
-    isBasicInfoComplete(basicInfo) &&
-    isCoreInfoComplete(coreInfo) &&
-    hasTag(resultInfo.skillTags) &&
-    hasTag(resultInfo.competencyTags)
-  );
-}
-
-function hasText(value: string | null | undefined) {
-  return (value ?? '').trim().length > 0;
-}
-
-function hasTag(tags: string[]) {
-  return tags.some(hasText);
 }
