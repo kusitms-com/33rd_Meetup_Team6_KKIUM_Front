@@ -1,8 +1,9 @@
 'use client';
 
 import { EditableTagGroup } from '@/app/(pages)/experience/_components/EditableTagGroup';
-import type { EditableTagGroupKey } from '@/app/(pages)/experience/_hooks/useExperienceDetailForm';
 import { Tag } from '@/components/common/Tag';
+
+type EditableTagGroupKey = 'skill' | 'competency';
 
 interface ExperienceDetailTagsProps {
   skillTags: string[];

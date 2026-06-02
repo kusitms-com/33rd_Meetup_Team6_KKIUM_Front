@@ -10,7 +10,7 @@ import { sanitizeNumberText } from '@/app/(pages)/experience/_utils/sanitizeNumb
 import type { CalendarDateRange } from '@/components/common/RangeCalendar';
 import type { SingleMonthCalendarDateRange } from '@/components/common/SingleMonthRangeCalendar';
 
-export type EditableTagGroupKey = 'skill' | 'competency';
+type EditableTagGroupKey = 'skill' | 'competency';
 export type { BasicDetailKey } from '@/app/(pages)/experience/_utils/experienceDetailInfoItems';
 export type ExperienceDetailSaveValue = Pick<
   ExperienceItem,
