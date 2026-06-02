@@ -100,7 +100,9 @@ export function useExperienceBoardSelection({
   const handleCategoryChange = React.useCallback(
     (category: ExperienceCategory) => {
       clearCloseTimer();
-      router.replace('/experience', { scroll: false });
+      const nextPath = category === 'all' ? '/experience' : `/experience?category=${category}`;
+
+      router.replace(nextPath, { scroll: false });
       setSelectedCategory(category);
       setSelectedExperienceId(undefined);
       setPanelOpen(false);
