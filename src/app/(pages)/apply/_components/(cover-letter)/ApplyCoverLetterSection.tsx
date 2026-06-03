@@ -28,6 +28,7 @@ import { ApplyCoverLetterRightPanel } from './ApplyCoverLetterRightPanel';
 import {
   useApplyJobPostingResume,
   useDeleteApplyResumeQuestion,
+  useUpdateApplyResumeQuestion,
 } from '@/hooks/apply/useApplyJobPostings';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +57,7 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
   );
   const resumeQuery = useApplyJobPostingResume(jdId, jdId != null);
   const deleteQuestionMutation = useDeleteApplyResumeQuestion();
+  const updateQuestionMutation = useUpdateApplyResumeQuestion();
   const [experienceModalOpen, setExperienceModalOpen] = React.useState(false);
   const initializedQuestionJdIdsRef = React.useRef<Set<string>>(new Set());
 
@@ -139,6 +141,45 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
 
   const canDeleteQuestion = questions.length > 1;
 
+  const handleCommitActiveQuestionTitle = async (content: string) => {
+    if (!activeQuestion || updateQuestionMutation.isPending) {
+      return;
+    }
+
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      return;
+    }
+
+    const jdQuestionId = getJdQuestionIdFromCoverLetterQuestion(activeQuestion);
+    const previousTitle = activeQuestion.title;
+
+    setQuestions(
+      questions.map((question, index) =>
+        index === activeQuestionIndex ? { ...question, title: trimmedContent } : question,
+      ),
+    );
+
+    if (jdId == null || jdQuestionId == null) {
+      return;
+    }
+
+    try {
+      await updateQuestionMutation.mutateAsync({
+        jdId,
+        questionId: jdQuestionId,
+        content: trimmedContent,
+      });
+    } catch {
+      const currentQuestions = useApplyCoverLetterStore.getState().questions;
+      setQuestions(
+        currentQuestions.map((question, index) =>
+          index === activeQuestionIndex ? { ...question, title: previousTitle } : question,
+        ),
+      );
+    }
+  };
+
   const handleDeleteActiveQuestion = async () => {
     if (!activeQuestion || !canDeleteQuestion || deleteQuestionMutation.isPending) {
       return;
@@ -211,6 +252,10 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
               isDeletingQuestion={deleteQuestionMutation.isPending}
               onDeleteQuestion={() => {
                 void handleDeleteActiveQuestion();
+              }}
+              isUpdatingQuestionTitle={updateQuestionMutation.isPending}
+              onCommitQuestionTitle={(title) => {
+                void handleCommitActiveQuestionTitle(title);
               }}
             />
           }

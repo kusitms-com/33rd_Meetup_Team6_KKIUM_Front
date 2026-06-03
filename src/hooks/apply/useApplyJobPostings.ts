@@ -17,6 +17,7 @@ import {
   parseJdUrl,
   createJdResumeAiDraft,
   deleteJdResumeQuestion,
+  updateJdResumeQuestion,
   saveJdResume,
   toggleJdTarget,
   updateJdResume,
@@ -177,6 +178,28 @@ export function useSaveApplyCoverLetter() {
       questions: ApplyCoverLetterQuestion[];
       selectedExperienceIdsByQuestion: Record<string, string[]>;
     }) => saveApplyCoverLetter(jdId, questions, selectedExperienceIdsByQuestion),
+    onSuccess: (_, { jdId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: [...applyJobPostingQueryKeys.detail(jdId), 'resume'],
+        refetchType: 'active',
+      });
+    },
+  });
+}
+
+export function useUpdateApplyResumeQuestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      jdId,
+      questionId,
+      content,
+    }: {
+      jdId: JdId;
+      questionId: number;
+      content: string;
+    }) => updateJdResumeQuestion(jdId, questionId, { content }),
     onSuccess: (_, { jdId }) => {
       void queryClient.invalidateQueries({
         queryKey: [...applyJobPostingQueryKeys.detail(jdId), 'resume'],

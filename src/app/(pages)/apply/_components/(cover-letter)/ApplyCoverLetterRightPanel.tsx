@@ -27,6 +27,8 @@ export interface ApplyCoverLetterRightPanelProps {
   canDeleteQuestion?: boolean;
   isDeletingQuestion?: boolean;
   onDeleteQuestion?: () => void;
+  isUpdatingQuestionTitle?: boolean;
+  onCommitQuestionTitle?: (title: string) => void;
 }
 
 function createQuestionId() {
@@ -56,6 +58,8 @@ export function ApplyCoverLetterRightPanel({
   canDeleteQuestion = true,
   isDeletingQuestion = false,
   onDeleteQuestion,
+  isUpdatingQuestionTitle = false,
+  onCommitQuestionTitle,
 }: ApplyCoverLetterRightPanelProps) {
   const [uncontrolledQuestions, setUncontrolledQuestions] = React.useState(initialQuestions);
   const [uncontrolledActiveIndex, setUncontrolledActiveIndex] = React.useState(0);
@@ -100,7 +104,12 @@ export function ApplyCoverLetterRightPanel({
     );
   };
 
-  const handleTitleChange = (title: string) => {
+  const handleCommitQuestionTitle = (title: string) => {
+    if (onCommitQuestionTitle) {
+      onCommitQuestionTitle(title);
+      return;
+    }
+
     setQuestions((prev) =>
       prev.map((question, index) => (index === activeIndex ? { ...question, title } : question)),
     );
@@ -160,11 +169,12 @@ export function ApplyCoverLetterRightPanel({
       />
 
       <ApplyCoverLetterQuestionEditor
+        questionId={activeQuestion.id}
         order={activeIndex + 1}
         title={activeQuestion.title}
         value={activeQuestion.content}
         onChange={handleContentChange}
-        onTitleChange={handleTitleChange}
+        onCommitTitle={handleCommitQuestionTitle}
         hasAiDraft={activeQuestion.hasAiDraft ?? false}
         aiDraft={activeQuestion.aiDraft ?? ''}
         onAiDraftChange={handleAiDraftChange}
@@ -174,6 +184,7 @@ export function ApplyCoverLetterRightPanel({
         hasSelectedExperiences={hasDisplayedSelectedExperiences}
         canDeleteQuestion={canDeleteQuestion}
         isDeletingQuestion={isDeletingQuestion}
+        isUpdatingTitle={isUpdatingQuestionTitle}
         onDeleteQuestion={onDeleteQuestion}
       />
     </section>

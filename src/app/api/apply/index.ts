@@ -18,6 +18,7 @@ import {
   updateJdResumeRequestSchema,
   saveResumeRequestSchema,
   createJdResumeQuestionRequestSchema,
+  updateJdResumeQuestionRequestSchema,
   createResumeAiDraftRequestSchema,
   createResumeAiDraftResponseSchema,
   resumeWritingGuideParamsSchema,
@@ -33,6 +34,7 @@ import {
   type JdExperienceAnalysisResponse,
   type SaveResumeRequest,
   type CreateJdResumeQuestionRequest,
+  type UpdateJdResumeQuestionRequest,
   type UpdateJdResumeRequest,
   type UpdateJdOrderRequest,
   type UpdateJdTitleRequest,
@@ -115,6 +117,21 @@ export async function createJdResumeQuestion(jdId: JdId, request: CreateJdResume
   const parsedRequest = createJdResumeQuestionRequestSchema.parse(request);
 
   await api.post<unknown>(`/api/v1/jd/${parsedJdId}/resume/questions`, parsedRequest);
+}
+
+export async function updateJdResumeQuestion(
+  jdId: JdId,
+  questionId: number,
+  request: UpdateJdResumeQuestionRequest,
+) {
+  const parsedJdId = parseJdId(jdId);
+  const parsedQuestionId = jdIdSchema.parse(questionId);
+  const parsedRequest = updateJdResumeQuestionRequestSchema.parse(request);
+
+  await api.patch<unknown>(
+    `/api/v1/resume/jd/${parsedJdId}/questions/${parsedQuestionId}`,
+    parsedRequest,
+  );
 }
 
 export async function deleteJdResumeQuestion(jdId: JdId, questionId: number) {
