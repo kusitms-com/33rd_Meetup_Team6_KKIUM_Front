@@ -163,7 +163,7 @@ describe('isResultStepComplete', () => {
     ).toBe(true);
   });
 
-  test('returns false when a required tag group has no text', () => {
+  test('returns false when skillTags has no text', () => {
     expect(
       isResultStepComplete({
         basicInfo: createBasicInfo(),
@@ -171,6 +171,38 @@ describe('isResultStepComplete', () => {
         resultInfo: createResultInfo({
           skillTags: [' '],
         }),
+      }),
+    ).toBe(false);
+  });
+
+  test('returns false when competencyTags has no text', () => {
+    expect(
+      isResultStepComplete({
+        basicInfo: createBasicInfo(),
+        coreInfo: createCoreInfo(),
+        resultInfo: createResultInfo({
+          competencyTags: [' '],
+        }),
+      }),
+    ).toBe(false);
+  });
+
+  test('returns false when basicInfo is incomplete', () => {
+    expect(
+      isResultStepComplete({
+        basicInfo: createBasicInfo({ title: '' }),
+        coreInfo: createCoreInfo(),
+        resultInfo: createResultInfo(),
+      }),
+    ).toBe(false);
+  });
+
+  test('returns false when coreInfo is incomplete', () => {
+    expect(
+      isResultStepComplete({
+        basicInfo: createBasicInfo(),
+        coreInfo: createCoreInfo({ situation: '' }),
+        resultInfo: createResultInfo(),
       }),
     ).toBe(false);
   });
