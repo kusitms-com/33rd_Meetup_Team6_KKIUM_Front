@@ -151,12 +151,13 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
       return;
     }
 
+    const targetQuestionId = activeQuestion.id;
     const jdQuestionId = getJdQuestionIdFromCoverLetterQuestion(activeQuestion);
     const previousTitle = activeQuestion.title;
 
     setQuestions(
-      questions.map((question, index) =>
-        index === activeQuestionIndex ? { ...question, title: trimmedContent } : question,
+      questions.map((question) =>
+        question.id === targetQuestionId ? { ...question, title: trimmedContent } : question,
       ),
     );
 
@@ -172,9 +173,17 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
       });
     } catch {
       const currentQuestions = useApplyCoverLetterStore.getState().questions;
+      const questionStillExists = currentQuestions.some(
+        (question) => question.id === targetQuestionId,
+      );
+
+      if (!questionStillExists) {
+        return;
+      }
+
       setQuestions(
-        currentQuestions.map((question, index) =>
-          index === activeQuestionIndex ? { ...question, title: previousTitle } : question,
+        currentQuestions.map((question) =>
+          question.id === targetQuestionId ? { ...question, title: previousTitle } : question,
         ),
       );
     }
@@ -196,15 +205,41 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
         });
       }
 
-      const nextQuestions = questions.filter((_, index) => index !== activeQuestionIndex);
-      const nextSelectedExperienceIdsByQuestion = { ...selectedExperienceIdsByQuestion };
+      const {
+        questions: currentQuestions,
+        selectedExperienceIdsByQuestion: currentSelectedExperienceIdsByQuestion,
+        activeQuestionIndex: currentActiveQuestionIndex,
+      } = useApplyCoverLetterStore.getState();
+
+      const removedQuestionIndex = currentQuestions.findIndex(
+        (question) => question.id === removedQuestionId,
+      );
+
+      if (removedQuestionIndex === -1) {
+        return;
+      }
+
+      const nextQuestions = currentQuestions.filter(
+        (question) => question.id !== removedQuestionId,
+      );
+      const nextSelectedExperienceIdsByQuestion = {
+        ...currentSelectedExperienceIdsByQuestion,
+      };
       delete nextSelectedExperienceIdsByQuestion[removedQuestionId];
+
+      let nextActiveQuestionIndex = currentActiveQuestionIndex;
+      if (removedQuestionIndex < currentActiveQuestionIndex) {
+        nextActiveQuestionIndex -= 1;
+      } else if (removedQuestionIndex === currentActiveQuestionIndex) {
+        nextActiveQuestionIndex = Math.min(
+          currentActiveQuestionIndex,
+          Math.max(0, nextQuestions.length - 1),
+        );
+      }
 
       setQuestions(nextQuestions);
       setSelectedExperienceIdsByQuestion(nextSelectedExperienceIdsByQuestion);
-      setActiveQuestionIndex(
-        Math.min(activeQuestionIndex, Math.max(0, nextQuestions.length - 1)),
-      );
+      setActiveQuestionIndex(Math.max(0, nextActiveQuestionIndex));
     } catch {
       // 삭제 실패 시 서버 상태 유지
     }

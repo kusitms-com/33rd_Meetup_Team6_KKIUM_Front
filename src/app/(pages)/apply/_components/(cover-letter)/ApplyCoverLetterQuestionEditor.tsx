@@ -138,6 +138,10 @@ export function ApplyCoverLetterQuestionEditor({
   }, [title, isTitleEditing]);
 
   React.useEffect(() => {
+    setIsTitleEditing(false);
+  }, [questionId]);
+
+  React.useEffect(() => {
     if (!questionId || !isPlaceholderTitle || isTitleEditing) {
       return;
     }
