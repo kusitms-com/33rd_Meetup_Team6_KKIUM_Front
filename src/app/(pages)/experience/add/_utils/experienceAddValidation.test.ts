@@ -126,6 +126,20 @@ describe('isBasicInfoComplete', () => {
       ),
     ).toBe(true);
   });
+
+  test('returns false when an etc required common field is missing', () => {
+    expect(
+      isBasicInfoComplete(
+        createBasicInfo({
+          type: 'etc',
+          title: '',
+          teamNum: '',
+          role: '',
+          contributionRate: '',
+        }),
+      ),
+    ).toBe(false);
+  });
 });
 
 describe('isCoreInfoComplete', () => {
