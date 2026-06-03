@@ -117,7 +117,19 @@ async function parseApiResponse<T>(response: Response): Promise<T> {
   const status = payload?.status ?? response.status;
   throwIfUnauthorized(status);
 
-  if (!response.ok || !payload || payload.code !== 'SUCCESS') {
+  if (!payload) {
+    if (response.ok) {
+      return undefined as T;
+    }
+
+    throw new ApiError({
+      status: response.status,
+      code: 'UNKNOWN_ERROR',
+      message: '요청 처리 중 오류가 발생했습니다.',
+    });
+  }
+
+  if (!response.ok || payload.code !== 'SUCCESS') {
     throw new ApiError({
       status,
       code: payload?.code ?? 'UNKNOWN_ERROR',

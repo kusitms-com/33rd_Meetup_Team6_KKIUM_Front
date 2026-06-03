@@ -210,7 +210,7 @@ export function ApplyCard({
                 <CalendarIcon className="size-5 text-gray-600" />
                 <span>모집 기간</span>
               </div>
-              <span className="min-w-0 flex-1 break-words label-3-regular text-gray-600">
+              <span className="min-w-0 flex-1 wrap-break-word label-3-regular text-gray-600">
                 {period}
               </span>
             </div>
