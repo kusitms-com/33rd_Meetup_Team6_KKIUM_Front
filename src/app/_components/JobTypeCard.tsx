@@ -9,7 +9,7 @@ export interface JobTypeCardProps extends Omit<React.ComponentProps<'section'>, 
   strengths?: readonly string[];
 }
 
-const JOB_TYPE_BACKGROUND_IMAGE = '/TypeBackground.svg';
+const JOB_TYPE_BACKGROUND_IMAGE = '/job-type-background.svg';
 
 export function JobTypeCard({
   roleTypeName = DEFAULT_HOME_JOB_TYPE_PROFILE.roleTypeName,

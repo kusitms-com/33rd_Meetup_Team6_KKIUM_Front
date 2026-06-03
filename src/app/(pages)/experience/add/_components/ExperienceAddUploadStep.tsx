@@ -180,7 +180,7 @@ function ExperienceMaterialCard({
       <div className="flex min-w-0 items-center gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-sm">
           {material.type === 'pdf' ? (
-            <Image src="/pdf.svg" alt="" width={22} height={28} className="h-7 w-[22px]" />
+            <Image src="/pdf-file.svg" alt="" width={22} height={28} className="h-7 w-[22px]" />
           ) : (
             <NotionPageIcon icon={material.icon} />
           )}
