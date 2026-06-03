@@ -9,6 +9,7 @@ import {
   JOB_POSTING_BODY_MAX_LENGTH,
   JOB_POSTING_COVER_QUESTION_MAX_LENGTH,
   JOB_POSTING_MODAL_CONTENT_CLASS,
+  JOB_POSTING_MODAL_URL_STEP_CONTENT_CLASS,
 } from '@/app/(pages)/apply/_constants/applyConstants';
 import { useApplyJobPostingStore } from '@/app/(pages)/apply/_stores/useApplyJobPostingStore';
 import {
@@ -25,6 +26,7 @@ import {
   useParseApplyJobPostingUrl,
 } from '@/hooks/apply/useApplyJobPostings';
 import { useJobPostingUrlField } from '@/hooks/apply/useJobPostingUrlField';
+import { cn } from '@/lib/utils';
 
 import {
   ApplyAddJobPostingEditStep,
@@ -235,7 +237,9 @@ export function ApplyAddJobPostingModal() {
     <Modal
       open={open}
       showCloseButton
-      contentClassName={JOB_POSTING_MODAL_CONTENT_CLASS}
+      contentClassName={
+        step === 'url' ? JOB_POSTING_MODAL_URL_STEP_CONTENT_CLASS : JOB_POSTING_MODAL_CONTENT_CLASS
+      }
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
 
@@ -249,7 +253,13 @@ export function ApplyAddJobPostingModal() {
         </Button>
       }
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div
+        className={cn(
+          step === 'url'
+            ? 'flex flex-col'
+            : 'flex min-h-0 flex-1 flex-col overflow-hidden',
+        )}
+      >
         {step === 'url' ? (
           <ApplyAddJobPostingUrlStep
             url={url}

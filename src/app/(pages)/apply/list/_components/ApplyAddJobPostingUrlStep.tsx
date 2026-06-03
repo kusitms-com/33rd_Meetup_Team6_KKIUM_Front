@@ -116,7 +116,7 @@ export function ApplyAddJobPostingUrlStep({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden">
+    <div className="flex flex-col gap-6">
       <div className="flex w-full min-w-0 shrink-0 items-start justify-between pr-10">
         <div className="flex min-w-0 flex-col gap-0.5">
           <ModalTitle className="text-strong">공고 등록</ModalTitle>
