@@ -3,6 +3,7 @@ name: Merge to Main
 on:
   schedule:
     - cron: '0 15 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0

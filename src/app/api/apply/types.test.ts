@@ -2,6 +2,7 @@ import {
   UNPARSEABLE_JD_URL_MESSAGE,
   assertParseableJdUrlResponse,
   jdAnalysisResponseSchema,
+  updateJdResumeQuestionRequestSchema,
 } from './types';
 
 describe('assertParseableJdUrlResponse', () => {
@@ -23,6 +24,21 @@ describe('assertParseableJdUrlResponse', () => {
         content: '',
       }),
     ).toThrow(UNPARSEABLE_JD_URL_MESSAGE);
+  });
+});
+
+describe('updateJdResumeQuestionRequestSchema', () => {
+  test('trims content and requires at least one character', () => {
+    const parsed = updateJdResumeQuestionRequestSchema.parse({
+      content: '  수정할 자기소개서 문항입니다.  ',
+    });
+
+    expect(parsed).toEqual({ content: '수정할 자기소개서 문항입니다.' });
+  });
+
+  test('rejects empty or whitespace-only content', () => {
+    expect(() => updateJdResumeQuestionRequestSchema.parse({ content: '' })).toThrow();
+    expect(() => updateJdResumeQuestionRequestSchema.parse({ content: '   ' })).toThrow();
   });
 });
 

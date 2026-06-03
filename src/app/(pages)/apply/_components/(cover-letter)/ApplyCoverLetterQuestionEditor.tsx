@@ -11,13 +11,15 @@ import { useApplyResumeAiDraft } from '@/hooks/apply/useApplyResumeAiDraft';
 
 import { AiDraftButton } from './AiDraftButton';
 import { ApplyCoverLetterAiDraftPanel } from './AiDraftPanel';
+import { ApplyCoverLetterQuestionMenuDropdown } from './ApplyCoverLetterQuestionMenuDropdown';
 
 export interface ApplyCoverLetterQuestionEditorProps {
+  questionId?: string;
   order: number;
   title: string;
   value: string;
   onChange: (value: string) => void;
-  onTitleChange: (title: string) => void;
+  onCommitTitle?: (title: string) => void;
   hasSelectedExperiences?: boolean;
   hasAiDraft?: boolean;
   aiDraft?: string;
@@ -25,6 +27,10 @@ export interface ApplyCoverLetterQuestionEditorProps {
   jdId?: JdId | null;
   jdQuestionId?: number | null;
   selectedExperienceIds?: string[];
+  canDeleteQuestion?: boolean;
+  isDeletingQuestion?: boolean;
+  isUpdatingTitle?: boolean;
+  onDeleteQuestion?: () => void;
   className?: string;
 }
 
@@ -32,12 +38,21 @@ function formatQuestionOrder(order: number) {
   return String(order).padStart(2, '0');
 }
 
+function isDefaultCoverLetterQuestionTitle(title: string) {
+  return /^\d+번 문항$/.test(title.trim());
+}
+
+function getDefaultCoverLetterQuestionTitle(order: number) {
+  return `${order}번 문항`;
+}
+
 export function ApplyCoverLetterQuestionEditor({
+  questionId,
   order,
   title,
   value,
   onChange,
-  onTitleChange,
+  onCommitTitle,
   hasSelectedExperiences = false,
   hasAiDraft = false,
   aiDraft = '',
@@ -45,8 +60,17 @@ export function ApplyCoverLetterQuestionEditor({
   jdId,
   jdQuestionId,
   selectedExperienceIds = [],
+  canDeleteQuestion = true,
+  isDeletingQuestion = false,
+  isUpdatingTitle = false,
+  onDeleteQuestion,
   className,
 }: ApplyCoverLetterQuestionEditorProps) {
+  const titleTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const dismissedAutoTitleEditQuestionIdsRef = React.useRef<Set<string>>(new Set());
+  const [isTitleEditing, setIsTitleEditing] = React.useState(false);
+  const [titleDraft, setTitleDraft] = React.useState(title);
+  const isPlaceholderTitle = isDefaultCoverLetterQuestionTitle(title);
   const [aiDraftOpen, setAiDraftOpen] = React.useState(false);
   const [draftContent, setDraftContent] = React.useState('');
   const {
@@ -107,6 +131,79 @@ export function ApplyCoverLetterQuestionEditor({
     setAiDraftOpen(expanded);
   };
 
+  React.useEffect(() => {
+    if (!isTitleEditing) {
+      setTitleDraft(title);
+    }
+  }, [title, isTitleEditing]);
+
+  React.useEffect(() => {
+    setIsTitleEditing(false);
+  }, [questionId]);
+
+  React.useEffect(() => {
+    if (!questionId || !isPlaceholderTitle || isTitleEditing) {
+      return;
+    }
+
+    if (dismissedAutoTitleEditQuestionIdsRef.current.has(questionId)) {
+      return;
+    }
+
+    setTitleDraft('');
+    setIsTitleEditing(true);
+  }, [questionId, isPlaceholderTitle, isTitleEditing]);
+
+  React.useEffect(() => {
+    if (!isTitleEditing) {
+      return;
+    }
+
+    const titleTextarea = titleTextareaRef.current;
+    titleTextarea?.focus();
+
+    if (titleTextarea && titleTextarea.value.length > 0) {
+      titleTextarea.setSelectionRange(titleTextarea.value.length, titleTextarea.value.length);
+    }
+  }, [isTitleEditing, questionId]);
+
+  const startTitleEditing = () => {
+    setTitleDraft(isPlaceholderTitle ? '' : title);
+    setIsTitleEditing(true);
+  };
+
+  const cancelTitleEditing = () => {
+    if (questionId && isPlaceholderTitle) {
+      dismissedAutoTitleEditQuestionIdsRef.current.add(questionId);
+    }
+
+    setTitleDraft(title);
+    setIsTitleEditing(false);
+  };
+
+  const commitTitleEditing = () => {
+    const nextTitle = titleDraft.trim();
+
+    if (!nextTitle) {
+      if (isPlaceholderTitle) {
+        return;
+      }
+
+      cancelTitleEditing();
+      return;
+    }
+
+    if (nextTitle === title.trim()) {
+      cancelTitleEditing();
+      return;
+    }
+
+    setIsTitleEditing(false);
+    onCommitTitle?.(nextTitle);
+  };
+
+  const menuDisabled = isDeletingQuestion || isUpdatingTitle;
+
   return (
     <article
       data-slot="cover-letter-question-editor"
@@ -121,22 +218,63 @@ export function ApplyCoverLetterQuestionEditor({
             {formatQuestionOrder(order)}.
           </span>
           <textarea
-            value={title}
+            ref={titleTextareaRef}
+            value={isTitleEditing ? titleDraft : title}
+            readOnly={!isTitleEditing}
             rows={2}
-            onChange={(event) => onTitleChange(event.target.value)}
+            onChange={(event) => {
+              if (!isTitleEditing) {
+                return;
+              }
+
+              setTitleDraft(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              if (!isTitleEditing || event.nativeEvent.isComposing) {
+                return;
+              }
+
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                commitTitleEditing();
+              }
+
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                cancelTitleEditing();
+              }
+            }}
+            placeholder={
+              isTitleEditing && titleDraft.length === 0
+                ? getDefaultCoverLetterQuestionTitle(order)
+                : undefined
+            }
             aria-label={`${formatQuestionOrder(order)} 문항 제목`}
-            className="min-h-14 max-h-14 min-w-0 flex-1 resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-0 text-xl font-bold leading-7 wrap-break-word text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
+            aria-readonly={!isTitleEditing}
+            className={cn(
+              'min-h-14 max-h-14 min-w-0 flex-1 resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-0 text-xl font-bold leading-7 wrap-break-word text-strong outline-none placeholder:text-tertiary focus-visible:ring-0',
+              !isTitleEditing && 'cursor-default',
+              isTitleEditing && 'ring-2 ring-border-default rounded-sm',
+            )}
           />
         </div>
-        <AiDraftButton
-          className="mt-px shrink-0"
-          hasDraft={hasDraft || hasStoredAiDraft}
-          canGenerate={canGenerateAiDraft}
-          isGenerating={isAiDraftGenerating}
-          disabled={!canUseAiDraft || hasStoredAiDraft}
-          onGenerate={generateDraft}
-          onDraftGenerated={handleDraftGenerated}
-        />
+        <div className="mt-px flex shrink-0 items-center gap-1">
+          <AiDraftButton
+            hasDraft={hasDraft || hasStoredAiDraft}
+            canGenerate={canGenerateAiDraft}
+            isGenerating={isAiDraftGenerating}
+            disabled={!canUseAiDraft || hasStoredAiDraft}
+            onGenerate={generateDraft}
+            onDraftGenerated={handleDraftGenerated}
+          />
+          <ApplyCoverLetterQuestionMenuDropdown
+            disabled={menuDisabled}
+            deleteDisabled={!canDeleteQuestion}
+            isDeleting={isDeletingQuestion}
+            onEditTitle={startTitleEditing}
+            onDelete={onDeleteQuestion}
+          />
+        </div>
       </div>
 
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-visible">

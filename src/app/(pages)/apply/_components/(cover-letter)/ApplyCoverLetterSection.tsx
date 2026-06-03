@@ -25,7 +25,11 @@ import { useApplyResumeWritingGuide } from '@/hooks/apply/useApplyResumeWritingG
 import { ApplyCoverLetterExperienceSelectModal } from './ApplyCoverLetterExperienceSelectModal';
 import { ApplyCoverLetterPanel } from './ApplyCoverLetterPanel';
 import { ApplyCoverLetterRightPanel } from './ApplyCoverLetterRightPanel';
-import { useApplyJobPostingResume } from '@/hooks/apply/useApplyJobPostings';
+import {
+  useApplyJobPostingResume,
+  useDeleteApplyResumeQuestion,
+  useUpdateApplyResumeQuestion,
+} from '@/hooks/apply/useApplyJobPostings';
 import { cn } from '@/lib/utils';
 
 export interface ApplyCoverLetterSectionProps {
@@ -45,10 +49,15 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
   const setQuestionExperienceIds = useApplyCoverLetterStore(
     (state) => state.setQuestionExperienceIds,
   );
+  const setSelectedExperienceIdsByQuestion = useApplyCoverLetterStore(
+    (state) => state.setSelectedExperienceIdsByQuestion,
+  );
   const removeQuestionExperienceId = useApplyCoverLetterStore(
     (state) => state.removeQuestionExperienceId,
   );
   const resumeQuery = useApplyJobPostingResume(jdId, jdId != null);
+  const deleteQuestionMutation = useDeleteApplyResumeQuestion();
+  const updateQuestionMutation = useUpdateApplyResumeQuestion();
   const [experienceModalOpen, setExperienceModalOpen] = React.useState(false);
   const initializedQuestionJdIdsRef = React.useRef<Set<string>>(new Set());
 
@@ -130,6 +139,112 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
     setQuestionExperienceIds(activeQuestion.id, experienceIds);
   };
 
+  const canDeleteQuestion = questions.length > 1;
+
+  const handleCommitActiveQuestionTitle = async (content: string) => {
+    if (!activeQuestion || updateQuestionMutation.isPending) {
+      return;
+    }
+
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      return;
+    }
+
+    const targetQuestionId = activeQuestion.id;
+    const jdQuestionId = getJdQuestionIdFromCoverLetterQuestion(activeQuestion);
+    const previousTitle = activeQuestion.title;
+
+    setQuestions(
+      questions.map((question) =>
+        question.id === targetQuestionId ? { ...question, title: trimmedContent } : question,
+      ),
+    );
+
+    if (jdId == null || jdQuestionId == null) {
+      return;
+    }
+
+    try {
+      await updateQuestionMutation.mutateAsync({
+        jdId,
+        questionId: jdQuestionId,
+        content: trimmedContent,
+      });
+    } catch {
+      const currentQuestions = useApplyCoverLetterStore.getState().questions;
+      const questionStillExists = currentQuestions.some(
+        (question) => question.id === targetQuestionId,
+      );
+
+      if (!questionStillExists) {
+        return;
+      }
+
+      setQuestions(
+        currentQuestions.map((question) =>
+          question.id === targetQuestionId ? { ...question, title: previousTitle } : question,
+        ),
+      );
+    }
+  };
+
+  const handleDeleteActiveQuestion = async () => {
+    if (!activeQuestion || !canDeleteQuestion || deleteQuestionMutation.isPending) {
+      return;
+    }
+
+    const jdQuestionId = getJdQuestionIdFromCoverLetterQuestion(activeQuestion);
+    const removedQuestionId = activeQuestion.id;
+
+    try {
+      if (jdId != null && jdQuestionId != null) {
+        await deleteQuestionMutation.mutateAsync({
+          jdId,
+          questionId: jdQuestionId,
+        });
+      }
+
+      const {
+        questions: currentQuestions,
+        selectedExperienceIdsByQuestion: currentSelectedExperienceIdsByQuestion,
+        activeQuestionIndex: currentActiveQuestionIndex,
+      } = useApplyCoverLetterStore.getState();
+
+      const removedQuestionIndex = currentQuestions.findIndex(
+        (question) => question.id === removedQuestionId,
+      );
+
+      if (removedQuestionIndex === -1) {
+        return;
+      }
+
+      const nextQuestions = currentQuestions.filter(
+        (question) => question.id !== removedQuestionId,
+      );
+      const nextSelectedExperienceIdsByQuestion = {
+        ...currentSelectedExperienceIdsByQuestion,
+      };
+      delete nextSelectedExperienceIdsByQuestion[removedQuestionId];
+
+      let nextActiveQuestionIndex = currentActiveQuestionIndex;
+      if (removedQuestionIndex < currentActiveQuestionIndex) {
+        nextActiveQuestionIndex -= 1;
+      } else if (removedQuestionIndex === currentActiveQuestionIndex) {
+        nextActiveQuestionIndex = Math.min(
+          currentActiveQuestionIndex,
+          Math.max(0, nextQuestions.length - 1),
+        );
+      }
+
+      setQuestions(nextQuestions);
+      setSelectedExperienceIdsByQuestion(nextSelectedExperienceIdsByQuestion);
+      setActiveQuestionIndex(Math.max(0, nextActiveQuestionIndex));
+    } catch {
+      // 삭제 실패 시 서버 상태 유지
+    }
+  };
+
   return (
     <>
       <div
@@ -168,6 +283,15 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
               onQuestionsChange={setQuestions}
               selectedExperienceIdsByQuestion={selectedExperienceIdsByQuestion}
               hasDisplayedSelectedExperiences={activeQuestionSelectedExperiences.length > 0}
+              canDeleteQuestion={canDeleteQuestion}
+              isDeletingQuestion={deleteQuestionMutation.isPending}
+              onDeleteQuestion={() => {
+                void handleDeleteActiveQuestion();
+              }}
+              isUpdatingQuestionTitle={updateQuestionMutation.isPending}
+              onCommitQuestionTitle={(title) => {
+                void handleCommitActiveQuestionTitle(title);
+              }}
             />
           }
         />
