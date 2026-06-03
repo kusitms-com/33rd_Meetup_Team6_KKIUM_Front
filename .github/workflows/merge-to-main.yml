@@ -2,7 +2,6 @@ name: Merge to Main
 
 on:
   schedule:
-    # 매일 KST 00:00 (UTC 전날 15:00)에 실행
     - cron: '0 15 * * *'
 
 permissions:
@@ -18,20 +17,15 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main  
 
       - name: Merge dev into main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 안전하게 로컬 브랜치를 생성하며 원격의 최신 상태를 가져옵니다.
-          git fetch origin main:main dev:dev
-          
-          # main 브랜치로 이동
-          git checkout main
-          
-          # dev의 최신 변경사항을 main에 병합
-          git merge dev --no-ff --no-edit -m "chore: main 최신화[scheduled]"
-          
-          # 원격 main에 푸시
+          git fetch origin
+
+          git merge origin/dev --no-ff --no-edit -m "chore: main 최신화[scheduled]"
+
           git push origin main
