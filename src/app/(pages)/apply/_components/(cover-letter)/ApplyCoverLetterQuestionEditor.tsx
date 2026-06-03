@@ -125,7 +125,7 @@ export function ApplyCoverLetterQuestionEditor({
             rows={2}
             onChange={(event) => onTitleChange(event.target.value)}
             aria-label={`${formatQuestionOrder(order)} 문항 제목`}
-            className="min-h-14 max-h-14 min-w-0 flex-1 resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-0 text-xl font-bold leading-7 break-words text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
+            className="min-h-14 max-h-14 min-w-0 flex-1 resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-0 text-xl font-bold leading-7 wrap-break-word text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
           />
         </div>
         <AiDraftButton

@@ -5,9 +5,5 @@ export function resolveApplyAccessToken(): string | null {
 }
 
 export function hasApplyApiAccess(): boolean {
-  return resolveApplyAccessToken() != null;
-}
-
-export function isUsingSessionAccessToken(): boolean {
   return getAccessTokenFromSession() != null;
 }
