@@ -24,6 +24,9 @@ export interface ApplyCoverLetterRightPanelProps {
   selectedExperienceIdsByQuestion?: Record<string, string[]>;
   hasDisplayedSelectedExperiences?: boolean;
   initialQuestions?: ApplyCoverLetterQuestion[];
+  canDeleteQuestion?: boolean;
+  isDeletingQuestion?: boolean;
+  onDeleteQuestion?: () => void;
 }
 
 function createQuestionId() {
@@ -50,6 +53,9 @@ export function ApplyCoverLetterRightPanel({
   selectedExperienceIdsByQuestion = {},
   hasDisplayedSelectedExperiences = false,
   initialQuestions = applyCoverLetterQuestionsMock,
+  canDeleteQuestion = true,
+  isDeletingQuestion = false,
+  onDeleteQuestion,
 }: ApplyCoverLetterRightPanelProps) {
   const [uncontrolledQuestions, setUncontrolledQuestions] = React.useState(initialQuestions);
   const [uncontrolledActiveIndex, setUncontrolledActiveIndex] = React.useState(0);
@@ -166,6 +172,9 @@ export function ApplyCoverLetterRightPanel({
         jdQuestionId={getJdQuestionIdFromCoverLetterQuestion(activeQuestion)}
         selectedExperienceIds={selectedExperienceIdsByQuestion[activeQuestion.id] ?? []}
         hasSelectedExperiences={hasDisplayedSelectedExperiences}
+        canDeleteQuestion={canDeleteQuestion}
+        isDeletingQuestion={isDeletingQuestion}
+        onDeleteQuestion={onDeleteQuestion}
       />
     </section>
   );

@@ -25,7 +25,10 @@ import { useApplyResumeWritingGuide } from '@/hooks/apply/useApplyResumeWritingG
 import { ApplyCoverLetterExperienceSelectModal } from './ApplyCoverLetterExperienceSelectModal';
 import { ApplyCoverLetterPanel } from './ApplyCoverLetterPanel';
 import { ApplyCoverLetterRightPanel } from './ApplyCoverLetterRightPanel';
-import { useApplyJobPostingResume } from '@/hooks/apply/useApplyJobPostings';
+import {
+  useApplyJobPostingResume,
+  useDeleteApplyResumeQuestion,
+} from '@/hooks/apply/useApplyJobPostings';
 import { cn } from '@/lib/utils';
 
 export interface ApplyCoverLetterSectionProps {
@@ -45,10 +48,14 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
   const setQuestionExperienceIds = useApplyCoverLetterStore(
     (state) => state.setQuestionExperienceIds,
   );
+  const setSelectedExperienceIdsByQuestion = useApplyCoverLetterStore(
+    (state) => state.setSelectedExperienceIdsByQuestion,
+  );
   const removeQuestionExperienceId = useApplyCoverLetterStore(
     (state) => state.removeQuestionExperienceId,
   );
   const resumeQuery = useApplyJobPostingResume(jdId, jdId != null);
+  const deleteQuestionMutation = useDeleteApplyResumeQuestion();
   const [experienceModalOpen, setExperienceModalOpen] = React.useState(false);
   const initializedQuestionJdIdsRef = React.useRef<Set<string>>(new Set());
 
@@ -130,6 +137,38 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
     setQuestionExperienceIds(activeQuestion.id, experienceIds);
   };
 
+  const canDeleteQuestion = questions.length > 1;
+
+  const handleDeleteActiveQuestion = async () => {
+    if (!activeQuestion || !canDeleteQuestion || deleteQuestionMutation.isPending) {
+      return;
+    }
+
+    const jdQuestionId = getJdQuestionIdFromCoverLetterQuestion(activeQuestion);
+    const removedQuestionId = activeQuestion.id;
+
+    try {
+      if (jdId != null && jdQuestionId != null) {
+        await deleteQuestionMutation.mutateAsync({
+          jdId,
+          questionId: jdQuestionId,
+        });
+      }
+
+      const nextQuestions = questions.filter((_, index) => index !== activeQuestionIndex);
+      const nextSelectedExperienceIdsByQuestion = { ...selectedExperienceIdsByQuestion };
+      delete nextSelectedExperienceIdsByQuestion[removedQuestionId];
+
+      setQuestions(nextQuestions);
+      setSelectedExperienceIdsByQuestion(nextSelectedExperienceIdsByQuestion);
+      setActiveQuestionIndex(
+        Math.min(activeQuestionIndex, Math.max(0, nextQuestions.length - 1)),
+      );
+    } catch {
+      // 삭제 실패 시 서버 상태 유지
+    }
+  };
+
   return (
     <>
       <div
@@ -168,6 +207,11 @@ export function ApplyCoverLetterSection({ jdId }: ApplyCoverLetterSectionProps) 
               onQuestionsChange={setQuestions}
               selectedExperienceIdsByQuestion={selectedExperienceIdsByQuestion}
               hasDisplayedSelectedExperiences={activeQuestionSelectedExperiences.length > 0}
+              canDeleteQuestion={canDeleteQuestion}
+              isDeletingQuestion={deleteQuestionMutation.isPending}
+              onDeleteQuestion={() => {
+                void handleDeleteActiveQuestion();
+              }}
             />
           }
         />

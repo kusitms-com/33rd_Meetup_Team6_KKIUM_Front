@@ -11,6 +11,7 @@ import { useApplyResumeAiDraft } from '@/hooks/apply/useApplyResumeAiDraft';
 
 import { AiDraftButton } from './AiDraftButton';
 import { ApplyCoverLetterAiDraftPanel } from './AiDraftPanel';
+import { ApplyCoverLetterQuestionMenuDropdown } from './ApplyCoverLetterQuestionMenuDropdown';
 
 export interface ApplyCoverLetterQuestionEditorProps {
   order: number;
@@ -25,6 +26,10 @@ export interface ApplyCoverLetterQuestionEditorProps {
   jdId?: JdId | null;
   jdQuestionId?: number | null;
   selectedExperienceIds?: string[];
+  canDeleteQuestion?: boolean;
+  isDeletingQuestion?: boolean;
+  onEditTitleFocus?: () => void;
+  onDeleteQuestion?: () => void;
   className?: string;
 }
 
@@ -45,8 +50,13 @@ export function ApplyCoverLetterQuestionEditor({
   jdId,
   jdQuestionId,
   selectedExperienceIds = [],
+  canDeleteQuestion = true,
+  isDeletingQuestion = false,
+  onEditTitleFocus,
+  onDeleteQuestion,
   className,
 }: ApplyCoverLetterQuestionEditorProps) {
+  const titleTextareaRef = React.useRef<HTMLTextAreaElement>(null);
   const [aiDraftOpen, setAiDraftOpen] = React.useState(false);
   const [draftContent, setDraftContent] = React.useState('');
   const {
@@ -121,6 +131,7 @@ export function ApplyCoverLetterQuestionEditor({
             {formatQuestionOrder(order)}.
           </span>
           <textarea
+            ref={titleTextareaRef}
             value={title}
             rows={2}
             onChange={(event) => onTitleChange(event.target.value)}
@@ -128,15 +139,26 @@ export function ApplyCoverLetterQuestionEditor({
             className="min-h-14 max-h-14 min-w-0 flex-1 resize-none overflow-x-hidden overflow-y-auto border-none bg-transparent p-0 text-xl font-bold leading-7 wrap-break-word text-strong outline-none placeholder:text-tertiary focus-visible:ring-0"
           />
         </div>
-        <AiDraftButton
-          className="mt-px shrink-0"
-          hasDraft={hasDraft || hasStoredAiDraft}
-          canGenerate={canGenerateAiDraft}
-          isGenerating={isAiDraftGenerating}
-          disabled={!canUseAiDraft || hasStoredAiDraft}
-          onGenerate={generateDraft}
-          onDraftGenerated={handleDraftGenerated}
-        />
+        <div className="mt-px flex shrink-0 items-center gap-1">
+          <AiDraftButton
+            hasDraft={hasDraft || hasStoredAiDraft}
+            canGenerate={canGenerateAiDraft}
+            isGenerating={isAiDraftGenerating}
+            disabled={!canUseAiDraft || hasStoredAiDraft}
+            onGenerate={generateDraft}
+            onDraftGenerated={handleDraftGenerated}
+          />
+          <ApplyCoverLetterQuestionMenuDropdown
+            disabled={isDeletingQuestion}
+            deleteDisabled={!canDeleteQuestion}
+            isDeleting={isDeletingQuestion}
+            onEditTitle={() => {
+              onEditTitleFocus?.();
+              titleTextareaRef.current?.focus();
+            }}
+            onDelete={onDeleteQuestion}
+          />
+        </div>
       </div>
 
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-visible">

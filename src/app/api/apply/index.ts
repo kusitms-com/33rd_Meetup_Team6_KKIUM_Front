@@ -117,6 +117,15 @@ export async function createJdResumeQuestion(jdId: JdId, request: CreateJdResume
   await api.post<unknown>(`/api/v1/jd/${parsedJdId}/resume/questions`, parsedRequest);
 }
 
+export async function deleteJdResumeQuestion(jdId: JdId, questionId: number) {
+  const parsedJdId = parseJdId(jdId);
+  const parsedQuestionId = jdIdSchema.parse(questionId);
+
+  await api.delete<unknown>(
+    `/api/v1/resume/jd/${parsedJdId}/questions/${parsedQuestionId}`,
+  );
+}
+
 export async function createJdResumeAiDraft(
   jdId: JdId,
   questionId: number,
