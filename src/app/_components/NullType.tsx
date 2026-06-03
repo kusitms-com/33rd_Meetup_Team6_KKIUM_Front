@@ -26,7 +26,7 @@ export function NullType({
       {...props}
     >
       <Image
-        src="/nullType.svg"
+        src="/empty-type.svg"
         alt=""
         fill
         className="object-cover object-center"
