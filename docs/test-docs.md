@@ -33,12 +33,13 @@ pnpm build              # CodeBuild와 동일한 빌드 순서로 확인 시 tes
 
 | 구분 | 테스트 파일 수 | 대상 |
 |------|----------------|------|
-| Apply (API) | 2 | 분석 상태·Zod 스키마 |
+| Apply (API) | 3 | 분석 상태·Zod 스키마·자소서 문항 PATCH/DELETE |
 | Apply (페이지 유틸) | 10 | 매핑·저장 요청·필드 제한 |
 | Home | 4 | 대시보드 스키마·기간·직무 유형·궁합 |
-| **합계** | **16 suites / 42 tests** | 순수 함수·스키마 위주 |
+| **합계** | **17 suites / 52 tests** | 순수 함수·스키마·API 클라이언트(mock) 위주 |
 
-브라우저/DOM·API 호출 오케스트레이션(`copyToClipboard`, `saveApplyCoverLetter` 등)은 유닛 테스트 대상에서 제외했습니다.
+브라우저/DOM·API 호출 오케스트레이션(`copyToClipboard`, `saveApplyCoverLetter` 등)은 유닛 테스트 대상에서 제외했습니다.  
+자소서 문항 수정·삭제는 `api.patch` / `api.delete`를 mock하여 **요청 URL·body·사전 검증**만 검증합니다.
 
 ---
 
@@ -58,8 +59,26 @@ pnpm build              # CodeBuild와 동일한 빌드 순서로 확인 시 tes
 | 테스트 | 기대 동작 |
 |--------|-----------|
 | `assertParseableJdUrlResponse` | 제목·회사·분야·본문 중 하나라도 값이 있으면 통과, 전부 비어 있으면 `UNPARSEABLE_JD_URL_MESSAGE` 예외 |
+| `updateJdResumeQuestionRequestSchema` | `content` trim. 빈 문자열·공백만 있으면 parse 실패 |
 | `jdAnalysisResponseSchema` | **Pending** 응답에서 `jdInfo`·`matchResult`가 `null`이어도 parse 성공 |
 | `jdAnalysisResponseSchema` | `analysis_status`(snake_case)를 `analysisStatus`로 정규화 |
+
+### `src/app/api/apply/resumeQuestionApi.test.ts`
+
+`api` 클라이언트를 mock합니다. 실제 네트워크 요청은 하지 않습니다.
+
+| 함수 | 기대 동작 |
+|------|-----------|
+| `updateJdResumeQuestion` | `PATCH /api/v1/resume/jd/{jdId}/questions/{questionId}` + body `{ content }`. 문자열·숫자 `jdId` 모두 허용 |
+| `updateJdResumeQuestion` | 빈 `content` 또는 `questionId ≤ 0`이면 Zod 실패, `api.patch` 미호출 |
+| `deleteJdResumeQuestion` | `DELETE /api/v1/resume/jd/{jdId}/questions/{questionId}` (body 없음) |
+| `deleteJdResumeQuestion` | 잘못된 `jdId`·`questionId`면 Zod 실패, `api.delete` 미호출 |
+
+로컬에서 해당 파일만 실행:
+
+```bash
+pnpm test:unit -- resumeQuestionApi
+```
 
 ---
 
