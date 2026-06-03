@@ -74,6 +74,10 @@ export function getAccessTokenFromSession(): string | null {
   return token || null;
 }
 
+export function hasApiAccessToken(): boolean {
+  return getAccessTokenFromSession() != null;
+}
+
 export function clearAccessTokenFromSession() {
   getStorage()?.removeItem(ACCESS_TOKEN_STORAGE_KEY);
 }
@@ -84,7 +88,7 @@ export function redirectToLoginOnUnauthorized() {
 
   clearAccessTokenFromSession();
 
-  if (isPublicAuthPath(window.location.pathname)) {
+  if (isAuthExemptPath(window.location.pathname)) {
     return;
   }
 
@@ -96,6 +100,17 @@ export function isPublicAuthPath(pathname: string) {
   const path = pathname.replace(/\/$/, '') || '/';
   return (
     path === '/login' || path.startsWith('/oauth') || path.startsWith('/auth/callback')
+  );
+}
+
+// 토큰 없이 UI 확인용
+export function isAuthExemptPath(pathname: string) {
+  const path = pathname.replace(/\/$/, '') || '/';
+  return (
+    isPublicAuthPath(pathname) ||
+    path === '/' ||
+    path === '/apply' ||
+    path.startsWith('/apply/')
   );
 }
 

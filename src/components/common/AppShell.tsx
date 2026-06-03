@@ -4,7 +4,8 @@ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
-  getAccessTokenFromSession,
+  hasApiAccessToken,
+  isAuthExemptPath,
   isPublicAuthPath,
 } from '@/app/_utils/authFetch';
 import { Sidebar } from '@/components/common/Sidebar';
@@ -29,10 +30,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [collapsed] = React.useState(false);
   const [canRender, setCanRender] = React.useState(false);
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(() => hasApiAccessToken());
+  const [isMobile, setIsMobile] = React.useState(false);
 
   const isRoot = isRootPath(pathname);
-  const hideSidebar = isPublicAuthPath(pathname) || (isRoot && !isAuthenticated);
+  const hideSidebar =
+    isPublicAuthPath(pathname) || (isRoot && !isAuthenticated && isMobile);
   const sidebarWidth = collapsed ? SIDEBAR_WIDTH.collapsed : SIDEBAR_WIDTH.expanded;
   const appShellStyle = {
     '--app-sidebar-width': hideSidebar ? '0px' : sidebarWidth,
@@ -40,16 +43,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   } as React.CSSProperties;
 
   React.useEffect(() => {
+    const mediaQueryList = window.matchMedia(MOBILE_LANDING_MEDIA_QUERY);
+    const syncMobile = () => setIsMobile(mediaQueryList.matches);
+
+    syncMobile();
+    mediaQueryList.addEventListener('change', syncMobile);
+
+    return () => mediaQueryList.removeEventListener('change', syncMobile);
+  }, []);
+
+  React.useEffect(() => {
     if (isPublicAuthPath(pathname)) {
       setCanRender(true);
       return;
     }
 
-    const hasAccessToken = Boolean(getAccessTokenFromSession());
+    if (isAuthExemptPath(pathname)) {
+      setIsAuthenticated(hasApiAccessToken());
+      setCanRender(true);
+      return;
+    }
 
-    setIsAuthenticated(hasAccessToken);
+    const hasAccess = hasApiAccessToken();
 
-    if (hasAccessToken) {
+    setIsAuthenticated(hasAccess);
+
+    if (hasAccess) {
       setCanRender(true);
       return;
     }
@@ -59,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!hasAccessToken) {
+    if (!hasAccess) {
       setCanRender(false);
       router.replace('/login');
       return;
@@ -84,7 +103,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={appShellStyle}
-      // sidebar-width와 content-left는 사이드바 오른쪽 경계를 기준으로 콘텐츠 영역을 계산합니다.
       className="min-h-dvh bg-background-default"
     >
       {!hideSidebar && <Sidebar collapsed={collapsed} />}

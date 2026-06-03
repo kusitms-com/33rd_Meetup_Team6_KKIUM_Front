@@ -3,7 +3,6 @@
 import { EditIcon } from '@/components/common/icons/EditIcon';
 import { MoreVerticalIcon } from '@/components/common/icons/MoreVerticalIcon';
 import { NomalStarIcon } from '@/components/common/icons/NomalStarIcon';
-import { StarIcon } from '@/components/common/icons/StarIcon';
 import { TrashIcon } from '@/components/common/icons/TrashIcon';
 import {
   DropdownMenu,
