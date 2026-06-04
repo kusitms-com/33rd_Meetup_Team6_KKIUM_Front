@@ -191,7 +191,7 @@ grep -E 'empty-type|job-type-background' out/index.html | head -5
 
 | 파일 | 변경 내용 |
 |------|-----------|
-| [`scripts/optimize-public-images.mjs`](../scripts/optimize-public-images.mjs) | SVGO + JPEG 추출·`sips` 리사이즈. |
+| [`scripts/optimize-public-images.mjs`](../scripts/optimize-public-images.mjs) | SVGO + JPEG 추출. macOS는 `sips` 리사이즈, Linux(CodeBuild)는 추출본 복사 폴백(빌드 중단 없음). |
 | [`package.json`](../package.json) | `optimize:images`, `build` 앞단에서 스크립트 실행. |
 | [`public/job-type-background-opt.jpg`](../public/job-type-background-opt.jpg) | 최적화 래스터 (빌드 스크립트로 재생성 가능). |
 | [`src/app/_components/JobTypeCard.tsx`](../src/app/_components/JobTypeCard.tsx) | 배경 경로 `.svg` → `-opt.jpg`. |
@@ -201,6 +201,7 @@ grep -E 'empty-type|job-type-background' out/index.html | head -5
 
 - 원본 [`public/job-type-background.svg`](../public/job-type-background.svg)는 디자인 원본으로 유지. **런타임에서는 JPG만 참조.**
 - `empty-type.svg`는 SVGO만 적용 (~98KB). 추가 축소 시 디자인 export 검토.
+- **CodeBuild(Linux):** `sips` 없음 → 추출 JPEG를 `-opt.jpg`로 복사(용량 큼). macOS 로컬/`sips` 성공 시 ~24KB. 스크립트 실패 시에도 레포의 `-opt.jpg`로 빌드는 계속됨.
 
 ### 검증
 
