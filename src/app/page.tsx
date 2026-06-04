@@ -58,6 +58,7 @@ export default function Home() {
 
   return (
     <section className="flex w-full min-w-0 flex-col items-stretch gap-6 pb-12">
+      <link rel="preload" as="image" href="/job-type-background.svg" />
       <div className={cn('flex flex-col items-stretch gap-2', HOME_DASHBOARD_CONTENT_CLASS)}>
         <div className="flex flex-col items-start gap-0.5">
           <p
@@ -97,6 +98,7 @@ export default function Home() {
             roleTypeName={mappedJobType.roleTypeName}
             roleTypeDescription={mappedJobType.description}
             strengths={mappedJobType.coreKeywords.slice(0, 4)}
+            priority
           />
         ) : (
           <NullType className={HOME_DASHBOARD_SIDE_CARD_CLASS} />
