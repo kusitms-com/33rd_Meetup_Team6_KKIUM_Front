@@ -24,4 +24,5 @@ export const nanumSquare = localFont({
     },
   ],
   display: 'swap',
+  preload: false,
 });
