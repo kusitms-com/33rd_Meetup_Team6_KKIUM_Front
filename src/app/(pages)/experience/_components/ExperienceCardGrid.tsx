@@ -1,14 +1,9 @@
+import dynamic from 'next/dynamic';
 import * as React from 'react';
 
 import { ExperienceCard } from '@/app/(pages)/experience/_components/ExperienceCard';
 import type { ExperienceCategory } from '@/app/(pages)/experience/_components/ExperienceCategoryTab';
 import { cn } from '@/lib/utils';
-
-const ExperienceSortableCardGrid = React.lazy(() =>
-  import('@/app/(pages)/experience/_components/ExperienceSortableCardGrid').then((mod) => ({
-    default: mod.ExperienceSortableCardGrid,
-  })),
-);
 
 export const EXPERIENCE_CARD_GRID_CLASS_NAME =
   'grid w-full grid-cols-2 gap-x-4 gap-y-5 min-[1720px]:grid-cols-3';
@@ -55,6 +50,15 @@ export interface ExperienceCardGridProps extends React.ComponentProps<'div'> {
   onExperienceTitleSave?: (experience: ExperienceItem, nextTitle: string) => Promise<void> | void;
 }
 
+export type ExperienceSortableCardGridProps = Omit<ExperienceCardGridProps, 'sortable'> & {
+  onReady?: () => void;
+};
+
+const ExperienceSortableCardGrid = dynamic<ExperienceSortableCardGridProps>(
+  () => import('@/app/(pages)/experience/_components/ExperienceSortableCardGrid'),
+  { ssr: false },
+);
+
 export function ExperienceCardGrid({
   experiences,
   selectedExperienceId,
@@ -66,6 +70,18 @@ export function ExperienceCardGrid({
   className,
   ...props
 }: ExperienceCardGridProps) {
+  const [sortableGridReady, setSortableGridReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!sortable) {
+      setSortableGridReady(false);
+    }
+  }, [sortable]);
+
+  const handleSortableGridReady = React.useCallback(() => {
+    setSortableGridReady(true);
+  }, []);
+
   const grid = (
     <div
       data-slot="experience-card-grid"
@@ -95,7 +111,8 @@ export function ExperienceCardGrid({
   }
 
   return (
-    <React.Suspense fallback={grid}>
+    <>
+      {!sortableGridReady && grid}
       <ExperienceSortableCardGrid
         experiences={experiences}
         selectedExperienceId={selectedExperienceId}
@@ -103,9 +120,10 @@ export function ExperienceCardGrid({
         onExperienceDelete={onExperienceDelete}
         onExperienceReorder={onExperienceReorder}
         onExperienceTitleSave={onExperienceTitleSave}
-        className={className}
+        onReady={handleSortableGridReady}
+        className={cn(className, !sortableGridReady && 'hidden')}
         {...props}
       />
-    </React.Suspense>
+    </>
   );
 }

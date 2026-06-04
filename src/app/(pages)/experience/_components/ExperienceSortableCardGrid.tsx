@@ -7,12 +7,10 @@ import * as React from 'react';
 
 import {
   EXPERIENCE_CARD_GRID_CLASS_NAME,
-  type ExperienceCardGridProps,
+  type ExperienceSortableCardGridProps,
 } from '@/app/(pages)/experience/_components/ExperienceCardGrid';
 import { SortableExperienceCard } from '@/app/(pages)/experience/_components/SortableExperienceCard';
 import { cn } from '@/lib/utils';
-
-type ExperienceSortableCardGridProps = Omit<ExperienceCardGridProps, 'sortable'>;
 
 export function ExperienceSortableCardGrid({
   experiences,
@@ -21,9 +19,14 @@ export function ExperienceSortableCardGrid({
   onExperienceDelete,
   onExperienceReorder,
   onExperienceTitleSave,
+  onReady,
   className,
   ...props
 }: ExperienceSortableCardGridProps) {
+  React.useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   const handleDragEnd = React.useCallback(
     (event: DragEndEvent) => {
       if (event.canceled) {
@@ -71,3 +74,5 @@ export function ExperienceSortableCardGrid({
     </DragDropProvider>
   );
 }
+
+export default ExperienceSortableCardGrid;
