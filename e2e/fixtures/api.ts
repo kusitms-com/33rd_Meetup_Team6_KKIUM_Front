@@ -37,6 +37,12 @@ async function fulfillUnmockedApi(route: Route) {
   });
 }
 
+function throwUnexpectedApiMethod(route: Route): never {
+  const request = route.request();
+
+  throw new Error(`Unexpected E2E API method: ${request.method()} ${request.url()}`);
+}
+
 export async function mockUserProfileApi(page: Page) {
   await page.route('**/api/v1/users/me/profile', async (route) => {
     await fulfillApiSuccess(route, {
@@ -53,8 +59,7 @@ export async function mockExperienceApi(page: Page) {
     const url = new URL(request.url());
 
     if (request.method() !== 'GET') {
-      await fulfillApiSuccess(route, null);
-      return;
+      throwUnexpectedApiMethod(route);
     }
 
     if (url.pathname === '/api/v1/experiences') {
@@ -118,8 +123,7 @@ export async function mockApplyListApi(page: Page) {
     const url = new URL(request.url());
 
     if (request.method() !== 'GET') {
-      await fulfillApiSuccess(route, null);
-      return;
+      throwUnexpectedApiMethod(route);
     }
 
     if (url.pathname === '/api/v1/jd') {
