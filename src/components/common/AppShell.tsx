@@ -14,11 +14,23 @@ const SIDEBAR_WIDTH = {
   expanded: '252px',
 } as const;
 
+function getInitialCanRender(pathname: string) {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  if (isPublicAuthPath(pathname)) {
+    return true;
+  }
+
+  return hasApiAccessToken();
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed] = React.useState(false);
-  const [canRender, setCanRender] = React.useState(false);
+  const [canRender, setCanRender] = React.useState(() => getInitialCanRender(pathname));
 
   const hideSidebar = isPublicAuthPath(pathname);
   const sidebarWidth = collapsed ? SIDEBAR_WIDTH.collapsed : SIDEBAR_WIDTH.expanded;
