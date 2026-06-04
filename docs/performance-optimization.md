@@ -123,9 +123,9 @@ grep -o 'rel="preload"[^>]*as="style"' out/index.html
 | [`scripts/inject-performance-hints.mjs`](../scripts/inject-performance-hints.mjs) | `out/index.html`에 LCP SVG `preload` 주입. |
 | [`package.json`](../package.json) | `build` 체인에 hints 스크립트 추가. |
 
-### 관련 후속 (§7)
+### LCP 배경 자산
 
-- LCP 배경은 [`job-type-background-opt.jpg`](../public/job-type-background-opt.jpg)로 대체함 (원본 SVG ~557KB → JPG ~24KB).
+- `JobTypeCard` 배경은 [`job-type-background.svg`](../public/job-type-background.svg) 사용 (`-opt.jpg` 제거).
 
 ### 검증
 
@@ -185,29 +185,29 @@ grep -E 'empty-type|job-type-background' out/index.html | head -5
 
 **증상:** `job-type-background.svg` ~557KB(내장 JPEG). LCP 다운로드·Resource load duration 과다.
 
-**대응:** SVG 내 JPEG 추출 → 표시 크기(400px)·품질 55% JPEG `job-type-background-opt.jpg` (~24KB). `JobTypeCard`는 최적화 JPG 사용.
+**현재:** 시각 품질 우선으로 **SVG 직접 렌더링** (`JobTypeCard` → `/job-type-background.svg`). `job-type-background-opt.jpg`는 제거.
+
+**빌드 시:** [`scripts/optimize-public-images.mjs`](../scripts/optimize-public-images.mjs)는 SVGO만 실행 (`empty-type.svg`, `job-type-background.svg`).
 
 ### 수정한 파일
 
 | 파일 | 변경 내용 |
 |------|-----------|
-| [`scripts/optimize-public-images.mjs`](../scripts/optimize-public-images.mjs) | SVGO + JPEG 추출. macOS는 `sips` 리사이즈, Linux(CodeBuild)는 추출본 복사 폴백(빌드 중단 없음). |
-| [`package.json`](../package.json) | `optimize:images`, `build` 앞단에서 스크립트 실행. |
-| [`public/job-type-background-opt.jpg`](../public/job-type-background-opt.jpg) | 최적화 래스터 (빌드 스크립트로 재생성 가능). |
-| [`src/app/_components/JobTypeCard.tsx`](../src/app/_components/JobTypeCard.tsx) | 배경 경로 `.svg` → `-opt.jpg`. |
-| [`src/app/page.tsx`](../src/app/page.tsx), [`scripts/inject-performance-hints.mjs`](../scripts/inject-performance-hints.mjs) | LCP preload 경로 갱신. |
+| [`src/app/_components/JobTypeCard.tsx`](../src/app/_components/JobTypeCard.tsx) | 배경 `/job-type-background.svg`. |
+| [`src/app/page.tsx`](../src/app/page.tsx), [`scripts/inject-performance-hints.mjs`](../scripts/inject-performance-hints.mjs) | LCP preload → `.svg`. |
+| [`scripts/optimize-public-images.mjs`](../scripts/optimize-public-images.mjs) | SVGO만 (JPEG/`sips` 파이프라인 제거). |
+| `public/job-type-background-opt.jpg` | 삭제. |
 
 ### 참고
 
-- 원본 [`public/job-type-background.svg`](../public/job-type-background.svg)는 디자인 원본으로 유지. **런타임에서는 JPG만 참조.**
-- `empty-type.svg`는 SVGO만 적용 (~98KB). 추가 축소 시 디자인 export 검토.
-- **CodeBuild(Linux):** `sips` 없음 → 추출 JPEG를 `-opt.jpg`로 복사(용량 큼). macOS 로컬/`sips` 성공 시 ~24KB. 스크립트 실패 시에도 레포의 `-opt.jpg`로 빌드는 계속됨.
+- SVG 용량·그레인 이슈가 남으면 디자인에서 **벡터-only SVG** 또는 별도 경량 자산 export 검토.
+- `empty-type.svg`는 SVGO만 적용 (~98KB).
 
 ### 검증
 
 ```bash
 pnpm optimize:images
-ls -lh public/job-type-background-opt.jpg
+ls -lh public/job-type-background.svg
 ```
 
 ---

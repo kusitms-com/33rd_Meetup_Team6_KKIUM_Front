@@ -9,8 +9,7 @@ export interface JobTypeCardProps extends Omit<React.ComponentProps<'section'>, 
   strengths?: readonly string[];
 }
 
-/** Raster optimized from job-type-background.svg (~557KB → ~24KB). See scripts/optimize-public-images.mjs */
-const JOB_TYPE_BACKGROUND_IMAGE = '/job-type-background-opt.jpg';
+const JOB_TYPE_BACKGROUND_IMAGE = '/job-type-background.svg';
 
 export function JobTypeCard({
   roleTypeName = DEFAULT_HOME_JOB_TYPE_PROFILE.roleTypeName,
