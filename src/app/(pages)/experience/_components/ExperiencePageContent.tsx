@@ -1,8 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { notFound, useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import * as React from 'react';
 
 import { ExperienceBoard } from '@/app/(pages)/experience/_components/ExperienceBoard';
@@ -26,13 +25,11 @@ export function ExperiencePageContent() {
   const debouncedKeyword = useDebouncedValue(keyword.trim(), 500);
 
   return (
-    <Suspense>
-      <ExperiencePageRouteContent
-        keyword={keyword}
-        debouncedKeyword={debouncedKeyword}
-        onKeywordChange={setKeyword}
-      />
-    </Suspense>
+    <ExperiencePageRouteContent
+      keyword={keyword}
+      debouncedKeyword={debouncedKeyword}
+      onKeywordChange={setKeyword}
+    />
   );
 }
 
@@ -76,11 +73,19 @@ function ExperiencePageRouteContent({
   debouncedKeyword,
   onKeywordChange,
 }: ExperiencePageRouteContentProps) {
-  const searchParams = useSearchParams();
-  const selectedExperienceId = searchParams.get('selected');
-  const isDetailView = searchParams.get('view') === 'detail';
+  const [detailExperienceId, setDetailExperienceId] = React.useState<number | null>(null);
+  const [hasInvalidDetailParam, setHasInvalidDetailParam] = React.useState(false);
 
-  if (isDetailView) {
+  React.useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const selectedExperienceId = searchParams.get('selected');
+
+    if (searchParams.get('view') !== 'detail') {
+      setDetailExperienceId(null);
+      setHasInvalidDetailParam(false);
+      return;
+    }
+
     const numericExperienceId = selectedExperienceId ? Number(selectedExperienceId) : null;
 
     if (
@@ -88,10 +93,21 @@ function ExperiencePageRouteContent({
       !Number.isInteger(numericExperienceId) ||
       numericExperienceId <= 0
     ) {
-      notFound();
+      setDetailExperienceId(null);
+      setHasInvalidDetailParam(true);
+      return;
     }
 
-    return <ExperienceDetailPageContent experienceId={numericExperienceId} />;
+    setDetailExperienceId(numericExperienceId);
+    setHasInvalidDetailParam(false);
+  }, []);
+
+  if (hasInvalidDetailParam) {
+    notFound();
+  }
+
+  if (detailExperienceId) {
+    return <ExperienceDetailPageContent experienceId={detailExperienceId} />;
   }
 
   return (
