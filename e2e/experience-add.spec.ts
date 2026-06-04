@@ -5,6 +5,7 @@ import { mockExperienceCreateApi, mockUserProfileApi } from './fixtures/api';
 import { mockAuthenticatedSession } from './fixtures/auth';
 
 async function setupAuthenticatedExperienceAddPage(page: Page) {
+  await page.clock.setFixedTime(new Date('2026-03-15'));
   await mockAuthenticatedSession(page);
   await mockUserProfileApi(page);
 }
