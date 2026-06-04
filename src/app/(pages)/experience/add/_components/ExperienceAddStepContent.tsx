@@ -67,7 +67,6 @@ const ExperienceAddCompleteStep = dynamic(
     ),
   {
     ssr: false,
-    loading: ExperienceAddStepLoading,
   },
 );
 
