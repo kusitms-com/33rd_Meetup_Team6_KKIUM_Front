@@ -12,7 +12,7 @@ const outDir = path.resolve(process.argv[2] ?? 'out');
 /** Matches Lighthouse LCP element on home (NullType / JobTypeCard). */
 const HOME_LCP_PRELOADS = [
   '<link rel="preload" href="/empty-type.svg" as="image" fetchpriority="high"/>',
-  '<link rel="preload" href="/job-type-background-opt.jpg" as="image"/>',
+  '<link rel="preload" href="/job-type-background.svg" as="image"/>',
 ];
 
 /** Next export may use `<meta ...>` or `<meta .../>`. */

@@ -4,6 +4,8 @@
 
 ## 빠른 참고
 
-- 배포 스크립트: [`scripts/s3-sync-with-cache.sh`](../scripts/s3-sync-with-cache.sh)
-- CodeBuild: `S3_BUCKET`, 선택 `CLOUDFRONT_DISTRIBUTION_ID`
-- 로컬: `export S3_BUCKET=... && ./scripts/s3-sync-with-cache.sh out`
+- 배포: [`scripts/s3-sync-with-cache.sh`](../scripts/s3-sync-with-cache.sh)
+- 기존 S3만 수정: [`scripts/repair-s3-cache-headers.sh`](../scripts/repair-s3-cache-headers.sh)
+- CodeBuild env: **`S3_BUCKET`** (또는 `STATIC_SITE_BUCKET` / `KKIUM_S3_BUCKET`)
+- deploy 전용: [`buildspec.deploy.yml`](../buildspec.deploy.yml)
+- 상세: [performance-optimization.md §1](./performance-optimization.md#1-use-efficient-cache-lifetimes)
