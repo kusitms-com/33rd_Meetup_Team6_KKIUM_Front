@@ -43,6 +43,113 @@ function throwUnexpectedApiMethod(route: Route): never {
   throw new Error(`Unexpected E2E API method: ${request.method()} ${request.url()}`);
 }
 
+const experienceCards = [
+  {
+    pieceId: 101,
+    experienceId: 1,
+    type: 'ACTIVITY',
+    title: 'E2E 경험 카드',
+    oneLineIntro: 'E2E 한 줄 소개',
+    startDate: '2026-01-01',
+    endDate: '2026-02-01',
+    tags: [
+      { category: 'TECH', field: 'Playwright' },
+      { category: 'COMPETENCY', field: '문제해결' },
+    ],
+  },
+  {
+    pieceId: 102,
+    experienceId: 2,
+    type: 'CAREER',
+    title: 'E2E 커리어 경험',
+    oneLineIntro: 'E2E 커리어 한 줄 소개',
+    startDate: '2026-02-01',
+    endDate: '2026-03-01',
+    tags: [
+      { category: 'TECH', field: 'React' },
+      { category: 'COMPETENCY', field: '협업' },
+    ],
+  },
+  {
+    pieceId: 103,
+    experienceId: 3,
+    type: 'ETC',
+    title: 'E2E 검색 대상 경험',
+    oneLineIntro: '검색 대상 한 줄 소개',
+    startDate: '2026-03-01',
+    endDate: '2026-04-01',
+    tags: [
+      { category: 'TECH', field: '검색태그' },
+      { category: 'COMPETENCY', field: '집중력' },
+    ],
+  },
+];
+
+type ExperienceDetailMock = Record<string, unknown>;
+
+const experienceDetails: Record<string, ExperienceDetailMock> = {
+  1: {
+    ...experienceCards[0],
+    oneLineIntro: 'E2E 상세 한 줄 소개',
+    situation: 'E2E 상황',
+    task: 'E2E 과제',
+    act: 'E2E 행동',
+    result: 'E2E 결과',
+    taken: 'E2E 배운 점',
+    detail: {
+      name: 'E2E 활동',
+      teamNum: 4,
+      role: '프론트엔드',
+      contributionRate: 80,
+      startDate: '2026-01-01',
+      endDate: '2026-02-01',
+    },
+  },
+  2: {
+    ...experienceCards[1],
+    situation: 'E2E 커리어 상황',
+    task: 'E2E 커리어 과제',
+    act: 'E2E 커리어 행동',
+    result: 'E2E 커리어 결과',
+    taken: 'E2E 커리어 배운 점',
+    detail: {
+      name: 'E2E 커리어',
+      company: '끼움컴퍼니',
+      employmentStatus: '인턴',
+      startDate: '2026-02-01',
+      endDate: '2026-03-01',
+    },
+  },
+  3: {
+    ...experienceCards[2],
+    situation: 'E2E 검색 상황',
+    task: 'E2E 검색 과제',
+    act: 'E2E 검색 행동',
+    result: 'E2E 검색 결과',
+    taken: 'E2E 검색 배운 점',
+    detail: {
+      startDate: '2026-03-01',
+      endDate: '2026-04-01',
+    },
+  },
+};
+
+function getMockExperienceCards(url: URL) {
+  const type = url.searchParams.get('type');
+  const keyword = url.searchParams.get('keyword')?.trim().toLowerCase() ?? '';
+
+  return experienceCards.filter((experience) => {
+    const matchesType = !type || experience.type === type;
+    const matchesKeyword =
+      keyword.length === 0 ||
+      [experience.title, experience.oneLineIntro, ...experience.tags.map((tag) => tag.field)].some(
+        (value) => value.toLowerCase().includes(keyword),
+      );
+
+    return matchesType && matchesKeyword;
+  });
+}
+
 export async function mockUserProfileApi(page: Page) {
   await page.route('**/api/v1/users/me/profile', async (route) => {
     await fulfillApiSuccess(route, {
@@ -66,50 +173,16 @@ export async function mockExperienceApi(page: Page) {
       await fulfillApiSuccess(route, {
         hasNext: false,
         nextCursor: null,
-        experiences: [
-          {
-            pieceId: 101,
-            experienceId: 1,
-            type: 'ACTIVITY',
-            title: 'E2E 경험 카드',
-            oneLineIntro: 'E2E 한 줄 소개',
-            startDate: '2026-01-01',
-            endDate: '2026-02-01',
-            tags: [
-              { category: 'TECH', field: 'Playwright' },
-              { category: 'COMPETENCY', field: '문제해결' },
-            ],
-          },
-        ],
+        experiences: getMockExperienceCards(url),
       });
       return;
     }
 
-    if (url.pathname === '/api/v1/experiences/1') {
-      await fulfillApiSuccess(route, {
-        pieceId: 101,
-        experienceId: 1,
-        type: 'ACTIVITY',
-        title: 'E2E 경험 카드',
-        oneLineIntro: 'E2E 상세 한 줄 소개',
-        situation: 'E2E 상황',
-        task: 'E2E 과제',
-        act: 'E2E 행동',
-        result: 'E2E 결과',
-        taken: 'E2E 배운 점',
-        tags: [
-          { category: 'TECH', field: 'Playwright' },
-          { category: 'COMPETENCY', field: '문제해결' },
-        ],
-        detail: {
-          name: 'E2E 활동',
-          teamNum: 4,
-          role: '프론트엔드',
-          contributionRate: 80,
-          startDate: '2026-01-01',
-          endDate: '2026-02-01',
-        },
-      });
+    const experienceId = url.pathname.match(/^\/api\/v1\/experiences\/(\d+)$/)?.[1];
+    const experienceDetail = experienceId ? experienceDetails[experienceId] : undefined;
+
+    if (experienceDetail) {
+      await fulfillApiSuccess(route, experienceDetail);
       return;
     }
 
