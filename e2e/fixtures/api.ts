@@ -255,3 +255,101 @@ export async function mockApplyListApi(page: Page) {
     await fulfillUnmockedApi(route);
   });
 }
+
+export async function mockApplyDetailApi(page: Page) {
+  await page.route('**/api/v1/jd/**', async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+
+    if (request.method() !== 'GET') {
+      throwUnexpectedApiMethod(route);
+    }
+
+    if (url.pathname === '/api/v1/jd/1/resume') {
+      await fulfillApiSuccess(route, {
+        id: 1,
+        postingTitle: 'E2E 지원 공고',
+        companyName: '끼움테스트',
+        recruitmentField: '프론트엔드',
+        startDate: '2026-03-01',
+        endDate: '2026-03-31',
+        questions: [
+          {
+            questionId: 1,
+            orderNum: 1,
+            content: '지원 동기를 작성해주세요.',
+            answer: '',
+            aiDraft: '',
+            hasAiDraft: false,
+          },
+        ],
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/v1/jd/1/analysis') {
+      await fulfillApiSuccess(route, {
+        analysisStatus: 'COMPLETED',
+        jdInfo: {
+          postingTitle: 'E2E 지원 공고',
+          companyName: '끼움테스트',
+          recruitmentField: '프론트엔드',
+          startDate: '2026-03-01',
+          endDate: '2026-03-31',
+          hardSkills: ['Playwright', 'React'],
+          softSkills: ['문제해결'],
+          mainResponsibilities: '사용자 경험 개선\n프론트엔드 품질 관리',
+          requiredQualifications: 'React 경험\n테스트 자동화 경험',
+          preferredQualifications: 'E2E 테스트 운영 경험',
+        },
+        matchResult: {
+          applicationFitScore: 82,
+          experiences: [
+            {
+              experienceId: 1,
+              type: 'ACTIVITY',
+              title: 'E2E 경험 카드',
+              oneLineIntro: 'E2E 한 줄 소개',
+              tags: [
+                { category: 'TECH', field: 'Playwright' },
+                { category: 'COMPETENCY', field: '문제해결' },
+              ],
+              usageFitScore: 91,
+            },
+          ],
+        },
+      });
+      return;
+    }
+
+    await fulfillUnmockedApi(route);
+  });
+
+  await page.route('**/api/v1/resume/jd/**', async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+
+    if (request.method() !== 'GET') {
+      throwUnexpectedApiMethod(route);
+    }
+
+    if (url.pathname === '/api/v1/resume/jd/1/questions/1/experiences') {
+      await fulfillApiSuccess(route, {
+        experiences: [
+          {
+            experienceId: 1,
+            type: 'ACTIVITY',
+            title: 'E2E 경험 카드',
+            oneLineIntro: 'E2E 한 줄 소개',
+            startDate: '2026-01-01',
+            endDate: '2026-02-01',
+            usageFitScore: 91,
+          },
+        ],
+      });
+      return;
+    }
+
+    await fulfillUnmockedApi(route);
+  });
+}
