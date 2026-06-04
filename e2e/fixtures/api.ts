@@ -43,6 +43,10 @@ function throwUnexpectedApiMethod(route: Route): never {
   throw new Error(`Unexpected E2E API method: ${request.method()} ${request.url()}`);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 const experienceCards = [
   {
     pieceId: 101,
@@ -183,6 +187,34 @@ export async function mockExperienceApi(page: Page) {
 
     if (experienceDetail) {
       await fulfillApiSuccess(route, experienceDetail);
+      return;
+    }
+
+    await fulfillUnmockedApi(route);
+  });
+}
+
+export async function mockExperienceCreateApi(
+  page: Page,
+  onCreate?: (requestBody: Record<string, unknown>) => void,
+) {
+  await page.route('**/api/v1/experiences', async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+
+    if (request.method() !== 'POST') {
+      throwUnexpectedApiMethod(route);
+    }
+
+    if (url.pathname === '/api/v1/experiences') {
+      const requestBody = request.postDataJSON();
+
+      if (!isRecord(requestBody)) {
+        throw new Error(`Unexpected E2E create experience body: ${request.postData() ?? ''}`);
+      }
+
+      onCreate?.(requestBody);
+      await fulfillApiSuccess(route, null);
       return;
     }
 
