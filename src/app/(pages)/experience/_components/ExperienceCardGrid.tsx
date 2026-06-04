@@ -39,11 +39,11 @@ export function ExperienceCardGrid({
     setSortableGridReady(true);
   }, []);
 
-  const grid = (
+  const renderGrid = (gridProps?: React.ComponentProps<'div'>) => (
     <div
       data-slot="experience-card-grid"
       className={cn(EXPERIENCE_CARD_GRID_CLASS_NAME, className)}
-      {...props}
+      {...gridProps}
     >
       {experiences.map((experience) => (
         <ExperienceCard
@@ -63,13 +63,16 @@ export function ExperienceCardGrid({
     </div>
   );
 
+  const grid = renderGrid(props);
+  const fallbackGrid = renderGrid();
+
   if (!sortable) {
     return grid;
   }
 
   return (
     <>
-      {!sortableGridReady && grid}
+      {!sortableGridReady && fallbackGrid}
       <ExperienceSortableCardGrid
         experiences={experiences}
         selectedExperienceId={selectedExperienceId}
