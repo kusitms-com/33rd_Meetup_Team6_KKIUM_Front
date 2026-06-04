@@ -15,7 +15,8 @@ const HOME_LCP_PRELOADS = [
   '<link rel="preload" href="/job-type-background-opt.jpg" as="image"/>',
 ];
 
-const VIEWPORT_META_RE = /(<meta name="viewport"[^>]*\/>)/i;
+/** Next export may use `<meta ...>` or `<meta .../>`. */
+const VIEWPORT_META_RE = /(<meta\s+name=["']viewport["'][^>]*\/?>)/i;
 
 function injectAfterViewport(html, snippets) {
   if (!VIEWPORT_META_RE.test(html)) {
