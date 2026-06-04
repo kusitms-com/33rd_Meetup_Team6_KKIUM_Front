@@ -31,7 +31,8 @@ export function NullType({
         fill
         className="object-cover object-center"
         sizes="(max-width: 1280px) 100vw, 384px"
-        priority={false}
+        priority
+        fetchPriority="high"
       />
 
       <div className="absolute inset-x-5 top-[26px] inline-flex items-start justify-between">
