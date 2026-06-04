@@ -8,11 +8,11 @@ import * as React from 'react';
 import {
   EXPERIENCE_CARD_GRID_CLASS_NAME,
   type ExperienceSortableCardGridProps,
-} from '@/app/(pages)/experience/_components/ExperienceCardGrid';
+} from '@/app/(pages)/experience/_components/experienceCardGridTypes';
 import { SortableExperienceCard } from '@/app/(pages)/experience/_components/SortableExperienceCard';
 import { cn } from '@/lib/utils';
 
-export function ExperienceSortableCardGrid({
+export default function ExperienceSortableCardGrid({
   experiences,
   selectedExperienceId,
   onExperienceClick,
@@ -74,5 +74,3 @@ export function ExperienceSortableCardGrid({
     </DragDropProvider>
   );
 }
-
-export default ExperienceSortableCardGrid;
