@@ -5,11 +5,8 @@ import Link from 'next/link';
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { clearAccessTokenFromSession } from '@/app/_utils/authFetch';
-import {
-  AccountDialog,
-  getProfileOptionByIllustrateId,
-} from '@/components/common/AccountDialog';
+import { clearAccessTokenFromSession, requestLogout } from '@/app/_utils/authFetch';
+import { AccountDialog, getProfileOptionByIllustrateId } from '@/components/common/AccountDialog';
 import { ApplicationIcon } from '@/components/common/icons/ApplicationIcon';
 import { ExperienceIcon } from '@/components/common/icons/ExperienceIcon';
 import { HomeIcon } from '@/components/common/icons/HomeIcon';
@@ -102,9 +99,10 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   };
 
   const handleLogoutClick = () => {
-    clearAccessTokenFromSession();
     setIsProfileMenuOpen(false);
-    router.replace('/login');
+    void requestLogout().finally(() => {
+      router.replace('/login');
+    });
   };
 
   const handleProfileColorChange = async (illustrateId: number) => {
@@ -165,7 +163,11 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             )}
           >
             <SidebarProfileMenuItem label="계정" icon={SettingsIcon} onClick={handleAccountClick} />
-            <SidebarProfileMenuItem label="로그아웃" icon={LogoutIcon} onClick={handleLogoutClick} />
+            <SidebarProfileMenuItem
+              label="로그아웃"
+              icon={LogoutIcon}
+              onClick={handleLogoutClick}
+            />
           </div>
         )}
 
@@ -229,7 +231,7 @@ function SidebarProfileMenuItem({
   return (
     <button
       type="button"
-      className="flex h-12 w-full cursor-pointer items-center gap-4 rounded-md px-2.5 py-2 text-left body-1-bold text-primary outline-none transition-colors hover:bg-gray-200 focus-visible:shadow-focus-ring"
+      className="flex h-12 w-full cursor-pointer items-center gap-4 rounded-md px-2.5 py-2 text-left body-1-bold text-primary transition-colors outline-none hover:bg-gray-200 focus-visible:shadow-focus-ring"
       onClick={onClick}
     >
       <span className="flex size-8 shrink-0 items-center justify-center">

@@ -43,6 +43,27 @@ interface SocialLoginResponse {
   data?: SocialLoginData;
 }
 
+interface AccessTokenReissueData {
+  accessToken?: string;
+  access_token?: string;
+}
+
+interface AccessTokenReissueResponse {
+  status: number;
+  code: string;
+  message: string;
+  data?: AccessTokenReissueData;
+}
+
+type OAuthRedirectType = 'LOCAL' | 'PROD';
+
+const LOCAL_OAUTH_REDIRECT_HOSTNAMES = new Set([
+  'localhost',
+  '127.0.0.1',
+  '::1',
+  '[::1]',
+]);
+
 function buildApiUrl(path: string) {
   if (!API_BASE_URL) {
     throw new Error('NEXT_PUBLIC_API_BASE_URL is not set.');
@@ -52,6 +73,13 @@ function buildApiUrl(path: string) {
   const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
 
   return new URL(normalizedPath, baseWithSlash);
+}
+
+async function readJsonResponse<T>(response: Response): Promise<T | null> {
+  const contentType = response.headers.get('Content-Type') ?? '';
+  if (!contentType.includes('application/json')) return null;
+
+  return (await response.json()) as T;
 }
 
 function getStorage() {
@@ -117,7 +145,19 @@ export function resolveOAuthRedirectUri(provider: 'google' | 'kakao'): string {
   return `${window.location.origin}/oauth/${provider}/callback`;
 }
 
+function resolveOAuthRedirectType(provider: 'google' | 'kakao'): OAuthRedirectType {
+  try {
+    const redirectUri = resolveOAuthRedirectUri(provider);
+    const hostname = new URL(redirectUri).hostname;
+
+    return LOCAL_OAUTH_REDIRECT_HOSTNAMES.has(hostname) ? 'LOCAL' : 'PROD';
+  } catch {
+    return 'PROD';
+  }
+}
+
 const inflightSocialLogins = new Map<string, Promise<SocialLoginResult>>();
+let inflightAccessTokenReissue: Promise<string> | null = null;
 
 export function requestSocialLoginOnce(provider: 'google' | 'kakao', code: string) {
   const normalizedCode = code.trim();
@@ -142,21 +182,18 @@ export async function requestSocialLogin(provider: 'google' | 'kakao', code: str
   }
 
   loginUrl.searchParams.set('code', normalizedCode);
+  loginUrl.searchParams.set('redirectType', resolveOAuthRedirectType(provider));
 
   const response = await fetch(loginUrl.toString(), {
     method: 'POST',
     headers: {
       Accept: 'application/json',
     },
+    credentials: 'include',
     cache: 'no-store',
   });
 
-  const contentType = response.headers.get('Content-Type') ?? '';
-  let payload: SocialLoginResponse | null = null;
-
-  if (contentType.includes('application/json')) {
-    payload = (await response.json()) as SocialLoginResponse;
-  }
+  const payload = await readJsonResponse<SocialLoginResponse>(response);
 
   if (response.status === 401) {
     redirectToLoginOnUnauthorized();
@@ -185,6 +222,66 @@ export async function requestSocialLogin(provider: 'google' | 'kakao', code: str
     accessToken,
     termsAgreed: isExplicitTermsAgreed(payload.data),
   };
+}
+
+export async function requestAccessTokenReissue() {
+  const reissueUrl = buildApiUrl('/auth/reissue');
+
+  const response = await fetch(reissueUrl.toString(), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+    cache: 'no-store',
+  });
+
+  const payload = await readJsonResponse<AccessTokenReissueResponse>(response);
+
+  if (!response.ok) {
+    const message = payload?.message ?? `Access token reissue failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  if (!payload) {
+    throw new Error('Invalid access token reissue response format.');
+  }
+
+  const accessToken = payload.data?.accessToken ?? payload.data?.access_token;
+
+  if (!accessToken) {
+    throw new Error('Access token is missing in reissue response.');
+  }
+
+  saveAuthTokensToSession(accessToken);
+  return accessToken;
+}
+
+function requestAccessTokenReissueOnce() {
+  if (inflightAccessTokenReissue) return inflightAccessTokenReissue;
+
+  inflightAccessTokenReissue = requestAccessTokenReissue().finally(() => {
+    inflightAccessTokenReissue = null;
+  });
+
+  return inflightAccessTokenReissue;
+}
+
+export async function requestLogout() {
+  const logoutUrl = buildApiUrl('/auth/logout');
+
+  try {
+    await fetch(logoutUrl.toString(), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+      cache: 'no-store',
+    });
+  } finally {
+    clearAccessTokenFromSession();
+  }
 }
 
 export async function requestTermsAgreement(termsAgreed: boolean) {
@@ -242,13 +339,7 @@ export function consumeOAuthState(provider: 'google' | 'kakao') {
   return state;
 }
 
-export async function authFetch(path: string, init: AuthFetchInit = {}) {
-  const accessToken = getAccessTokenFromSession();
-
-  if (!accessToken) {
-    throw new Error('Access token session is missing.');
-  }
-
+function buildAuthenticatedRequest(path: string, init: AuthFetchInit, accessToken: string) {
   const url = buildApiUrl(path);
   const headers = new Headers(init.headers);
 
@@ -258,16 +349,53 @@ export async function authFetch(path: string, init: AuthFetchInit = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
+  return {
+    requestInit: {
+      ...init,
+      headers,
+      cache: init.cache ?? 'no-store',
+    },
+    url,
+  };
+}
+
+export async function authFetch(path: string, init: AuthFetchInit = {}) {
+  const accessToken = getAccessTokenFromSession();
+
+  if (!accessToken) {
+    throw new Error('Access token session is missing.');
+  }
+
+  const { requestInit, url } = buildAuthenticatedRequest(path, init, accessToken);
   const response = await fetch(url.toString(), {
-    ...init,
-    headers,
-    cache: init.cache ?? 'no-store',
+    ...requestInit,
   });
 
-  if (response.status === 401) {
+  if (response.status !== 401) {
+    return response;
+  }
+
+  let reissuedAccessToken: string;
+  try {
+    reissuedAccessToken = await requestAccessTokenReissueOnce();
+  } catch {
     redirectToLoginOnUnauthorized();
     throw new Error('Unauthorized');
   }
 
-  return response;
+  const { requestInit: retryRequestInit, url: retryUrl } = buildAuthenticatedRequest(
+    path,
+    init,
+    reissuedAccessToken,
+  );
+  const retryResponse = await fetch(retryUrl.toString(), {
+    ...retryRequestInit,
+  });
+
+  if (retryResponse.status === 401) {
+    redirectToLoginOnUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
+  return retryResponse;
 }
